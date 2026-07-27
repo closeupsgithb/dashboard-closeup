@@ -1,65 +1,209 @@
-import Image from "next/image";
+"use client";
+
+import { useEffect, useState } from "react";
+import { Logo } from "@/components/Logo";
+import { StatTile } from "@/components/StatTile";
+import { MonthlyIncomeChart, type IncomePoint } from "@/components/MonthlyIncomeChart";
+import { OnboardingStageBar, type StageCount } from "@/components/OnboardingStageBar";
+import { PendingFollowUpTable, type PendingRow } from "@/components/PendingFollowUpTable";
+import { PausedClientsTable, type PausedRow } from "@/components/PausedClientsTable";
+import { DataIssuesAlert, type DataIssue } from "@/components/DataIssuesAlert";
+import { formatEUR, formatMonths, formatPercent } from "@/lib/format";
+
+type CacResult = {
+  periodo: string;
+  mes: string | null;
+  gastoAds: number | null;
+  clientesNuevos: number | null;
+  cac: number | null;
+  motivo: string | null;
+};
+
+type ChurnResult = {
+  periodo: string;
+  clientesMesAnterior: number;
+  clientesBaja: string[];
+  churnRate: number | null;
+  motivo: string | null;
+};
+
+type LtvResult = {
+  arpuMedio: number | null;
+  vidaMediaMeses: number | null;
+  ltv: number | null;
+  muestraClientesFinalizados: number;
+  motivo: string | null;
+};
+
+type IncomePointWithIssues = IncomePoint & { entradasNoInterpretables: { cliente: string; raw: string }[] };
+
+type ApiResponse = {
+  generatedAt: string;
+  ingresoMensualConfirmado: IncomePointWithIssues[];
+  cac: CacResult[];
+  churn: ChurnResult[];
+  ltv: LtvResult;
+  seguimientoPendientes: PendingRow[];
+  estadoOnboarding: StageCount[];
+  clientesEnPausa: PausedRow[];
+};
+
+type ApiError = { error: "MISSING_CREDENTIALS" | "UPSTREAM_ERROR"; detail?: string };
+
+const REFRESH_MS = 5 * 60 * 1000;
+
+function lastReportedIndex(data: ApiResponse["ingresoMensualConfirmado"]): number {
+  for (let i = data.length - 1; i >= 0; i--) {
+    if (data[i].reportado) return i;
+  }
+  return data.length - 1;
+}
 
 export default function Home() {
+  const [data, setData] = useState<ApiResponse | null>(null);
+  const [error, setError] = useState<ApiError | null>(null);
+
+  useEffect(() => {
+    let cancelled = false;
+
+    async function load() {
+      try {
+        const res = await fetch("/api/metrics", { cache: "no-store" });
+        const json = await res.json();
+        if (cancelled) return;
+        if (!res.ok) {
+          setError(json as ApiError);
+          return;
+        }
+        setError(null);
+        setData(json as ApiResponse);
+      } catch {
+        if (!cancelled) setError({ error: "UPSTREAM_ERROR" });
+      }
+    }
+
+    load();
+    const interval = setInterval(load, REFRESH_MS);
+    return () => {
+      cancelled = true;
+      clearInterval(interval);
+    };
+  }, []);
+
+  if (error?.error === "MISSING_CREDENTIALS") {
+    return (
+      <Centered>
+        Faltan credenciales configuradas en <code>.env.local</code>. Añade
+        GOOGLE_SHEETS_CLIENT_EMAIL / GOOGLE_SHEETS_PRIVATE_KEY, GHL_PRIVATE_TOKEN y
+        META_ACCESS_TOKEN.
+      </Centered>
+    );
+  }
+
+  if (error) {
+    return <Centered>No se pudo cargar el dashboard. {error.detail ?? ""}</Centered>;
+  }
+
+  if (!data) {
+    return <Centered>Cargando…</Centered>;
+  }
+
+  const idx = lastReportedIndex(data.ingresoMensualConfirmado);
+  const ultimoIngreso = data.ingresoMensualConfirmado[idx];
+  const ultimoCac = data.cac[idx];
+  const ultimoChurn = data.churn[idx];
+
+  const dataIssues: DataIssue[] = data.ingresoMensualConfirmado.flatMap((p) =>
+    p.entradasNoInterpretables.map((e) => ({ cliente: e.cliente, raw: e.raw, periodo: p.periodo }))
+  );
+
   return (
-    <div className="flex flex-col flex-1 items-center justify-center bg-zinc-50 font-sans dark:bg-black">
-      <main className="flex flex-1 w-full max-w-3xl flex-col items-center justify-between py-32 px-16 bg-white dark:bg-black sm:items-start">
-        <Image
-          className="dark:invert"
-          src="/next.svg"
-          alt="Next.js logo"
-          width={100}
-          height={20}
-          priority
+    <main className="mx-auto max-w-5xl px-6 py-8">
+      <header className="mb-8 flex items-center justify-between">
+        <div className="flex items-center gap-3">
+          <Logo />
+          <div>
+            <h1 className="text-lg font-semibold" style={{ color: "var(--ink)" }}>
+              Dashboard Financiero — Closeup Marketing
+            </h1>
+            <p className="text-xs" style={{ color: "var(--ink-muted)" }}>
+              Actualizado {new Date(data.generatedAt).toLocaleString("es-ES")}
+            </p>
+          </div>
+        </div>
+      </header>
+
+      {dataIssues.length > 0 && (
+        <div className="mb-6">
+          <DataIssuesAlert data={dataIssues} />
+        </div>
+      )}
+
+      <section className="mb-8 grid grid-cols-2 gap-4 md:grid-cols-4">
+        <StatTile
+          label={`Ingreso confirmado — ${ultimoIngreso?.periodo ?? ""}`}
+          value={formatEUR(ultimoIngreso?.ingreso ?? null)}
+          accent
         />
-        <div className="flex flex-col items-center gap-6 text-center sm:items-start sm:text-left">
-          <h1 className="max-w-xs text-3xl font-semibold leading-10 tracking-tight text-black dark:text-zinc-50">
-            To get started, edit the page.tsx file.
-          </h1>
-          <p className="max-w-md text-lg leading-8 text-zinc-600 dark:text-zinc-400">
-            Looking for a starting point or more instructions? Head over to{" "}
-            <a
-              href="https://vercel.com/templates?framework=next.js&utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-              className="font-medium text-zinc-950 dark:text-zinc-50"
-            >
-              Templates
-            </a>{" "}
-            or the{" "}
-            <a
-              href="https://nextjs.org/learn?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-              className="font-medium text-zinc-950 dark:text-zinc-50"
-            >
-              Learning
-            </a>{" "}
-            center.
-          </p>
+        <StatTile
+          label="CAC"
+          value={ultimoCac?.cac !== null && ultimoCac?.cac !== undefined ? formatEUR(ultimoCac.cac) : "N/D"}
+          caption={ultimoCac?.motivo ?? undefined}
+        />
+        <StatTile
+          label="LTV"
+          value={data.ltv.ltv !== null ? formatEUR(data.ltv.ltv) : "N/D"}
+          caption={
+            data.ltv.motivo ??
+            (data.ltv.vidaMediaMeses !== null
+              ? `ARPU ${formatEUR(data.ltv.arpuMedio)} × ${formatMonths(data.ltv.vidaMediaMeses)}`
+              : undefined)
+          }
+        />
+        <StatTile
+          label="Churn mensual"
+          value={ultimoChurn?.churnRate !== null && ultimoChurn?.churnRate !== undefined ? formatPercent(ultimoChurn.churnRate) : "N/D"}
+          caption={ultimoChurn?.motivo ?? undefined}
+        />
+      </section>
+
+      <section className="mb-8 rounded-lg border p-5" style={{ borderColor: "var(--border)", background: "var(--surface)" }}>
+        <h2 className="mb-4 text-sm font-medium" style={{ color: "var(--ink-secondary)" }}>
+          Ingreso mensual confirmado
+        </h2>
+        <MonthlyIncomeChart data={data.ingresoMensualConfirmado} />
+      </section>
+
+      <section className="mb-8 grid grid-cols-1 gap-4 md:grid-cols-2">
+        <div className="rounded-lg border p-5" style={{ borderColor: "var(--border)", background: "var(--surface)" }}>
+          <h2 className="mb-4 text-sm font-medium" style={{ color: "var(--ink-secondary)" }}>
+            Seguimiento de pendientes de cobro
+          </h2>
+          <PendingFollowUpTable data={data.seguimientoPendientes} />
         </div>
-        <div className="flex flex-col gap-4 text-base font-medium sm:flex-row">
-          <a
-            className="flex h-12 w-full items-center justify-center gap-2 rounded-full bg-foreground px-5 text-background transition-colors hover:bg-[#383838] dark:hover:bg-[#ccc] md:w-[158px]"
-            href="https://vercel.com/new?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            <Image
-              className="dark:invert"
-              src="/vercel.svg"
-              alt="Vercel logomark"
-              width={16}
-              height={16}
-            />
-            Deploy Now
-          </a>
-          <a
-            className="flex h-12 w-full items-center justify-center rounded-full border border-solid border-black/[.08] px-5 transition-colors hover:border-transparent hover:bg-black/[.04] dark:border-white/[.145] dark:hover:bg-[#1a1a1a] md:w-[158px]"
-            href="https://nextjs.org/docs?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            Documentation
-          </a>
+
+        <div className="rounded-lg border p-5" style={{ borderColor: "var(--border)", background: "var(--surface)" }}>
+          <h2 className="mb-4 text-sm font-medium" style={{ color: "var(--ink-secondary)" }}>
+            Clientes en pausa
+          </h2>
+          <PausedClientsTable data={data.clientesEnPausa} />
         </div>
-      </main>
-    </div>
+      </section>
+
+      <section className="rounded-lg border p-5" style={{ borderColor: "var(--border)", background: "var(--surface)" }}>
+        <h2 className="mb-4 text-sm font-medium" style={{ color: "var(--ink-secondary)" }}>
+          Clientes por fase de Onboarding
+        </h2>
+        <OnboardingStageBar data={data.estadoOnboarding} />
+      </section>
+    </main>
+  );
+}
+
+function Centered({ children }: { children: React.ReactNode }) {
+  return (
+    <main className="flex min-h-screen items-center justify-center px-6 text-center text-sm" style={{ color: "var(--ink-secondary)" }}>
+      {children}
+    </main>
   );
 }
