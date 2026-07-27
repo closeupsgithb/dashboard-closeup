@@ -3,17 +3,11 @@ const GHL_API_VERSION = "2021-07-28";
 
 export const LOCATION_ID = "gNZGfOheofHgZtuYObm7";
 
-// IDs confirmados en la Fase 0 directamente contra la API — no coincidían con la
-// spec inicial (ver memoria del proyecto): "FB Form Nativo" es el funnel de
-// leads/venta, el pago real ocurre al entrar en Onboarding > "3.-(Si pago)".
+// Confirmado en la Fase 2 contra la API real: "FB Form Nativo || Pipeline" son
+// leads de particulares para el Servicio de Leads (no clientes de agencia) y
+// queda fuera de este dashboard. "Onboarding" sí son los clientes reales de
+// Closeup — el pago ocurre al entrar en la fase "3.-(Si pago) Agendar reunión".
 export const PIPELINES = {
-  fbFormNativo: {
-    id: "BF2Ap1zJkPjLJ2gtqEf5",
-    stages: {
-      nuevoLeadMeta: "f79d1c8e-cd35-4824-b64d-6795b9329d45",
-      clienteCerrado: "905fc52d-94d3-4c4b-8690-69f93ceec203",
-    },
-  },
   onboarding: {
     id: "24qvnC75Mxwh1ZnRKApe",
     stages: {
@@ -48,8 +42,9 @@ export type GhlOpportunity = {
   pipelineStageId: string;
   status: string;
   monetaryValue: number;
-  dateAdded: string;
+  createdAt: string;
   updatedAt: string;
+  contact?: { name: string; companyName: string | null };
 };
 
 type SearchResponse = {
@@ -90,10 +85,6 @@ async function searchOpportunities(pipelineId: string): Promise<GhlOpportunity[]
   }
 
   return results;
-}
-
-export async function fetchFunnelOpportunities(): Promise<GhlOpportunity[]> {
-  return searchOpportunities(PIPELINES.fbFormNativo.id);
 }
 
 export async function fetchOnboardingOpportunities(): Promise<GhlOpportunity[]> {

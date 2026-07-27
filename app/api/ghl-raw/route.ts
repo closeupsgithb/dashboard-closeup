@@ -1,15 +1,14 @@
 import { NextResponse } from "next/server";
-import { fetchFunnelOpportunities, fetchOnboardingOpportunities, MissingCredentialsError } from "@/lib/ghl";
+import { fetchOnboardingOpportunities, MissingCredentialsError } from "@/lib/ghl";
 
 export const dynamic = "force-dynamic";
 export const maxDuration = 30;
 
 export async function GET() {
   try {
-    const [funnel, onboarding] = await Promise.all([fetchFunnelOpportunities(), fetchOnboardingOpportunities()]);
+    const onboarding = await fetchOnboardingOpportunities();
     return NextResponse.json({
       generatedAt: new Date().toISOString(),
-      funnel: { count: funnel.length, sample: funnel.slice(0, 5) },
       onboarding: { count: onboarding.length, sample: onboarding.slice(0, 5) },
     });
   } catch (err) {
