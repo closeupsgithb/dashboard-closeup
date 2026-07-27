@@ -6,12 +6,10 @@ import { PIPELINES } from "@/lib/ghl";
 // no una pestaña de facturación — se excluye de la lista de periodos de pago.
 const NON_PERIOD_TABS = new Set(["SBY"]);
 
-// Las pestañas de periodo actuales no siempre llevan nombre de mes ("Hoja 2" es
-// julio 2026 por los comentarios de fecha) — mapeo manual de respaldo mientras
-// no se rebauticen las pestañas con el nombre del mes real.
-const MANUAL_TAB_TO_MONTH: Record<string, string> = {
-  "Hoja 2": "2026-07",
-};
+// Respaldo manual por si alguna pestaña de periodo no lleva nombre de mes
+// reconocible (la convención acordada es ENERO..DICIEMBRE en mayúsculas, que
+// ya se detecta solo — ver inferMonthFromTabName).
+const MANUAL_TAB_TO_MONTH: Record<string, string> = {};
 
 const SPANISH_MONTHS: Record<string, string> = {
   enero: "01", febrero: "02", marzo: "03", abril: "04", mayo: "05", junio: "06",
@@ -125,6 +123,10 @@ export type MonthSnapshot = {
   clientesEnPausa: string[];
   importePorCliente: Record<string, number>;
   entradasNoInterpretables: { cliente: string; raw: string }[];
+  // Falso mientras la pestaña tenga clientes listados pero ningún Estado
+  // rellenado todavía (ej. un mes recién creado a partir de la plantilla del
+  // mes anterior) — evita que se lea como "todos han causado baja".
+  reportado: boolean;
 };
 
 export function buildMonthSnapshots(
@@ -158,6 +160,7 @@ export function buildMonthSnapshots(
         entradasNoInterpretables: entries
           .filter((e) => e.importe.needsReview)
           .map((e) => ({ cliente: e.cliente, raw: e.importe.raw })),
+        reportado: entries.some((e) => e.estado !== ""),
       };
     });
 }
@@ -181,72 +184,98 @@ export type CacResult = {
   motivo: string | null;
 };
 
+function noReportadoResultCac(snap: MonthSnapshot): CacResult {
+  return {
+    periodo: snap.periodo,
+    mes: snap.mes,
+    gastoAds: null,
+    clientesNuevos: null,
+    cac: null,
+    motivo: `La pestaña "${snap.periodo}" todavía no tiene ningún Estado registrado — se ignora hasta que se rellene.`,
+  };
+}
+
 // CAC = gasto de la campaña propia de captación (CBO_LEADS_REFOR) del mes ÷
 // nº de clientes cuyo PRIMER registro confirmado (Hecho/50%) aparece ese mes.
-// El primer periodo de la serie nunca tiene CAC: no hay un "antes" con el que
-// comparar quién es realmente nuevo.
+// El primer periodo REPORTADO de la serie nunca tiene CAC: no hay un "antes"
+// con el que comparar quién es realmente nuevo. Los periodos todavía sin
+// rellenar (ej. un mes recién creado a partir de la plantilla anterior) se
+// excluyen de la comparación — no cuentan como "cero clientes nuevos".
 export function computeCac(snapshots: MonthSnapshot[], spendByMonth: MonthlySpend[]): CacResult[] {
+  const reportados = snapshots.filter((s) => s.reportado);
+  const resultsByPeriodo = new Map<string, CacResult>();
   const seenBefore = new Set<string>();
 
-  return snapshots.map((snap, i) => {
+  reportados.forEach((snap, i) => {
     const clientesNuevos =
       i === 0 ? null : snap.clientesConfirmados.filter((c) => !seenBefore.has(c)).length;
     snap.clientesConfirmados.forEach((c) => seenBefore.add(c));
 
-    if (i === 0) {
-      return {
-        periodo: snap.periodo,
-        mes: snap.mes,
-        gastoAds: null,
-        clientesNuevos: null,
-        cac: null,
-        motivo: "Primer periodo con datos: no hay mes anterior para saber quién es cliente nuevo.",
-      };
-    }
+    resultsByPeriodo.set(snap.periodo, computeCacForPeriod(snap, i, clientesNuevos, spendByMonth));
+  });
 
-    if (!snap.mes) {
-      return {
-        periodo: snap.periodo,
-        mes: null,
-        gastoAds: null,
-        clientesNuevos,
-        cac: null,
-        motivo: `La pestaña "${snap.periodo}" no tiene un mes identificable — no se puede cruzar con el gasto de Meta Ads.`,
-      };
-    }
+  return snapshots.map((snap) => (snap.reportado ? resultsByPeriodo.get(snap.periodo)! : noReportadoResultCac(snap)));
+}
 
-    const gasto = spendByMonth.find((s) => s.month === snap.mes)?.spend ?? null;
-    if (gasto === null) {
-      return {
-        periodo: snap.periodo,
-        mes: snap.mes,
-        gastoAds: null,
-        clientesNuevos,
-        cac: null,
-        motivo: `Sin dato de gasto de Meta Ads para ${snap.mes}.`,
-      };
-    }
+function computeCacForPeriod(
+  snap: MonthSnapshot,
+  i: number,
+  clientesNuevos: number | null,
+  spendByMonth: MonthlySpend[]
+): CacResult {
+  if (i === 0) {
+    return {
+      periodo: snap.periodo,
+      mes: snap.mes,
+      gastoAds: null,
+      clientesNuevos: null,
+      cac: null,
+      motivo: "Primer periodo con datos: no hay mes anterior para saber quién es cliente nuevo.",
+    };
+  }
 
-    if (!clientesNuevos) {
-      return {
-        periodo: snap.periodo,
-        mes: snap.mes,
-        gastoAds: gasto,
-        clientesNuevos: 0,
-        cac: null,
-        motivo: "No hubo clientes nuevos confirmados este periodo.",
-      };
-    }
+  if (!snap.mes) {
+    return {
+      periodo: snap.periodo,
+      mes: null,
+      gastoAds: null,
+      clientesNuevos,
+      cac: null,
+      motivo: `La pestaña "${snap.periodo}" no tiene un mes identificable — no se puede cruzar con el gasto de Meta Ads.`,
+    };
+  }
 
+  const gasto = spendByMonth.find((s) => s.month === snap.mes)?.spend ?? null;
+  if (gasto === null) {
+    return {
+      periodo: snap.periodo,
+      mes: snap.mes,
+      gastoAds: null,
+      clientesNuevos,
+      cac: null,
+      motivo: `Sin dato de gasto de Meta Ads para ${snap.mes}.`,
+    };
+  }
+
+  if (!clientesNuevos) {
     return {
       periodo: snap.periodo,
       mes: snap.mes,
       gastoAds: gasto,
-      clientesNuevos,
-      cac: gasto / clientesNuevos,
-      motivo: null,
+      clientesNuevos: 0,
+      cac: null,
+      motivo: "No hubo clientes nuevos confirmados este periodo.",
     };
-  });
+  }
+
+  return {
+    periodo: snap.periodo,
+    mes: snap.mes,
+    gastoAds: gasto,
+    clientesNuevos,
+    cac: gasto / clientesNuevos,
+    motivo: null,
+  };
 }
 
 export type ChurnResult = {
@@ -258,38 +287,54 @@ export type ChurnResult = {
 };
 
 // Baja = facturado (Hecho/50%) el periodo anterior, y este periodo ni factura
-// ni aparece en SBY (si está en SBY se trata como "en pausa", no como baja).
-export function computeChurn(snapshots: MonthSnapshot[], sbyByPeriod: SbySnapshot[][]): ChurnResult[] {
-  return snapshots.map((snap, i) => {
+// ni está en pausa (SBY, tabla global de clientes pausados, o STAND BY dentro
+// de la propia pestaña). Los periodos sin ningún Estado registrado todavía se
+// excluyen de la comparación — no cuentan como "todos han causado baja".
+export function computeChurn(snapshots: MonthSnapshot[], sbyEntries: SbySnapshot[]): ChurnResult[] {
+  const reportados = snapshots.filter((s) => s.reportado);
+  const sbyNormalizados = new Set(sbyEntries.map((s) => s.clienteNormalizado));
+  const resultsByPeriodo = new Map<string, ChurnResult>();
+
+  reportados.forEach((snap, i) => {
     if (i === 0) {
-      return {
+      resultsByPeriodo.set(snap.periodo, {
         periodo: snap.periodo,
         clientesMesAnterior: 0,
         clientesBaja: [],
         churnRate: null,
         motivo: "Primer periodo con datos: no hay mes anterior con el que comparar.",
-      };
+      });
+      return;
     }
 
-    const anterior = snapshots[i - 1];
-    const enPausaActual = new Set([
-      ...(sbyByPeriod[i] ?? []).map((s) => s.clienteNormalizado),
-      ...snap.clientesEnPausa,
-    ]);
+    const anterior = reportados[i - 1];
+    const enPausaActual = new Set([...sbyNormalizados, ...snap.clientesEnPausa]);
     const confirmadosActual = new Set(snap.clientesConfirmados);
 
     const bajas = anterior.clientesConfirmados.filter(
       (c) => !confirmadosActual.has(c) && !enPausaActual.has(c)
     );
 
-    return {
+    resultsByPeriodo.set(snap.periodo, {
       periodo: snap.periodo,
       clientesMesAnterior: anterior.clientesConfirmados.length,
       clientesBaja: bajas,
       churnRate: anterior.clientesConfirmados.length > 0 ? bajas.length / anterior.clientesConfirmados.length : null,
       motivo: null,
-    };
+    });
   });
+
+  return snapshots.map((snap) =>
+    snap.reportado
+      ? resultsByPeriodo.get(snap.periodo)!
+      : {
+          periodo: snap.periodo,
+          clientesMesAnterior: 0,
+          clientesBaja: [],
+          churnRate: null,
+          motivo: `La pestaña "${snap.periodo}" todavía no tiene ningún Estado registrado — se ignora hasta que se rellene.`,
+        }
+  );
 }
 
 export type LtvResult = {
@@ -368,13 +413,14 @@ export function computeLtv(snapshots: MonthSnapshot[], churnResults: ChurnResult
 export type PendienteSeguimiento = { cliente: string; mesesConsecutivosPendiente: number };
 
 export function computePendingFollowUp(snapshots: MonthSnapshot[]): PendienteSeguimiento[] {
-  if (snapshots.length === 0) return [];
-  const ultimo = snapshots[snapshots.length - 1];
+  const reportados = snapshots.filter((s) => s.reportado);
+  if (reportados.length === 0) return [];
+  const ultimo = reportados[reportados.length - 1];
 
   return ultimo.clientesPendientes.map((cliente) => {
     let meses = 0;
-    for (let i = snapshots.length - 1; i >= 0; i--) {
-      if (snapshots[i].clientesPendientes.includes(cliente)) {
+    for (let i = reportados.length - 1; i >= 0; i--) {
+      if (reportados[i].clientesPendientes.includes(cliente)) {
         meses += 1;
       } else {
         break;

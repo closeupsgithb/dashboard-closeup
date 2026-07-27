@@ -25,7 +25,6 @@ export async function GET() {
     const periodTabOrder = Object.keys(tabsData).filter((t) => t !== "SBY" && t !== "Hoja 1");
     const snapshots = buildMonthSnapshots(tabsData, periodTabOrder);
     const sbyEntries = parseSbyTab(tabsData["SBY"] ?? []);
-    const sbyByPeriod = snapshots.map(() => sbyEntries);
 
     const meses = snapshots.map((s) => s.mes).filter((m): m is string => m !== null);
     const since = meses.length > 0 ? `${meses[0]}-01` : "2026-01-01";
@@ -33,7 +32,7 @@ export async function GET() {
     const spendByMonth = await fetchOwnCampaignSpendByMonth(since, until);
 
     const cac = computeCac(snapshots, spendByMonth);
-    const churn = computeChurn(snapshots, sbyByPeriod);
+    const churn = computeChurn(snapshots, sbyEntries);
     const ltv = computeLtv(snapshots, churn);
     const pendientes = computePendingFollowUp(snapshots);
     const onboardingStages = computeOnboardingStageBreakdown(onboarding);
@@ -43,6 +42,7 @@ export async function GET() {
       ingresoMensualConfirmado: snapshots.map((s) => ({
         periodo: s.periodo,
         mes: s.mes,
+        reportado: s.reportado,
         ingreso: s.ingresoConfirmado,
         entradasNoInterpretables: s.entradasNoInterpretables,
       })),
