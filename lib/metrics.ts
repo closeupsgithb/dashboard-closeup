@@ -87,7 +87,7 @@ export type PeriodEntry = {
   comentario: string;
 };
 
-function parseTabRows(rows: string[][]): PeriodEntry[] {
+export function parseTabRows(rows: string[][]): PeriodEntry[] {
   const [header, ...body] = rows;
   if (!header) return [];
   const idx = {

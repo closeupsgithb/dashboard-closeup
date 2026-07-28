@@ -26,13 +26,19 @@ function credentials(): { clientEmail: string; privateKey: string } {
   return { clientEmail, privateKey };
 }
 
-let cachedToken: { value: string; expiresAt: number } | null = null;
+// Cacheado por scope (nunca compartido entre lectura y escritura — un token
+// de solo lectura cacheado se reutilizaría para escrituras y Google lo
+// rechazaría con 403 ACCESS_TOKEN_SCOPE_INSUFFICIENT, como pasó en pruebas).
+const cachedTokens: Record<"readOnly" | "readWrite", { value: string; expiresAt: number } | null> = {
+  readOnly: null,
+  readWrite: null,
+};
 
-// Cacheado en memoria del proceso: los tokens de Google duran 1h y cada request
-// de un dashboard con varias tarjetas puede disparar varias llamadas seguidas.
 async function getAccessToken(readOnly: boolean): Promise<string> {
-  if (cachedToken && cachedToken.expiresAt > Date.now() + 30_000) {
-    return cachedToken.value;
+  const key = readOnly ? "readOnly" : "readWrite";
+  const cached = cachedTokens[key];
+  if (cached && cached.expiresAt > Date.now() + 30_000) {
+    return cached.value;
   }
   const { clientEmail, privateKey } = credentials();
   const now = Math.floor(Date.now() / 1000);
@@ -58,8 +64,8 @@ async function getAccessToken(readOnly: boolean): Promise<string> {
   if (!res.ok) {
     throw new Error(`Google OAuth ${res.status}: ${JSON.stringify(json)}`);
   }
-  cachedToken = { value: json.access_token, expiresAt: Date.now() + json.expires_in * 1000 };
-  return cachedToken.value;
+  cachedTokens[key] = { value: json.access_token, expiresAt: Date.now() + json.expires_in * 1000 };
+  return cachedTokens[key]!.value;
 }
 
 export type SheetTab = { title: string; rowCount: number; columnCount: number };
@@ -100,6 +106,54 @@ export async function getAllTabsData(): Promise<Record<string, string[][]>> {
   const tabs = await listTabs();
   const entries = await Promise.all(tabs.map(async (t) => [t.title, await getTabValues(t.title)] as const));
   return Object.fromEntries(entries);
+}
+
+function columnLetter(zeroBasedIndex: number): string {
+  return String.fromCharCode(65 + zeroBasedIndex);
+}
+
+export class ClientRowNotFoundError extends Error {
+  constructor(cliente: string, tabName: string) {
+    super(`No se encontró "${cliente}" en la pestaña "${tabName}".`);
+  }
+}
+
+// Escribe Estado y/o Importe para un cliente ya existente en una pestaña de
+// periodo. Nunca crea filas nuevas — si el nombre no coincide exactamente con
+// una fila existente, falla en vez de adivinar dónde escribir.
+export async function updateClientFields(
+  tabName: string,
+  cliente: string,
+  updates: { estado?: string; importe?: string }
+): Promise<void> {
+  const rows = await getTabValues(tabName);
+  const [header, ...body] = rows;
+  if (!header) throw new ClientRowNotFoundError(cliente, tabName);
+
+  const idx = { nombre: header.indexOf("Nombre"), importe: header.indexOf("Importe"), estado: header.indexOf("Estado") };
+  const rowIndex = body.findIndex((row) => row[idx.nombre] === cliente);
+  if (rowIndex === -1) throw new ClientRowNotFoundError(cliente, tabName);
+
+  const sheetRow = rowIndex + 2; // +1 por la cabecera, +1 porque Sheets es 1-indexado
+  const data: { range: string; values: string[][] }[] = [];
+  if (updates.estado !== undefined) {
+    data.push({ range: `'${tabName}'!${columnLetter(idx.estado)}${sheetRow}`, values: [[updates.estado]] });
+  }
+  if (updates.importe !== undefined) {
+    data.push({ range: `'${tabName}'!${columnLetter(idx.importe)}${sheetRow}`, values: [[updates.importe]] });
+  }
+  if (data.length === 0) return;
+
+  const token = await getAccessToken(false);
+  const res = await fetch(`${SHEETS_BASE}/${SPREADSHEET_ID}/values:batchUpdate`, {
+    method: "POST",
+    headers: { Authorization: `Bearer ${token}`, "Content-Type": "application/json" },
+    body: JSON.stringify({ valueInputOption: "USER_ENTERED", data }),
+  });
+  if (!res.ok) {
+    const json = await res.json();
+    throw new Error(`Sheets ${res.status}: ${JSON.stringify(json)}`);
+  }
 }
 
 export { MissingCredentialsError, SPREADSHEET_ID };

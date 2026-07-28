@@ -5,6 +5,7 @@ import { fetchOwnCampaignSpendByMonth, MissingCredentialsError as MetaMissingCre
 import {
   buildMonthSnapshots,
   parseSbyTab,
+  parseTabRows,
   computeCac,
   computeChurn,
   computeLtv,
@@ -37,6 +38,17 @@ export async function GET() {
     const pendientes = computePendingFollowUp(snapshots);
     const onboardingStages = computeOnboardingStageBreakdown(onboarding);
 
+    // Pestaña editable desde el dashboard: siempre la última de la lista (el
+    // mes que Daniel esté rellenando ahora), reportada o no.
+    const ultimoPeriodo = periodTabOrder[periodTabOrder.length - 1] ?? null;
+    const roster = ultimoPeriodo
+      ? parseTabRows(tabsData[ultimoPeriodo] ?? []).map((e) => ({
+          cliente: e.cliente,
+          estado: e.estado,
+          importeRaw: e.importe.raw,
+        }))
+      : [];
+
     return NextResponse.json({
       generatedAt: new Date().toISOString(),
       ingresoMensualConfirmado: snapshots.map((s) => ({
@@ -53,6 +65,8 @@ export async function GET() {
       seguimientoPendientes: pendientes,
       estadoOnboarding: onboardingStages,
       clientesEnPausa: sbyEntries.map((s) => ({ cliente: s.cliente, comentario: s.comentario })),
+      periodoEditable: ultimoPeriodo,
+      rosterEditable: roster,
     });
   } catch (err) {
     if (err instanceof SheetsMissingCredentials || err instanceof GhlMissingCredentials || err instanceof MetaMissingCredentials) {

@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import { Logo } from "@/components/Logo";
 import { StatTile } from "@/components/StatTile";
 import { MonthlyIncomeChart, type IncomePoint } from "@/components/MonthlyIncomeChart";
@@ -8,6 +8,7 @@ import { OnboardingStageBar, type StageCount } from "@/components/OnboardingStag
 import { PendingFollowUpTable, type PendingRow } from "@/components/PendingFollowUpTable";
 import { PausedClientsTable, type PausedRow } from "@/components/PausedClientsTable";
 import { DataIssuesAlert, type DataIssue } from "@/components/DataIssuesAlert";
+import { EditableClientTable, type RosterRow } from "@/components/EditableClientTable";
 import { formatEUR, formatMonths, formatPercent } from "@/lib/format";
 
 type CacResult = {
@@ -46,6 +47,8 @@ type ApiResponse = {
   seguimientoPendientes: PendingRow[];
   estadoOnboarding: StageCount[];
   clientesEnPausa: PausedRow[];
+  periodoEditable: string | null;
+  rosterEditable: RosterRow[];
 };
 
 type ApiError = { error: "MISSING_CREDENTIALS" | "UPSTREAM_ERROR"; detail?: string };
@@ -63,32 +66,28 @@ export default function Home() {
   const [data, setData] = useState<ApiResponse | null>(null);
   const [error, setError] = useState<ApiError | null>(null);
 
-  useEffect(() => {
-    let cancelled = false;
-
-    async function load() {
-      try {
-        const res = await fetch("/api/metrics", { cache: "no-store" });
-        const json = await res.json();
-        if (cancelled) return;
-        if (!res.ok) {
-          setError(json as ApiError);
-          return;
-        }
-        setError(null);
-        setData(json as ApiResponse);
-      } catch {
-        if (!cancelled) setError({ error: "UPSTREAM_ERROR" });
+  const load = useCallback(async () => {
+    try {
+      const res = await fetch("/api/metrics", { cache: "no-store" });
+      const json = await res.json();
+      if (!res.ok) {
+        setError(json as ApiError);
+        return;
       }
+      setError(null);
+      setData(json as ApiResponse);
+    } catch {
+      setError({ error: "UPSTREAM_ERROR" });
     }
+  }, []);
 
+  useEffect(() => {
     load();
     const interval = setInterval(load, REFRESH_MS);
     return () => {
-      cancelled = true;
       clearInterval(interval);
     };
-  }, []);
+  }, [load]);
 
   if (error?.error === "MISSING_CREDENTIALS") {
     return (
@@ -190,12 +189,21 @@ export default function Home() {
         </div>
       </section>
 
-      <section className="rounded-lg border p-5" style={{ borderColor: "var(--border)", background: "var(--surface)" }}>
+      <section className="mb-8 rounded-lg border p-5" style={{ borderColor: "var(--border)", background: "var(--surface)" }}>
         <h2 className="mb-4 text-sm font-medium" style={{ color: "var(--ink-secondary)" }}>
           Clientes por fase de Onboarding
         </h2>
         <OnboardingStageBar data={data.estadoOnboarding} />
       </section>
+
+      {data.periodoEditable && (
+        <section className="rounded-lg border p-5" style={{ borderColor: "var(--border)", background: "var(--surface)" }}>
+          <h2 className="mb-4 text-sm font-medium" style={{ color: "var(--ink-secondary)" }}>
+            Editar {data.periodoEditable}
+          </h2>
+          <EditableClientTable periodo={data.periodoEditable} roster={data.rosterEditable} onSaved={load} />
+        </section>
+      )}
     </main>
   );
 }
