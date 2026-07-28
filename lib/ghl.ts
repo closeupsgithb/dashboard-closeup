@@ -44,7 +44,13 @@ export const CUSTOM_FIELDS = {
 
 export const ASISTIO_OPTIONS = ["Sí", "No", "Pendiente"] as const;
 
-type GhlCustomField = { id: string; fieldValue?: string; fieldValueString?: string; value?: string };
+type GhlCustomField = {
+  id: string;
+  fieldValue?: string;
+  fieldValueString?: string;
+  fieldValueDate?: number;
+  value?: string;
+};
 
 export type GhlOpportunity = {
   id: string;
@@ -60,12 +66,18 @@ export type GhlOpportunity = {
   customFields?: GhlCustomField[];
 };
 
-// El endpoint /opportunities/search devuelve "fieldValueString"; el endpoint
-// /opportunities/{id} (usado al escribir) devuelve "fieldValue" — mismo dato,
-// nombre de clave distinto según el endpoint. Se comprueban ambas variantes.
+// La API de GHL no es consistente: los campos de texto/lista usan
+// "fieldValueString" en /opportunities/search o "fieldValue" en
+// /opportunities/{id}; los campos de tipo Fecha usan "fieldValueDate" (un
+// timestamp en milisegundos) en vez de una de esas dos — confirmado con una
+// llamada real, no está documentado de forma clara. Se comprueban las tres.
 export function getCustomFieldValue(opportunity: GhlOpportunity, fieldId: string): string {
   const field = opportunity.customFields?.find((f) => f.id === fieldId);
-  return field?.fieldValueString ?? field?.fieldValue ?? field?.value ?? "";
+  if (!field) return "";
+  if (field.fieldValueDate !== undefined) {
+    return new Date(field.fieldValueDate).toISOString().slice(0, 10);
+  }
+  return field.fieldValueString ?? field.fieldValue ?? field.value ?? "";
 }
 
 type SearchResponse = {
