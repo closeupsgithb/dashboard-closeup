@@ -9,6 +9,8 @@ import { PendingFollowUpTable, type PendingRow } from "@/components/PendingFollo
 import { PausedClientsTable, type PausedRow } from "@/components/PausedClientsTable";
 import { DataIssuesAlert, type DataIssue } from "@/components/DataIssuesAlert";
 import { EditableClientTable, type RosterRow } from "@/components/EditableClientTable";
+import { ReunionesTable, type ReunionRow } from "@/components/ReunionesTable";
+import { ReunionStatsTable, type ReunionStatsRow } from "@/components/ReunionStatsTable";
 import { formatEUR, formatMonths, formatPercent } from "@/lib/format";
 
 type CacResult = {
@@ -49,6 +51,8 @@ type ApiResponse = {
   clientesEnPausa: PausedRow[];
   periodoEditable: string | null;
   rosterEditable: RosterRow[];
+  reunionStats: ReunionStatsRow[];
+  reunionRoster: ReunionRow[];
 };
 
 type ApiError = { error: "MISSING_CREDENTIALS" | "UPSTREAM_ERROR"; detail?: string };
@@ -197,13 +201,27 @@ export default function Home() {
       </section>
 
       {data.periodoEditable && (
-        <section className="rounded-lg border p-5" style={{ borderColor: "var(--border)", background: "var(--surface)" }}>
+        <section className="mb-8 rounded-lg border p-5" style={{ borderColor: "var(--border)", background: "var(--surface)" }}>
           <h2 className="mb-4 text-sm font-medium" style={{ color: "var(--ink-secondary)" }}>
             Editar {data.periodoEditable}
           </h2>
           <EditableClientTable periodo={data.periodoEditable} roster={data.rosterEditable} onSaved={load} />
         </section>
       )}
+
+      <section className="mb-8 rounded-lg border p-5" style={{ borderColor: "var(--border)", background: "var(--surface)" }}>
+        <h2 className="mb-4 text-sm font-medium" style={{ color: "var(--ink-secondary)" }}>
+          Reuniones agendadas vs asistidas
+        </h2>
+        <ReunionStatsTable data={data.reunionStats} />
+      </section>
+
+      <section className="rounded-lg border p-5" style={{ borderColor: "var(--border)", background: "var(--surface)" }}>
+        <h2 className="mb-4 text-sm font-medium" style={{ color: "var(--ink-secondary)" }}>
+          Marcar reunión agendada / asistencia
+        </h2>
+        <ReunionesTable roster={data.reunionRoster} onSaved={load} />
+      </section>
     </main>
   );
 }

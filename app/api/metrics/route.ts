@@ -11,6 +11,8 @@ import {
   computeLtv,
   computePendingFollowUp,
   computeOnboardingStageBreakdown,
+  computeReunionStats,
+  getReunionRoster,
 } from "@/lib/metrics";
 
 export const dynamic = "force-dynamic";
@@ -37,6 +39,8 @@ export async function GET() {
     const ltv = computeLtv(snapshots, churn);
     const pendientes = computePendingFollowUp(snapshots);
     const onboardingStages = computeOnboardingStageBreakdown(onboarding);
+    const reunionStats = computeReunionStats(onboarding, spendByMonth);
+    const reunionRoster = getReunionRoster(onboarding);
 
     // Pestaña editable desde el dashboard: siempre la última de la lista (el
     // mes que Daniel esté rellenando ahora), reportada o no.
@@ -67,6 +71,8 @@ export async function GET() {
       clientesEnPausa: sbyEntries.map((s) => ({ cliente: s.cliente, comentario: s.comentario })),
       periodoEditable: ultimoPeriodo,
       rosterEditable: roster,
+      reunionStats,
+      reunionRoster,
     });
   } catch (err) {
     if (err instanceof SheetsMissingCredentials || err instanceof GhlMissingCredentials || err instanceof MetaMissingCredentials) {

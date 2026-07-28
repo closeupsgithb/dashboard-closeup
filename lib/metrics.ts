@@ -1,6 +1,6 @@
 import type { MonthlySpend } from "@/lib/metaAds";
 import type { GhlOpportunity } from "@/lib/ghl";
-import { PIPELINES } from "@/lib/ghl";
+import { PIPELINES, CUSTOM_FIELDS, getCustomFieldValue } from "@/lib/ghl";
 
 // "SBY" es un estado de cliente (pausado / no renovó / vuelve en fecha conocida),
 // no una pestaña de facturación — se excluye de la lista de periodos de pago.
@@ -448,4 +448,73 @@ export function computeOnboardingStageBreakdown(opportunities: GhlOpportunity[])
     counts.set(label, (counts.get(label) ?? 0) + 1);
   });
   return [...counts.entries()].map(([stage, count]) => ({ stage, count }));
+}
+
+function monthKeyFromDateString(raw: string): string | null {
+  const isoMatch = raw.match(/^(\d{4})-(\d{2})/);
+  if (isoMatch) return `${isoMatch[1]}-${isoMatch[2]}`;
+  const parsed = new Date(raw);
+  if (Number.isNaN(parsed.getTime())) return null;
+  return `${parsed.getUTCFullYear()}-${String(parsed.getUTCMonth() + 1).padStart(2, "0")}`;
+}
+
+export type ReunionStats = {
+  mes: string;
+  agendadas: number;
+  asistidas: number;
+  showRate: number | null;
+  gastoAds: number | null;
+  costePorAgendada: number | null;
+  costePorAsistida: number | null;
+};
+
+// Reuniones agendadas/asistidas: Daniel las marca a mano desde el dashboard
+// (fecha_reunion_agendada + asistio_reunion), no hay workflow automático que
+// las rellene — ver memoria del proyecto. Agrupa por el mes de la fecha de
+// reunión agendada, no por el mes de pago del Sheet (son cosas distintas).
+export function computeReunionStats(opportunities: GhlOpportunity[], spendByMonth: MonthlySpend[]): ReunionStats[] {
+  const byMonth = new Map<string, { agendadas: number; asistidas: number }>();
+
+  for (const o of opportunities) {
+    const fecha = getCustomFieldValue(o, CUSTOM_FIELDS.fechaReunionAgendada);
+    if (!fecha) continue;
+    const mes = monthKeyFromDateString(fecha);
+    if (!mes) continue;
+
+    const entry = byMonth.get(mes) ?? { agendadas: 0, asistidas: 0 };
+    entry.agendadas += 1;
+    if (getCustomFieldValue(o, CUSTOM_FIELDS.asistioReunion) === "Sí") entry.asistidas += 1;
+    byMonth.set(mes, entry);
+  }
+
+  return [...byMonth.entries()]
+    .sort(([a], [b]) => a.localeCompare(b))
+    .map(([mes, { agendadas, asistidas }]) => {
+      const gasto = spendByMonth.find((s) => s.month === mes)?.spend ?? null;
+      return {
+        mes,
+        agendadas,
+        asistidas,
+        showRate: agendadas > 0 ? asistidas / agendadas : null,
+        gastoAds: gasto,
+        costePorAgendada: gasto !== null && agendadas > 0 ? gasto / agendadas : null,
+        costePorAsistida: gasto !== null && asistidas > 0 ? gasto / asistidas : null,
+      };
+    });
+}
+
+export type ReunionRoster = {
+  opportunityId: string;
+  cliente: string;
+  fechaReunionAgendada: string;
+  asistioReunion: string;
+};
+
+export function getReunionRoster(opportunities: GhlOpportunity[]): ReunionRoster[] {
+  return opportunities.map((o) => ({
+    opportunityId: o.id,
+    cliente: o.contact?.companyName || o.contact?.name || o.name,
+    fechaReunionAgendada: getCustomFieldValue(o, CUSTOM_FIELDS.fechaReunionAgendada),
+    asistioReunion: getCustomFieldValue(o, CUSTOM_FIELDS.asistioReunion),
+  }));
 }

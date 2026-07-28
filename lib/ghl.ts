@@ -34,6 +34,18 @@ function authHeaders(): Record<string, string> {
   };
 }
 
+// IDs de los campos personalizados creados el 2026-07-28 (Configuración >
+// Campos personalizados > Oportunidad > carpeta "Opportunity Details").
+// Daniel los rellena a mano desde el dashboard — no hay workflow automático.
+export const CUSTOM_FIELDS = {
+  fechaReunionAgendada: "ZYQr2nc7006KhRrJBCzQ",
+  asistioReunion: "J54D8m3778Bu5Vninimm",
+} as const;
+
+export const ASISTIO_OPTIONS = ["Sí", "No", "Pendiente"] as const;
+
+type GhlCustomField = { id: string; fieldValue?: string; fieldValueString?: string; value?: string };
+
 export type GhlOpportunity = {
   id: string;
   name: string;
@@ -45,7 +57,16 @@ export type GhlOpportunity = {
   createdAt: string;
   updatedAt: string;
   contact?: { name: string; companyName: string | null };
+  customFields?: GhlCustomField[];
 };
+
+// El endpoint /opportunities/search devuelve "fieldValueString"; el endpoint
+// /opportunities/{id} (usado al escribir) devuelve "fieldValue" — mismo dato,
+// nombre de clave distinto según el endpoint. Se comprueban ambas variantes.
+export function getCustomFieldValue(opportunity: GhlOpportunity, fieldId: string): string {
+  const field = opportunity.customFields?.find((f) => f.id === fieldId);
+  return field?.fieldValueString ?? field?.fieldValue ?? field?.value ?? "";
+}
 
 type SearchResponse = {
   opportunities?: GhlOpportunity[];
@@ -89,6 +110,34 @@ async function searchOpportunities(pipelineId: string): Promise<GhlOpportunity[]
 
 export async function fetchOnboardingOpportunities(): Promise<GhlOpportunity[]> {
   return searchOpportunities(PIPELINES.onboarding.id);
+}
+
+// Escribe fecha_reunion_agendada y/o asistio_reunion sobre una oportunidad ya
+// existente. Nunca crea oportunidades — si el ID no existe, GHL devuelve error
+// y no se escribe nada.
+export async function updateOpportunityCustomFields(
+  opportunityId: string,
+  updates: { fechaReunionAgendada?: string; asistioReunion?: string }
+): Promise<void> {
+  const headers = authHeaders();
+  const customFields: { id: string; fieldValue: string }[] = [];
+  if (updates.fechaReunionAgendada !== undefined) {
+    customFields.push({ id: CUSTOM_FIELDS.fechaReunionAgendada, fieldValue: updates.fechaReunionAgendada });
+  }
+  if (updates.asistioReunion !== undefined) {
+    customFields.push({ id: CUSTOM_FIELDS.asistioReunion, fieldValue: updates.asistioReunion });
+  }
+  if (customFields.length === 0) return;
+
+  const res = await fetch(`${GHL_BASE}/opportunities/${opportunityId}`, {
+    method: "PUT",
+    headers: { ...headers, "Content-Type": "application/json" },
+    body: JSON.stringify({ customFields }),
+  });
+  if (!res.ok) {
+    const json = await res.json().catch(() => ({}));
+    throw new Error(`GHL ${res.status}: ${JSON.stringify(json)}`);
+  }
 }
 
 export { MissingCredentialsError };
