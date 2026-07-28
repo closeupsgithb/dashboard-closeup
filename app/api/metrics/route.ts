@@ -44,6 +44,7 @@ export async function GET() {
         mes: s.mes,
         reportado: s.reportado,
         ingreso: s.ingresoConfirmado,
+        ingresoPendiente: s.ingresoPendiente,
         entradasNoInterpretables: s.entradasNoInterpretables,
       })),
       cac,

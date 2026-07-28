@@ -118,6 +118,7 @@ export type MonthSnapshot = {
   periodo: string;
   mes: string | null;
   ingresoConfirmado: number;
+  ingresoPendiente: number;
   clientesConfirmados: string[];
   clientesPendientes: string[];
   clientesEnPausa: string[];
@@ -153,6 +154,7 @@ export function buildMonthSnapshots(
         periodo: tabName,
         mes: inferMonthFromTabName(tabName),
         ingresoConfirmado: confirmadas.reduce((sum, e) => sum + (e.importe.value ?? 0), 0),
+        ingresoPendiente: pendientes.reduce((sum, e) => sum + (e.importe.value ?? 0), 0),
         clientesConfirmados: confirmadas.map((e) => e.clienteNormalizado),
         clientesPendientes: pendientes.map((e) => e.clienteNormalizado),
         clientesEnPausa: enPausa.map((e) => e.clienteNormalizado),
