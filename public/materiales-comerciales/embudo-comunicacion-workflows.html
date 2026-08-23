@@ -1,0 +1,586 @@
+<!doctype html>
+<html>
+<head>
+<meta charset="utf-8">
+<style>
+  :root {
+    --orange: #ff4e08;
+    --orange-tint: #fdece3;
+    --dark: #14171d;
+    --cream: #f6f3ee;
+    --ink: #1c1c1c;
+    --ink-soft: #55524c;
+    --line: #ddd5c4;
+    --green: #1a7a3c;
+    --amber: #a86a00;
+  }
+  * { box-sizing: border-box; }
+  @page { size: 210mm 297mm; margin: 0; }
+  html, body { margin: 0; padding: 0; font-family: 'Segoe UI', Arial, sans-serif; color: var(--ink); background: #fff; }
+  .page { width: 210mm; min-height: 297mm; background: #fff; padding: 16mm 18mm 14mm 18mm; position: relative; }
+  .page + .page { page-break-before: always; }
+
+  .cover { text-align:center; padding-top: 20mm; }
+  .brand-mark { width: 13mm; height: 13mm; border-radius: 50%; overflow:hidden; display:flex; align-items:center; justify-content:center; margin:0 auto 5mm auto; }
+  .brand-mark img { width:132%; height:132%; object-fit:cover; mix-blend-mode:multiply; }
+  .brand-name { font-size:10.5pt; font-weight:800; color:var(--ink-soft); margin-bottom: 8mm; }
+  .brand-name .plus { color: var(--orange); }
+  .cover-badge { display:inline-block; background: var(--dark); color:#fff; font-size:7.3pt; font-weight:800; letter-spacing:1.5px; padding:2mm 6mm; border-radius:20px; margin-bottom:7mm; }
+  h1.cover-title { font-size: 23pt; font-weight:800; line-height:1.2; margin:0 0 6mm 0; }
+  h1.cover-title .hl { color: var(--orange); }
+  .cover-sub { font-size: 10.3pt; color: var(--ink-soft); max-width: 140mm; margin: 0 auto 8mm auto; line-height:1.55; }
+  .cover-warn { max-width: 145mm; margin: 0 auto 8mm auto; background: var(--cream); border-left:3px solid var(--orange); border-radius:0 2mm 2mm 0; padding: 4mm 5mm; text-align:left; font-size:8.8pt; line-height:1.5; }
+  .cover-warn b { color: var(--orange); }
+
+  .flowmap { display:flex; justify-content:center; gap:2.5mm; margin: 8mm auto 0 auto; max-width:172mm; flex-wrap:wrap; }
+  .flowmap .fstep { background:#fff; border:1.5px solid var(--dark); border-radius:2mm; padding:3mm 3.5mm; font-size:7.2pt; font-weight:800; text-align:center; width:30mm; line-height:1.3; }
+  .flowmap .fstep .fnum { color: var(--orange); font-size:6.6pt; letter-spacing:0.5px; display:block; margin-bottom:0.8mm; }
+  .flowmap .arrow { align-self:center; color: var(--orange); font-weight:800; font-size:10pt; }
+
+  .cover-meta { font-size: 8.3pt; color: var(--ink-soft); border-top:1px solid var(--line); padding-top:5mm; max-width:130mm; margin: 10mm auto 0 auto; }
+
+  /* Folder section headers */
+  .folder-header { background: var(--dark); color:#fff; border-radius: 2mm; padding: 5mm 6mm; margin-bottom: 6mm; }
+  .folder-header .fname { font-size: 14pt; font-weight: 800; }
+  .folder-header .fname .fcode { color: var(--orange); }
+  .folder-header .fdesc { font-size: 8.8pt; color: #cfcbc2; margin-top: 1.5mm; }
+
+  .kicker { color: var(--orange); font-size: 7.8pt; font-weight:800; letter-spacing:1.3px; margin-bottom:1.5mm; }
+  h2 { font-size: 13.5pt; font-weight:800; margin: 0 0 3mm 0; }
+  h3 { font-size: 10pt; font-weight:800; margin: 5mm 0 2mm 0; }
+  p { font-size: 9.1pt; line-height:1.55; margin: 0 0 3mm 0; }
+  .section { margin-bottom: 7mm; }
+  strong { font-weight:800; }
+
+  .tag { display:inline-block; font-size:6.8pt; font-weight:800; letter-spacing:0.6px; padding:0.8mm 2.5mm; border-radius: 10px; margin-left: 2mm; vertical-align: 1.5px; }
+  .tag.confirmado { background:#e5f3ea; color: var(--green); }
+  .tag.decidido { background:#e5f3ea; color: var(--green); }
+  .tag.propuesto { background:#fdf1de; color: var(--amber); }
+
+  .meta-box { background: var(--cream); border: 1px solid var(--line); border-radius: 2mm; padding: 3.5mm 5mm; margin: 2mm 0 4mm 0; font-size: 8.6pt; }
+  .meta-box div { margin-bottom: 1.2mm; }
+  .meta-box div:last-child { margin-bottom: 0; }
+  .meta-box b { color: var(--dark); }
+
+  table { width:100%; border-collapse: collapse; margin: 2mm 0 4mm 0; font-size: 8.2pt; }
+  th { background: var(--dark); color:#fff; text-align:left; padding:2.3mm 3mm; font-size:7.3pt; font-weight:700; }
+  td { padding:2.3mm 3mm; border-bottom:1px solid var(--line); vertical-align:top; }
+  tr:last-child td { border-bottom:none; }
+  td.moment { font-weight:800; white-space:nowrap; color:var(--dark); }
+
+  .msg-box { background: var(--cream); border:1px solid var(--line); border-radius:2mm; padding:3mm 4mm; margin: 1.5mm 0 3.5mm 0; }
+  .msg-box .msg-tag { font-size:7pt; font-weight:800; letter-spacing:0.6px; color:var(--orange-tint); background:var(--dark); display:inline-block; padding:0.7mm 2.3mm; border-radius:10px; margin-bottom:1.6mm; }
+  .msg-box p { font-style: italic; font-size: 8.6pt; margin:0; }
+  .msg-box p + p { margin-top:1.8mm; }
+  .editnote { font-size:7.4pt; color:var(--ink-soft); font-style:normal; margin-top:1.2mm !important; }
+
+  .rule-box { background: var(--cream); border-left: 3px solid var(--orange); border-radius: 0 2mm 2mm 0; padding: 3.5mm 5mm; margin: 2mm 0 4mm 0; }
+  .rule-box .rule-label { font-size: 7pt; font-weight: 800; letter-spacing: 1px; color: var(--orange); margin-bottom: 1.2mm; }
+  .rule-box p { margin: 0; font-size: 8.6pt; }
+
+  .flow-box { background:#fff; border:1px dashed var(--line); border-radius:2mm; padding: 3mm 4mm; margin: 2mm 0 4mm 0; font-size:8.3pt; font-family: 'Consolas', monospace; line-height:1.6; white-space: pre-wrap; }
+
+  ul.check { margin:2mm 0; padding:0; list-style:none; }
+  ul.check li { position:relative; padding-left:5mm; font-size:8.8pt; margin-bottom:1.8mm; line-height:1.4; }
+  ul.check li::before { content:"›"; position:absolute; left:0; color:var(--orange); font-weight:800; }
+
+  .footer-tab { position:absolute; bottom: 7mm; left:18mm; right:18mm; font-size:6.8pt; color:var(--ink-soft); display:flex; justify-content:space-between; border-top:1px solid var(--line); padding-top:2mm; }
+
+  .callout-final { background: var(--dark); color:#fff; border-radius:3mm; padding:6mm 7mm; margin-top:5mm; }
+  .callout-final p { color:#e8e6e1; font-size:9pt; margin:0; }
+  .callout-final p + p { margin-top:2mm; }
+  .callout-final .kicker { color: var(--orange); }
+</style>
+</head>
+<body>
+
+<!-- PORTADA -->
+<div class="page cover">
+  <div class="brand-mark"><img src="file:///C:/Users/Lenovo/Downloads/logo%20closeup%20png%20800x800.png"></div>
+  <div class="brand-name"><span class="plus">+</span>Reformas System — Closeup Marketing</div>
+  <div class="cover-badge">DOCUMENTO INTERNO · BASE PARA AUTOMATIZACIÓN (GOHIGHLEVEL)</div>
+  <h1 class="cover-title">Documento de comunicación<br><span class="hl">del embudo, por workflow</span></h1>
+  <p class="cover-sub">Plantillas de mensaje y lógica de cada etapa, organizadas exactamente por las carpetas de workflow ya creadas en GoHighLevel. Este documento es la base de texto que Claude Code usará para construir las automatizaciones — revisa y edita el texto de las plantillas antes de darlo por definitivo.</p>
+  <div class="cover-warn">Estado: <b>BORRADOR PARA EDITAR.</b> Nada de este texto está todavía cargado en GoHighLevel. Las plantillas marcadas <span class="tag confirmado">CONFIRMADO</span> reproducen literalmente lo que Javier explicó o mostró en la reunión del 07/08. Las marcadas <span class="tag propuesto">PROPUESTO</span> son texto de partida mío, sin fuente directa en la reunión — son las que más margen tienen para reescribir.</div>
+
+  <div class="flowmap">
+    <div class="fstep"><span class="fnum">00</span>CAPTACIÓN</div>
+    <div class="arrow">→</div>
+    <div class="fstep"><span class="fnum">10</span>AGENDA</div>
+    <div class="arrow">→</div>
+    <div class="fstep"><span class="fnum">20</span>NO-SHOW</div>
+    <div class="arrow">→</div>
+    <div class="fstep"><span class="fnum">30</span>POST-LLAMADA</div>
+    <div class="arrow">→</div>
+    <div class="fstep"><span class="fnum">40</span>NURTURE</div>
+  </div>
+
+  <div class="cover-meta">
+    Pipeline GROWTH (GoHighLevel), 7 etapas: Nuevo cualificado | Sin agenda · Agendado | Pendiente confirmación · Agendado | Confirmado · Solicita Reagendar · Reunión realizada | Interesado · Follow-up / Call 2 · Pagado.<br>
+    No hay columna visible de "No-show" — se gestiona dentro del workflow 20, como etiqueta/estado del contacto, igual que lo describió Javier ("lo tengo oculto"). Ver sección 20.<br><br>
+    Versión 3 · agosto 2026 · Closeup Marketing — 00 y 10 reescritas con las 5 reglas transversales de la página siguiente; 20 ajustada; 30 y 40 quedan como referencia, sin implementar en GoHighLevel en esta fase.<br>
+    Enlace de reagenda confirmado (sustituye a [enlace_reagenda] en todo el documento): https://api.leadconnectorhq.com/widget/booking/xiEtpyAXe41W1O029LSs
+  </div>
+</div>
+
+<!-- REGLAS TRANSVERSALES -->
+<div class="page">
+  <div class="section">
+    <div class="kicker">APLICA A TODO EL DOCUMENTO</div>
+    <h2>Reglas transversales</h2>
+    <p>Estas cinco reglas se aplican a 00, 10 y 20 (las etapas críticas, únicas que se van a construir en esta fase). 30 y 40 quedan como referencia, sin implementar todavía.</p>
+
+    <h3>1 · Lenguaje prohibido</h3>
+    <div class="rule-box">
+      <div class="rule-label">NUNCA EN UN MENSAJE DIRIGIDO AL LEAD</div>
+      <p>"generar leads propios para tu empresa" · la palabra "leads" · "captación de leads". Cuando sea imprescindible nombrar el servicio, usar algo neutro y discreto como <strong>"sistema de captación de reformas"</strong> — y solo cuando aporte, sin sobreexplicar el producto por chat. El texto automatizado confirma, agenda y recuerda; no vende ni describe.</p>
+    </div>
+
+    <h3>2 · Corte de secuencia por cambio de etapa</h3>
+    <div class="rule-box">
+      <div class="rule-label">SE DETIENE EN CUANTO</div>
+      <p>El contacto responde (aunque sea de forma ambigua), agenda una cita, o cambia de etapa en el pipeline por cualquier motivo (confirma, no confirma, reagenda, no-show...). Ningún mensaje de una secuencia "vieja" sigue saliendo una vez el contacto ha avanzado de etapa. Aplica a 00, 10 y 20.</p>
+    </div>
+
+    <h3>3 · Cadencia de reintento en 00 | CAPTACIÓN</h3>
+    <div class="rule-box">
+      <div class="rule-label">SIN RESPUESTA</div>
+      <p>El siguiente intento se envía a las <strong>12 horas</strong> del anterior. Sustituye cualquier escalón anterior tipo "mismo día +2-3h / día 2 / día 3" que hubiera en el borrador previo de esta etapa.</p>
+    </div>
+
+    <h3>4 · Firma</h3>
+    <div class="rule-box">
+      <div class="rule-label">QUIÉN FIRMA CADA MENSAJE — DECIDIDO</div>
+      <p>00 | CAPTACIÓN: <strong>sin nombre propio</strong> — firma "el equipo de Closeup Marketing" (genérico). A partir de 10 | AGENDA, una vez agendada la reunión: <strong>Daniel</strong>, de Closeup Marketing. El nombre de Daniel no se usa antes de que haya cita reservada.</p>
+    </div>
+
+    <h3>5 · Aislamiento total entre etapas</h3>
+    <div class="rule-box">
+      <div class="rule-label">CRÍTICO</div>
+      <p>Cuando un contacto pasa de una etapa a otra (p. ej. de 00 | CAPTACIÓN a 10 | AGENDA al agendar), la secuencia de mensajes de la etapa anterior debe quedar <strong>completamente desactivada</strong> — no debe seguir "ligada" a las dos etapas a la vez. Esto es más estricto que la regla 2: no basta con detener el próximo mensaje, hay que eliminar al contacto del workflow anterior por completo. Antes de implementar cualquier automatización con esta lógica, se confirma explícitamente con Daniel que el diseño del workflow resuelve este corte — ver nota al final del documento.</p>
+    </div>
+  </div>
+</div>
+
+<!-- 00 CAPTACION -->
+<div class="page">
+  <div class="folder-header">
+    <div class="fname"><span class="fcode">00</span> | CAPTACIÓN</div>
+    <div class="fdesc">Desde que el formulario cualifica al lead hasta que reserva cita. Etapa de pipeline: Nuevo cualificado | Sin agenda.</div>
+  </div>
+
+  <div class="section">
+    <div class="kicker">TRIGGER Y OBJETIVO</div>
+    <div class="meta-box">
+      <div><b>Entra:</b> lead que pasa el filtro del formulario condicional (descarta automáticamente por falta de capacidad de inversión).</div>
+      <div><b>Canal principal:</b> llamada. Si no contesta, WhatsApp.</div>
+      <div><b>Objetivo:</b> que conteste al teléfono o confirme por WhatsApp que "todo encaja", y agendar la llamada.</div>
+      <div><b>Sale:</b> cita reservada → pasa a 10 | AGENDA, con desactivación total del workflow 00 (regla 5). 3 intentos sin respuesta → se descarta, candidato a 40 | NURTURE (sin implementar todavía).</div>
+      <div><b>Firma:</b> sin nombre propio — "el equipo de Closeup Marketing" (regla transversal 4).</div>
+    </div>
+    <div class="rule-box">
+      <div class="rule-label">CORTE DE SECUENCIA Y AISLAMIENTO (reglas transversales 2 y 5)</div>
+      <p>En cuanto el contacto responde, contesta la llamada o queda agendada la cita, se detiene cualquier intento pendiente de esta secuencia y el contacto se elimina por completo del workflow 00 — no se queda "ligado" a la vez a 00 y 10.</p>
+    </div>
+    <p class="tag confirmado" style="margin-left:0;">FUENTE</p>
+    <p>Regla de velocidad y de descarte, citadas literalmente por Javier: "el speed to lead, hay que intentar llamar en menos de 10 o 15 minutos desde que alguien deja su formulario" · "tres intentos y en respuesta descartado, no dejes leads fantasmas en el CRM".</p>
+  </div>
+
+  <div class="section">
+    <h2>Secuencia de contacto <span class="tag propuesto">PROPUESTO — v3, aplica reglas transversales 1, 3, 4 y 5</span></h2>
+    <table>
+      <tr><th style="width:20%">MOMENTO</th><th style="width:55%">ACCIÓN</th><th style="width:25%">CANAL</th></tr>
+      <tr><td class="moment">Inmediato</td><td>Mensaje automático de aviso (speed to lead) al enviar el formulario</td><td>WhatsApp</td></tr>
+      <tr><td class="moment">En paralelo</td><td>Intento de llamada real</td><td>Llamada</td></tr>
+      <tr><td class="moment">Mismo día, +2-3h (si no contesta la llamada)</td><td>WhatsApp intento 2</td><td>WhatsApp</td></tr>
+      <tr><td class="moment">+12h desde el intento anterior</td><td>WhatsApp intento 3 — último intento</td><td>WhatsApp</td></tr>
+      <tr><td class="moment">Tras 3 intentos sin respuesta</td><td>Cierre sin mensaje, pasa a 40 | NURTURE</td><td>—</td></tr>
+    </table>
+
+    <h3>Mensaje automático — inmediato, al enviar el formulario</h3>
+    <div class="msg-box">
+      <span class="msg-tag">PLANTILLA</span>
+      <p>"Hola [Nombre]! Por aquí el equipo de Closeup Marketing. Hemos recibido tu solicitud acerca de la captación de reformas. En breve se pondrá en contacto contigo una persona de mi equipo para confirmar que todo encaja. Un saludo."</p>
+      <p class="editnote">Nota: "por aquí el equipo" y "una persona de mi equipo" mezclan plural/singular en la misma frase — lo dejo tal cual lo diste, dímelo si quieres que lo unifique a "nuestro equipo" en la segunda parte.</p>
+    </div>
+
+    <h3>En paralelo — intento de llamada real</h3>
+    <p>Sin plantilla de texto: es una llamada, no un mensaje. Si no descuelga, continúa la secuencia de WhatsApp.</p>
+
+    <h3>WhatsApp intento 2 — mismo día, +2-3h si no contesta la llamada</h3>
+    <div class="msg-box">
+      <span class="msg-tag">PLANTILLA</span>
+      <p>"Hola [Nombre], no hemos logrado hablar contigo. Dime un momento que te venga bien y te llamamos."</p>
+    </div>
+
+    <h3>WhatsApp intento 3 — +12h desde el intento anterior, último intento</h3>
+    <div class="msg-box">
+      <span class="msg-tag">PLANTILLA</span>
+      <p>"[Nombre], último intento por mi parte. Si te sigue interesando, escríbeme y buscamos un hueco. Si no, no te molesto más."</p>
+    </div>
+
+    <h3>Cierre — tras 3 intentos sin respuesta</h3>
+    <div class="msg-box">
+      <span class="msg-tag">CIERRE DE CICLO</span>
+      <p>Sin mensaje de cierre al lead. Se marca internamente como sin respuesta y se retira del seguimiento activo. Candidato a 40 | NURTURE si se decide reactivar más adelante.</p>
+    </div>
+  </div>
+
+  <div class="footer-tab"><span>+Reformas System — Closeup Marketing · Documento interno</span><span>00 | CAPTACIÓN</span></div>
+</div>
+
+<!-- 10 AGENDA -->
+<div class="page">
+  <div class="folder-header">
+    <div class="fname"><span class="fcode">10</span> | AGENDA</div>
+    <div class="fdesc">Desde que reserva cita hasta la hora de la llamada. Etapas: Agendado | Pendiente confirmación → Agendado | Confirmado.</div>
+  </div>
+
+  <div class="section">
+    <div class="kicker">TRIGGER Y OBJETIVO</div>
+    <div class="meta-box">
+      <div><b>Entra:</b> cita reservada en el calendario.</div>
+      <div><b>Sale:</b> "Asistió" → 30 | POST-LLAMADA. Sin confirmación a 12h antes → hueco liberado automáticamente, contacto pasa a 20 | NO-SHOW (rama "sin confirmar") si llega la hora sin presentarse. Confirmado pero no llega → 20 | NO-SHOW (rama "confirmado").</div>
+      <div><b>Objetivo:</b> confirmar que el documento se ha enviado/revisado, confirmar asistencia expresa, nunca resolver dudas de precio o del sistema en el chat.</div>
+      <div><b>Firma:</b> <span class="tag decidido" style="margin-left:0;">DECIDIDO</span> — Daniel, de Closeup Marketing. Es el primer punto del embudo donde se usa su nombre propio (regla transversal 4).</div>
+    </div>
+    <div class="rule-box">
+      <div class="rule-label">CORTE DE SECUENCIA Y AISLAMIENTO (reglas transversales 2 y 5)</div>
+      <p>En cuanto el contacto confirma, no confirma, avisa que no puede asistir o cambia de etapa por cualquier motivo, se detiene cualquier mensaje pendiente del estado anterior y el contacto sale por completo de la rama de recordatorios que ya no aplica — sin quedar ligado a dos ramas a la vez.</p>
+    </div>
+  </div>
+
+  <div class="section">
+    <h2>Secuencia de recordatorios <span class="tag propuesto">PROPUESTO — v3, aplica reglas transversales 1, 2, 4 y 5</span></h2>
+    <table>
+      <tr><th style="width:20%">MOMENTO</th><th style="width:55%">QUÉ SE ENVÍA</th><th style="width:25%">CANAL</th></tr>
+      <tr><td class="moment">Al agendar</td><td>WhatsApp 1 — confirmación + documento, con nombre propio (Daniel), pide un "sí"</td><td>WhatsApp</td></tr>
+      <tr><td class="moment">Tiempo razonable sin confirmar apertura del documento</td><td>Follow-up de lectura — único, sin reenviar el enlace ni fijar ventana horaria estricta</td><td>WhatsApp</td></tr>
+      <tr><td class="moment">24h antes</td><td>Recordatorio de asistencia</td><td>WhatsApp</td></tr>
+      <tr><td class="moment">4h antes</td><td>Recordatorio — cadencia ampliada en build real, ver nota</td><td>WhatsApp</td></tr>
+      <tr><td class="moment">1h antes</td><td>Recordatorio — cadencia ampliada en build real, ver nota</td><td>WhatsApp</td></tr>
+      <tr><td class="moment">15 min / 5 min antes</td><td>WhatsApp 4 — apagado por defecto, se activa solo si baja el show rate</td><td>WhatsApp</td></tr>
+    </table>
+    <p class="editnote">Nota de sincronización: el build real en GoHighLevel amplió esta cadencia a 4 puntos de contacto (24h/4h/1h/5min, con plantillas Meta ya aprobadas como UTILITY) en vez de los 2 originales de este documento. Se acepta la cadencia ampliada — cada mensaje debe tener redacción distinta entre sí (nada de repetir "nos vemos en X" en cada uno) y el enlace directo a la reunión solo se destaca en los dos últimos (1h y 5min), no en todos. Los 4 puntos de contacto deben vivir dentro de un único workflow de recordatorios de 10|AGENDA, no repartidos en workflows separados — un solo flujo, con el aislamiento (regla 5) resuelto una vez para toda la secuencia, no una vez por cada workflow suelto.</p>
+
+    <h3>WhatsApp 1 — al agendar</h3>
+    <div class="msg-box">
+      <span class="msg-tag">PLANTILLA</span>
+      <p>"Hola [Nombre], soy Daniel de Closeup Marketing. Has reservado tu sesión para el [Fecha] a las [Hora]. Te adjunto el documento, échale un vistazo antes de la llamada. ¿Me confirmas con un "sí" que te ha llegado bien la cita?"</p>
+      <p class="editnote">El documento se envía como archivo PDF adjunto en el propio WhatsApp, no como enlace. Consecuencia técnica: no hay tracking automático de apertura (eso solo existe con un enlace/Trigger Link) — la única señal de que lo ha visto es la respuesta del contacto, por eso el follow-up de abajo es imprescindible, no opcional.</p>
+    </div>
+
+    <h3>Follow-up de lectura del documento — único, sin ventana horaria estricta</h3>
+    <div class="msg-box">
+      <span class="msg-tag">PLANTILLA</span>
+      <p>"¿Has podido echarle un ojo al documento?"</p>
+      <p class="editnote">Se dispara cuando no hay respuesta afirmativa sobre el documento — sin atarlo a una franja fija como "3-4h", con un tiempo razonable a criterio operativo. No se reenvía el adjunto, solo se pide la confirmación. Es un único follow-up, no una secuencia repetida.</p>
+    </div>
+
+    <h3>Recordatorio de asistencia — 24h antes / mismo día</h3>
+    <div class="msg-box">
+      <span class="msg-tag">PLANTILLA</span>
+      <p>"Mañana nos vemos a las [Hora]. ¿Sigue todo bien para que puedas asistir? Respóndeme con un sí y te dejo el hueco confirmado."</p>
+      <p class="editnote">Mismo mensaje para el aviso de 24h y el de mismo día (ajustando "mañana" por "hoy"). Si a las 12h antes sigue sin "sí" expreso: hueco liberado automáticamente. Punto abierto: si el contacto ya confirmó en el paso anterior, este recordatorio puede sonar redundante — dime si prefieres una versión más corta para quien ya dijo que sí.</p>
+    </div>
+
+    <h3>Si avisa que no puede asistir</h3>
+    <div class="rule-box">
+      <div class="rule-label">AISLAMIENTO (regla transversal 5)</div>
+      <p>No se queda dentro de la secuencia normal de recordatorios. Se mueve a Solicita Reagendar de inmediato — ver tabla de gestión de respuestas más abajo.</p>
+    </div>
+
+    <h3>WhatsApp 4 — 15 min antes <span class="tag confirmado">CONFIRMADO — apagado por defecto</span></h3>
+    <div class="msg-box">
+      <span class="msg-tag">PLANTILLA (en espera, no activo)</span>
+      <p>"[Nombre], empezamos en 15 minutos."</p>
+    </div>
+  </div>
+
+  <div class="section">
+    <h2>Gestión de respuestas <span class="tag propuesto">PROPUESTO</span></h2>
+    <table>
+      <tr><th style="width:28%">RESPUESTA DEL LEAD</th><th style="width:52%">CONTESTACIÓN</th><th style="width:20%">EFECTO EN PIPELINE</th></tr>
+      <tr><td>"Sí, confirmado"</td><td>"Perfecto, gracias. Nos vemos el [Fecha]. Si mientras tanto te surge algo sobre el documento, dímelo por aquí."</td><td>→ Agendado | Confirmado</td></tr>
+      <tr><td>Pregunta por precio</td><td>"Depende del volumen que busques y de tu zona. En la sesión repasamos tu situación concreta y te doy una propuesta con números reales. Lo dejo apuntado para la llamada."</td><td>Sin cambio</td></tr>
+      <tr><td>"No sé si me sirve"</td><td>"Precisamente eso es lo que vemos en la sesión — tu zona, tu capacidad comercial actual y si el sistema encaja con tu empresa. Si no encaja, te lo digo directamente."</td><td>Sin cambio</td></tr>
+      <tr><td>"No puedo asistir"</td><td>"Sin problema. Reprograma desde aquí y elige un momento en el que sepas que vas a poder estar: [enlace_reagenda]"</td><td>→ Solicita Reagendar</td></tr>
+      <tr><td>"Quiero cancelar"</td><td>"Entendido, gracias por avisar. Cancelo la sesión. Si más adelante quieres retomarlo, escríbeme por aquí."</td><td>→ 40 | NURTURE</td></tr>
+    </table>
+  </div>
+
+  <div class="footer-tab"><span>+Reformas System — Closeup Marketing · Documento interno</span><span>10 | AGENDA</span></div>
+</div>
+
+<!-- 20 NO-SHOW -->
+<div class="page">
+  <div class="folder-header">
+    <div class="fname"><span class="fcode">20</span> | NO-SHOW</div>
+    <div class="fdesc">Se activa cuando llega la hora de la cita y el contacto no entra a la llamada. Dos ramas según si había confirmado o no.</div>
+  </div>
+
+  <div class="section">
+    <div class="kicker">TRIGGER Y RAMAS</div>
+    <div class="meta-box">
+      <div><b>Entra:</b> hora de la cita cumplida sin marcar "Asistió".</div>
+      <div><b>Rama A — no confirmó nunca:</b> ya se sabía antes de la hora, el hueco se liberó en el paso anterior (10 | AGENDA). No se persigue en caliente. Tono neutro.</div>
+      <div><b>Rama B — había confirmado y no llegó:</b> no-show real, sí merece recuperación inmediata. Protocolo minuto a minuto.</div>
+      <div><b>Sale:</b> reagenda por su cuenta → Solicita Reagendar → vuelve a 10 | AGENDA con la nueva fecha. 3 intentos sin reagenda → 40 | NURTURE.</div>
+      <div><b>Nota sobre el pipeline:</b> no existe una columna visible "No-show" en GROWTH — se gestiona como estado interno del workflow (igual que lo describió Javier: "existe no show pero yo lo tengo oculto").</div>
+    </div>
+    <div class="rule-box">
+      <div class="rule-label">CORTE DE SECUENCIA Y AISLAMIENTO (reglas transversales 2 y 5)</div>
+      <p>En cuanto el contacto responde, reagenda o cambia de etapa, se detiene cualquier mensaje pendiente de la rama activa y el contacto sale del workflow 20 por completo — no se queda ligado a la vez a 20 y a Solicita Reagendar.</p>
+    </div>
+  </div>
+
+  <div class="section">
+    <h2>Rama B — confirmó y no llegó <span class="tag confirmado">CONFIRMADO — cita literal, reunión 07/08, min. 46:57-49:13</span></h2>
+    <table>
+      <tr><th style="width:20%">MINUTO</th><th style="width:55%">ACCIÓN</th><th style="width:25%">CANAL</th></tr>
+      <tr><td class="moment">3-5 min</td><td>WhatsApp con el enlace directo, por si ha sido un problema técnico</td><td>WhatsApp</td></tr>
+      <tr><td class="moment">5-7 min</td><td>Llamada corta para entender qué pasa</td><td>Llamada</td></tr>
+      <tr><td class="moment">10-15 min</td><td>WhatsApp de cierre de sala + enlace de reagenda</td><td>WhatsApp</td></tr>
+      <tr><td class="moment">3-4h después</td><td>Si no ha respondido, mensaje neutro preguntando si sigue interesado</td><td>WhatsApp</td></tr>
+      <tr><td class="moment">Día siguiente</td><td>Cierre del seguimiento activo, enlace de reagenda abierto</td><td>WhatsApp</td></tr>
+      <tr><td class="moment">Día 3</td><td>Cierre definitivo → pasa a 40 | NURTURE</td><td>WhatsApp</td></tr>
+    </table>
+
+    <h3>Minuto 3-5 — WhatsApp</h3>
+    <div class="msg-box"><span class="msg-tag">PLANTILLA</span>
+      <p>"Hola [Nombre], soy Daniel de Closeup Marketing. Estoy conectado para tu sesión de las [Hora]. Te dejo el enlace directo por si ha habido algún problema para entrar: [enlace]"</p>
+      <p class="editnote">Firma Daniel, no "[Setter]" — 20|NO-SHOW ocurre después de 10|AGENDA, donde ya rige la regla transversal 4 (Daniel firma a partir de ahí).</p>
+    </div>
+
+    <h3>Minuto 5-7 — Llamada (según cómo responda)</h3>
+    <div class="msg-box"><span class="msg-tag">APERTURA</span>
+      <p>"Hola [Nombre], estaba conectado/a para nuestra sesión. ¿Has tenido algún problema para entrar?"</p>
+    </div>
+    <div class="msg-box"><span class="msg-tag">SI PUEDE ENTRAR YA</span><p>"Perfecto, te espero, te reenvío el enlace ahora mismo."</p></div>
+    <div class="msg-box"><span class="msg-tag">SI TIENE CAUSA RAZONABLE</span><p>"Lo entiendo. Te mando el enlace para reprogramar — elige un hueco en el que tengas la seguridad de poder estar."</p></div>
+    <div class="msg-box"><span class="msg-tag">SI SE MUESTRA DESENTENDIDO</span><p>"Sin problema. Escríbeme cuando tengas claro que quieres retomarlo y miramos disponibilidad."</p></div>
+
+    <h3>Minuto 10-15 — WhatsApp de cierre</h3>
+    <div class="msg-box"><span class="msg-tag">PLANTILLA</span>
+      <p>"Hola [Nombre]. Como no hemos podido conectar, cierro la sesión y sigo con el resto del día. Si ha sido un imprevisto y sigues interesado en revisar el sistema de captación de reformas, elige una nueva hora aquí: [enlace_reagenda]."</p>
+      <p>"Avísame cuando lo hayas hecho y te lo confirmo."</p>
+    </div>
+
+    <h3>3-4h después — mensaje neutro (si no ha respondido)</h3>
+    <div class="msg-box"><span class="msg-tag">PLANTILLA</span>
+      <p>"[Nombre], ¿sigues interesado en revisar el sistema de captación de reformas? Cuando quieras, aquí tienes el enlace para elegir una nueva hora: [enlace_reagenda]"</p>
+    </div>
+
+    <h3>Día siguiente — cierre del seguimiento activo</h3>
+    <div class="msg-box"><span class="msg-tag">PLANTILLA</span>
+      <p>"[Nombre], sigo con hueco disponible esta semana si quieres retomar la sesión. Aquí tienes el enlace: [enlace_reagenda]"</p>
+    </div>
+
+    <h3>Día 3 — cierre definitivo</h3>
+    <div class="msg-box"><span class="msg-tag">PLANTILLA</span>
+      <p>"[Nombre], cierro por ahora el seguimiento. Si más adelante quieres retomarlo, aquí tienes el enlace para reservar cuando te venga bien: [enlace_reagenda]"</p>
+    </div>
+
+    <p class="tag confirmado" style="margin-left:0;">REGLA</p>
+    <p>No se negocia el horario a mano ("¿y para cuándo te va bien?"). Es el propio lead quien elige la nueva hora en el enlace de reagenda — Javier fue explícito: negociar a mano tras un no-show "es una cagada a nivel comercial", da sensación de ir detrás del cliente.</p>
+  </div>
+
+  <div class="section">
+    <h2>Rama A — nunca confirmó <span class="tag propuesto">PROPUESTO</span></h2>
+    <p>Tono más neutro que la Rama B: no hubo un compromiso explícito roto.</p>
+    <div class="msg-box"><span class="msg-tag">MENSAJE 1 — tras la hora</span>
+      <p>"Hola [Nombre]. Vi que teníamos la sesión a las [Hora] pero no pudimos contactar. ¿Sigues interesado en revisar el sistema de captación para tu empresa? Elige un hueco aquí: [enlace_reagenda]"</p>
+    </div>
+    <div class="msg-box"><span class="msg-tag">MENSAJE 2 — +24h</span>
+      <p>"[Nombre], ¿seguimos adelante con tu sesión? Aquí tienes el enlace para elegir un nuevo hueco: [enlace_reagenda]"</p>
+    </div>
+    <div class="msg-box"><span class="msg-tag">MENSAJE 3 — +48-72h, último intento</span>
+      <p>"[Nombre], no quiero insistir de más — si en algún momento quieres retomarlo, aquí tienes el enlace: [enlace_reagenda]"</p>
+    </div>
+  </div>
+
+  <div class="section">
+    <div class="kicker">REGLA DE CORTE — AMBAS RAMAS</div>
+    <p class="tag confirmado" style="margin-left:0;">CONFIRMADO</p>
+    <p>Máximo 3 mensajes tras un no-show. Si el lead no reagenda por su cuenta, se detiene la insistencia y pasa a 40 | NURTURE — Javier: "tres intentos y en respuesta descartado, no dejes leads fantasmas en el CRM".</p>
+  </div>
+
+  <div class="footer-tab"><span>+Reformas System — Closeup Marketing · Documento interno</span><span>20 | NO-SHOW</span></div>
+</div>
+
+<!-- 30 POST-LLAMADA -->
+<div class="page">
+  <div class="folder-header">
+    <div class="fname"><span class="fcode">30</span> | POST-LLAMADA</div>
+    <div class="fdesc">Desde que se realiza la llamada hasta el cierre. Etapas: Reunión realizada | Interesado → Follow-up / Call 2 → Pagado. Confirmado por Daniel: no se construye automatización aquí en esta fase — se deja como referencia, sin implementar en GoHighLevel todavía.</div>
+  </div>
+
+  <div class="section">
+    <div class="kicker">TRIGGER Y OBJETIVO</div>
+    <div class="meta-box">
+      <div><b>Entra:</b> cita marcada como "Asistió" en 10 | AGENDA.</div>
+      <div><b>Sale:</b> propuesta aceptada → Pagado. Decisor ausente en la primera llamada → Follow-up / Call 2. Sin decisión tras seguimiento → 40 | NURTURE.</div>
+      <div><b>Nota de fuente:</b> la reunión del 07/08 no detalla una secuencia de mensajes post-llamada — sí confirma el caso "decisor ausente" (Bloque 7, punto 4: no explicar el sistema completo sin el socio presente, agendar Call 2 o enviar la grabación). El resto de esta sección es texto de partida sin cita directa.</div>
+    </div>
+    <p class="tag propuesto" style="margin-left:0;">TODA ESTA SECCIÓN — PROPUESTO, MENOS FUENTE DIRECTA QUE 10 Y 20</p>
+  </div>
+
+  <div class="section">
+    <h2>30.1 · Agradecimiento post-llamada</h2>
+    <div class="msg-box"><span class="msg-tag">MISMO DÍA, TRAS LA LLAMADA</span>
+      <p>"Hola [Nombre], gracias por el tiempo de hoy. Te dejo por aquí [lo que corresponda: propuesta / resumen / próximos pasos] tal y como hablamos. Cualquier cosa, aquí me tienes."</p>
+      <p class="editnote">Edita según lo que de verdad se entrega tras la llamada — propuesta con precio, resumen de lo hablado, o enlace de pago si ya se cerró en la propia llamada.</p>
+    </div>
+  </div>
+
+  <div class="section">
+    <h2>30.2 · Agenda de Call 2 (decisor ausente) <span class="tag confirmado">Situación confirmada por Javier — texto propuesto</span></h2>
+    <p>Se activa cuando en la llamada 1 el interlocutor no puede decidir solo. Sigue la misma lógica de 10 | AGENDA (confirmación + recordatorio), aplicada a la segunda cita.</p>
+    <div class="msg-box"><span class="msg-tag">PLANTILLA</span>
+      <p>"Hola [Nombre]. Como comentamos, para la segunda sesión necesitamos que esté también [socio/decisor]. Aquí tienes el enlace para elegir hueco entre los dos: [enlace_call2]"</p>
+    </div>
+  </div>
+
+  <div class="section">
+    <h2>30.3 · Seguimiento de propuesta hasta el pago</h2>
+    <table>
+      <tr><th style="width:20%">MOMENTO</th><th style="width:80%">ACCIÓN</th></tr>
+      <tr><td class="moment">+2-3 días sin respuesta</td><td>Seguimiento suave, sin presión, preguntando si ha podido revisar la propuesta</td></tr>
+      <tr><td class="moment">+7 días sin respuesta</td><td>Último seguimiento activo — después, pasa a 40 | NURTURE</td></tr>
+      <tr><td class="moment">Al confirmar y pagar</td><td>Mensaje de bienvenida/onboarding → etapa Pagado</td></tr>
+    </table>
+    <div class="msg-box"><span class="msg-tag">SEGUIMIENTO +2-3 DÍAS</span>
+      <p>"Hola [Nombre], ¿has podido echarle un ojo a la propuesta? Si tienes alguna duda, dime y la vemos."</p>
+    </div>
+    <div class="msg-box"><span class="msg-tag">BIENVENIDA AL PAGAR</span>
+      <p>"¡Bienvenido a +Reformas System, [Nombre]! Ya estás dentro. En breve te contactamos para arrancar la puesta en marcha."</p>
+    </div>
+  </div>
+
+  <div class="footer-tab"><span>+Reformas System — Closeup Marketing · Documento interno</span><span>30 | POST-LLAMADA</span></div>
+</div>
+
+<!-- 40 NURTURE -->
+<div class="page">
+  <div class="folder-header">
+    <div class="fname"><span class="fcode">40</span> | NURTURE</div>
+    <div class="fdesc">Seguimiento a largo plazo, baja presión. Recibe contactos desde 00 y 20 cuando se agota el seguimiento activo. Confirmado por Daniel: no se construye automatización aquí en esta fase — se deja como referencia, sin implementar en GoHighLevel todavía.</div>
+  </div>
+
+  <div class="section">
+    <div class="kicker">TRIGGER Y OBJETIVO</div>
+    <div class="meta-box">
+      <div><b>Entra:</b> desde 00 | CAPTACIÓN (3 intentos sin respuesta), desde 20 | NO-SHOW (3 mensajes sin reagenda) o desde 30 | POST-LLAMADA (7 días sin decisión).</div>
+      <div><b>Objetivo:</b> mantener la puerta abierta sin insistir — contacto espaciado, sin presión, contenido de valor en vez de recordatorios de cita.</div>
+      <div><b>Sale:</b> responde y quiere retomar → vuelve a 00 o 10 según el punto en que estaba. Sin respuesta indefinida → se mantiene en nurture pasivo, sin acción activa constante.</div>
+    </div>
+    <p class="tag propuesto" style="margin-left:0;">PROPUESTO — sin cita directa de Javier sobre esta fase; sí menciona en general "reactivación cuando sea apropiado" como principio del embudo de captación</p>
+  </div>
+
+  <div class="section">
+    <h2>Cadencia recomendada</h2>
+    <table>
+      <tr><th style="width:25%">MOMENTO</th><th style="width:75%">ACCIÓN</th></tr>
+      <tr><td class="moment">+30 días desde el cierre del ciclo activo</td><td>Contacto ligero, sin pedir cita — contenido de valor (caso de éxito, dato del sector) o pregunta abierta de bajo compromiso</td></tr>
+      <tr><td class="moment">+60-90 días</td><td>Segundo contacto similar, si el primero no obtuvo respuesta</td></tr>
+      <tr><td class="moment">Después</td><td>Pasa a un ritmo pasivo — sin cadencia fija, solo campañas puntuales</td></tr>
+    </table>
+    <div class="msg-box"><span class="msg-tag">CONTACTO +30 DÍAS</span>
+      <p>"Hola [Nombre], hace un tiempo hablamos sobre el sistema de captación de reformas para tu empresa. Por si te sirve: [caso de éxito / dato relevante]. Si en algún momento quieres retomarlo, aquí me tienes."</p>
+    </div>
+  </div>
+
+  <div class="footer-tab"><span>+Reformas System — Closeup Marketing · Documento interno</span><span>40 | NURTURE</span></div>
+</div>
+
+<!-- AGENTE DE WHATSAPP CON IA -->
+<div class="page">
+  <div class="folder-header">
+    <div class="fname">Agente de WhatsApp con IA</div>
+    <div class="fdesc">Contexto (system prompt) propuesto — para revisar antes de crear nada en GoHighLevel. Cubre 00, 10 y 20 con prioridad; 30 y 40 solo si el agente los necesita.</div>
+  </div>
+
+  <div class="section">
+    <div class="kicker">BORRADOR PARA REVISAR</div>
+    <h2>System prompt propuesto</h2>
+    <div class="flow-box">ROL
+Eres el agente de WhatsApp de Closeup Marketing para el embudo +Reformas
+System. Tu función es exclusivamente operativa: confirmar, agendar y
+recordar. No vendes ni describes el servicio en detalle — eso ocurre en
+la llamada con Daniel.
+
+ETAPAS QUE DEBES CONOCER (por prioridad)
+- 00 | CAPTACIÓN: el contacto acaba de dejar sus datos en el formulario.
+  Tu objetivo: que conteste o confirme por WhatsApp que "todo encaja",
+  y que quede agendada la llamada.
+- 10 | AGENDA: ya tiene cita reservada. Tu objetivo: confirmar que ha
+  recibido/revisado el documento y confirmar asistencia expresa.
+- 20 | NO-SHOW: la cita ya pasó y no se presentó. Tu objetivo: entender
+  qué pasó (distingue si había confirmado o no) y ofrecer reagendar
+  mediante el enlace — nunca negociando un horario a mano.
+- 30 | POST-LLAMADA y 40 | NURTURE: prioridad baja, úsalas solo si el
+  contacto ya pasó por la llamada o lleva tiempo sin actividad.
+
+LENGUAJE PROHIBIDO (regla transversal 1)
+Nunca digas "generar leads propios para tu empresa", la palabra
+"leads", ni "captación de leads". Si necesitas nombrar el servicio,
+usa "sistema de captación de reformas" — solo cuando aporte, sin
+sobreexplicarlo.
+
+REGLAS DE COMPORTAMIENTO
+- No resuelves dudas de precio, encaje o funcionamiento del sistema —
+  siempre rediriges a la llamada con Daniel.
+- No negocias horarios a mano tras un no-show — usas el enlace de
+  reagenda, el lead elige su hora.
+- Te detienes en cuanto el contacto responde (aunque sea ambiguo),
+  agenda, o cambia de etapa por cualquier motivo — nunca sigues una
+  secuencia que ya no aplica (regla transversal 2).
+- Cuando el contacto cambia de etapa, sales por completo del workflow
+  anterior — nunca quedas "ligado" a dos etapas a la vez (regla
+  transversal 5, aislamiento total).
+- Máximo 3 intentos de contacto sin respuesta en cualquier etapa;
+  después, dejas de insistir.
+- Identificas en qué etapa está el contacto y qué número de intento
+  es, y adaptas el tono — más neutro en captación y en el no-show sin
+  confirmar, más cercano si ya hay conversación iniciada.
+- Nunca inventas precio, resultados ni garantías — si te preguntan,
+  rediriges a la llamada.
+
+FIRMA (regla transversal 4 — decidido)
+En 00 | CAPTACIÓN no usas nombre propio: te identificas como "el
+equipo de Closeup Marketing". A partir de 10 | AGENDA, una vez hay
+cita reservada, te identificas como Daniel, de Closeup Marketing. El
+nombre de Daniel nunca se usa antes de que exista una cita.</div>
+    <p class="editnote" style="font-size:8.2pt;">Esto es un borrador de contexto, no el prompt final de producción — ajusta tono, ejemplos y el resto de reglas de negocio que falten antes de cargarlo en el agente de GoHighLevel.</p>
+  </div>
+
+  <div class="footer-tab"><span>+Reformas System — Closeup Marketing · Documento interno</span><span>AGENTE IA — WHATSAPP</span></div>
+</div>
+
+<div class="page">
+  <div class="section">
+    <div class="kicker">RESUMEN</div>
+    <h2>Qué falta decidir antes de pasar esto a Claude Code</h2>
+    <ul class="check">
+      <li><strong>00 | CAPTACIÓN:</strong> reescrita con las 5 reglas transversales, firma genérica ("el equipo") ya decidida — confirmar si el primer contacto real es llamada, WhatsApp, o ambos en paralelo, y si te vale la mezcla plural/singular del mensaje automático (nota en esa sección).</li>
+      <li><strong>10 | AGENDA:</strong> reescrita y simplificada — firma con Daniel ya decidida, se elimina el reenvío del documento (WhatsApp 3 anterior). Queda abierto si el recordatorio de 24h/mismo día debe ser más corto para quien ya confirmó.</li>
+      <li><strong>20 | NO-SHOW:</strong> lógica intacta (mejor respaldo directo de la reunión), solo se limpió el lenguaje prohibido y se reforzó la regla de aislamiento total.</li>
+      <li><strong>30 | POST-LLAMADA y 40 | NURTURE:</strong> confirmado que no se implementan en GoHighLevel en esta fase — quedan solo como referencia de diseño.</li>
+      <li><strong>Agente de WhatsApp con IA:</strong> system prompt en borrador, sección anterior — revisar antes de crear nada en GoHighLevel.</li>
+    </ul>
+
+    <div class="rule-box">
+      <div class="rule-label">CHECKPOINT OBLIGATORIO — REGLA TRANSVERSAL 5</div>
+      <p>Antes de construir cualquier workflow en GoHighLevel, necesito tu confirmación explícita de que el diseño de aislamiento total te cuadra: al cambiar de etapa, el contacto se retira del workflow anterior (acción "eliminar de workflow" o equivalente en GHL) en el mismo paso en que entra al nuevo — no basta con dejar de enviar el siguiente mensaje si el contacto sigue técnicamente inscrito en dos automatizaciones a la vez. Dime "confirmado" o dime qué cambiar antes de que empiece a construir esto en GoHighLevel.</p>
+    </div>
+  </div>
+
+  <div class="callout-final">
+    <div class="kicker">USO</div>
+    <p>Edita el texto directamente sobre este documento (o dime los cambios y regenero el PDF). Cuando esté cerrado y confirmado el checkpoint de arriba, es la base literal que se usa para construir los workflows 00, 10 y 20, y el agente de IA en GoHighLevel.</p>
+    <p>+Reformas System — Closeup Marketing · Documento interno, no compartir fuera del equipo.</p>
+  </div>
+</div>
+
+</body>
+</html>

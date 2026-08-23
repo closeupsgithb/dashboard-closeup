@@ -1,0 +1,356 @@
+PROMPT MAESTRO — GENERADOR DE CONTRATO +REFORMAS SYSTEM
+Uso interno — Closers y comerciales de CloseUp Marketing
+No compartir fuera del equipo.
+
+===============================================================
+INSTRUCCIONES PARA EL CLOSER — LEELO ANTES DE USAR
+===============================================================
+
+1. Rellena los 5 datos del cliente en el bloque "DATOS DEL CLIENTE" de aqui abajo.
+2. Copia TODO este documento, de principio a fin (incluyendo los datos que acabas
+   de rellenar, las instrucciones para la IA y la plantilla HTML), y pegalo en
+   una conversacion NUEVA de Claude o ChatGPT. Una conversacion nueva cada vez,
+   nunca reutilices una conversacion donde ya se haya hablado de otra cosa.
+3. Envia el mensaje. La IA te devolvera el HTML completo del contrato, ya con
+   los datos del cliente metidos, dentro de un bloque de codigo.
+4. Sigue los pasos de la seccion "COMO CONVERTIRLO EN PDF" al final de este
+   documento para obtener el PDF final.
+5. Repasa el "CHECKLIST ANTES DE ENVIAR AL CLIENTE" antes de mandarselo a nadie.
+
+Si en algun paso algo no cuadra (falta un dato, el PDF no tiene 4 paginas,
+algo se ve raro), no lo envies: avisa a Daniel o repite el proceso desde el
+paso 2 en una conversacion nueva.
+
+===============================================================
+DATOS DEL CLIENTE - RELLENA ESTO ANTES DE PEGAR EL PROMPT
+===============================================================
+
+Nombre completo del representante:
+DNI:
+Nombre de la sociedad (razon social / nombre comercial):
+Direccion comercial:
+CIF:
+Fecha del contrato:
+
+===============================================================
+INSTRUCCIONES PARA LA IA (CLAUDE / CHATGPT) - NO EDITAR ESTA PARTE
+===============================================================
+
+Actua como un editor de documentos mecanico y estrictamente literal. Tu unica
+tarea es sustituir un conjunto cerrado de marcadores dentro de la plantilla
+HTML que aparece mas abajo, usando los 6 datos del cliente que el closer ha
+rellenado justo arriba, en "DATOS DEL CLIENTE". No tienes permiso para hacer
+ningun otro cambio, por pequeno que sea.
+
+REGLAS OBLIGATORIAS - CUMPLELAS TODAS, SIN EXCEPCION:
+
+1. NO modifiques ni una sola palabra del contenido juridico del contrato: ni
+   una clausula, ni una frase, ni un signo de puntuacion fuera de los
+   marcadores indicados.
+2. NO toques el CSS, la estructura HTML, los margenes, las tipografias, los
+   tamanos de letra, los colores, la numeracion de las clausulas, las tablas,
+   las firmas ni el pie de pagina. Todo debe quedar visualmente identico.
+3. NO "mejores" el texto, no corrijas redaccion, no reformules nada, no
+   anadas ni quites contenido que no este explicitamente indicado en estas
+   reglas. No es tu trabajo opinar sobre el contrato ni redactarlo de nuevo:
+   es una plantilla ya aprobada, tu unica funcion es rellenar datos.
+4. Sustituye UNICAMENTE estos marcadores, y exactamente como se indica:
+
+   [NOMBRE_COMPLETO_CLIENTE]   -> Nombre completo del representante (aparece 2 veces)
+   [DNI_NIE_CLIENTE]           -> DNI (aparece 2 veces)
+   [NOMBRE_SOCIEDAD_CLIENTE]   -> Nombre de la sociedad (aparece 3 veces)
+   [CIF_CLIENTE]               -> CIF (aparece 1 vez)
+   [DIRECCION_CLIENTE]         -> Direccion comercial (aparece 1 vez)
+   [FECHA_CONTRATO]            -> Fecha del contrato (aparece 2 veces, una por firma)
+
+   Cada marcador puede aparecer mas de una vez en el documento. Sustituye
+   TODAS las apariciones de un mismo marcador por el mismo valor exacto.
+   Buscalos por el texto exacto entre corchetes, no por posicion ni por
+   suposicion. Estos 6 marcadores son los UNICOS que existen en la plantilla:
+   no debe quedar ninguno sin sustituir.
+
+5. Actualiza tambien el contenido de la etiqueta <title> del documento (en el
+   <head>) a: Closeup x [Nombre de la sociedad]
+   Ejemplo: si la sociedad es "Reformas Gomez S.L.", el <title> debe quedar
+   "Closeup x Reformas Gomez S.L.". Esto es necesario para que, al imprimir
+   el HTML a PDF, el nombre de archivo sugerido sea ese. No cambies ningun
+   otro <title> ni ningun comentario HTML que encuentres en el codigo.
+
+6. IMPORTANTE - estilo del texto sustituido: los 6 marcadores de datos del
+   cliente estan envueltos en un span con class="sig-fill" (texto naranja en
+   cursiva), que es el estilo que usa esta plantilla para senalar "dato
+   pendiente de rellenar". Al sustituir el marcador por el dato real, quita
+   tambien class="sig-fill" de ese span concreto (dejalo como <span> sin
+   clase, o elimina el atributo class por completo en ese span), para que el
+   dato final del cliente se vea en texto normal, igual que el resto del
+   contrato, y no en naranja. No toques el atributo class de ningun otro
+   span que no sea uno de los 6 marcadores de datos del cliente.
+
+7. No cambies el nombre de ningun otro archivo ni ningun comentario HTML que
+   encuentres en el codigo, salvo lo indicado en la regla 5.
+
+8. Devuelve el documento HTML COMPLETO, integro de principio a fin, dentro de
+   un unico bloque de codigo. No escribas nada antes ni despues del bloque de
+   codigo: sin saludos, sin resumenes, sin explicaciones, sin listar los
+   cambios que has hecho. Solo el HTML.
+
+9. Si falta alguno de los 6 datos porque el closer no lo relleno, dilo
+   claramente ANTES de generar nada, indicando que dato falta, y no generes
+   el documento hasta tener los 6 datos completos. No inventes ni un solo
+   dato que falte.
+
+===============================================================
+PLANTILLA HTML - BASE DEL CONTRATO (no editar su contenido, solo usarla)
+===============================================================
+
+```html
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<title>Contrato +Reformas System</title>
+<style>
+  :root {
+    --orange: #ff4e08;
+    --ink: #17212b;
+    --ink-soft: #55606b;
+    --line: #dfe3e7;
+  }
+  @page { size: A4; margin: 0; }
+  * { box-sizing: border-box; }
+  html, body { margin: 0; padding: 0; font-family: 'Segoe UI', Arial, Helvetica, sans-serif; color: var(--ink); font-size: 10.3pt; line-height: 1.52; background: #fff; }
+  .page { width: 210mm; height: 297mm; padding: 16mm 20mm 14mm 20mm; position: relative; page-break-after: always; }
+  .page:last-child { page-break-after: auto; }
+  p { margin: 6px 0; text-align: justify; }
+  ul { margin: 6px 0; padding-left: 16px; list-style: none; }
+  li { margin-bottom: 5px; padding-left: 12px; position: relative; text-align: justify; }
+  li::before { content: "\2022"; color: var(--orange); position: absolute; left: 0; font-weight: 700; }
+  b { font-weight: 700; }
+
+  .run-header { display: flex; justify-content: space-between; font-size: 7.3pt; color: #9aa4ad; border-bottom: 1px solid var(--line); padding-bottom: 3mm; margin-bottom: 6mm; }
+
+  /* ---- COVER / TITLE BLOCK (page 1 only) ---- */
+  .lockup { text-align: center; margin-bottom: 5mm; }
+  .lockup .mark { width: 11mm; height: 11mm; border-radius: 50%; overflow: hidden; margin: 0 auto; display: flex; align-items: center; justify-content: center; }
+  .lockup .mark img { width: 132%; height: 132%; object-fit: cover; mix-blend-mode: multiply; }
+  h1.doc-title { text-align: center; font-size: 17pt; font-weight: 800; letter-spacing: 0.3px; margin: 0; color: var(--ink); }
+  p.doc-sub { text-align: center; font-size: 13pt; font-weight: 800; color: var(--orange); margin: 3px 0 0 0; }
+  p.doc-sub2 { text-align: center; font-size: 9.3pt; font-weight: 400; color: var(--ink-soft); margin: 4px 0 0 0; }
+  .rule { width: 46px; height: 2.4px; background: var(--orange); margin: 12px auto 14px auto; border-radius: 2px; }
+
+  h3.big-title { font-size: 11.3pt; font-weight: 800; letter-spacing: 0.3px; color: var(--orange); margin: 15px 0 6px 0; border-bottom: 1px solid var(--line); padding-bottom: 4px; }
+  h4.sub { font-style: italic; font-weight: 700; font-size: 10.3pt; margin: 10px 0 3px 0; color: var(--ink); }
+
+  h4.clause-title { font-size: 10.6pt; font-weight: 800; margin: 13px 0 5px 0; color: var(--ink); }
+  h4.clause-title .n { color: var(--orange); }
+
+  /* ---- GARANTÍA — jerarquía ligeramente superior, sin banner ---- */
+  h4.guarantee-title { font-size: 12.6pt; font-weight: 800; margin: 14px 0 2px 0; color: var(--ink); }
+  h4.guarantee-title .n { color: var(--orange); }
+  .guarantee-rule { width: 100%; height: 1.6px; background: var(--orange); margin: 3px 0 6px 0; border-radius: 1px; }
+  p.guarantee-line { font-size: 11.3pt; font-weight: 800; color: var(--orange); margin: 0 0 1px 0; }
+  p.guarantee-sub { font-size: 8pt; font-style: italic; color: var(--ink-soft); margin: 0 0 8px 0; }
+
+  .price-block { border-top: 1px solid var(--line); border-bottom: 1px solid var(--line); padding: 8px 0; margin: 8px 0 10px 0; }
+  .price-row { display: flex; justify-content: space-between; align-items: baseline; padding: 2px 0; }
+  .price-row .k { font-size: 9.6pt; color: var(--ink-soft); }
+  .price-row .v { font-size: 9.6pt; font-weight: 700; }
+  .price-row.total .v { font-size: 13pt; font-weight: 800; color: var(--ink); }
+  .price-row.total .k { font-weight: 700; color: var(--ink); }
+  .price-note { font-size: 8.3pt; color: var(--ink-soft); margin-top: 4px; }
+  .continuity-label { font-size: 8pt; font-weight: 800; letter-spacing: 1px; text-transform: uppercase; color: var(--orange); margin-top: 8px; }
+
+  .signatures { display: flex; justify-content: space-between; margin-top: 34px; }
+  .sig-block { width: 46%; }
+  .sig-block .role { font-size: 9pt; font-weight: 800; letter-spacing: 0.5px; margin-bottom: 34px; }
+  .sig-line { border-top: 1px solid var(--ink); padding-top: 5px; font-size: 9pt; }
+  .sig-name { font-weight: 700; }
+  .sig-fill { color: #b8461f; font-style: italic; }
+  p.sig-date { font-size: 9pt; margin-top: 26px; }
+</style>
+</head>
+<body>
+
+<!-- PÁGINA 1 -->
+<div class="page">
+  <div class="run-header"><span>Closeup Marketing · Contrato de prestación de servicios · +Reformas System</span><span>1</span></div>
+
+  <div class="lockup">
+    <div class="mark"><img src="data:image/png;base64,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/2T+DAAAAHoMgQUAAGAYgQUAAGAYgQUAAGAYgQUAAGAYgQUAAGAYgQUAAGAYgQUAAGAYgQUAAGAYgQUAAGAYgQUAAGAYgQUAAGAYgQUAAGAYgQUAAGAYgQUAAGAYgQUAAGAYgQUAAGAYgQUAAGAYgQUAAGAYgQUAAGAYgQUAAGAYgQUAAGAYgQUAAGAYgQUAAGAYgQUAAGAYgQUAAGAYgQUAAGAYgQUAAGAYgQUAAGAYgQUAAGAYgQUAAGAYgQUAAGAYgQUAAGAYgQUAAGAYgQUAAGAYgQUAAGAYgQUAAGAYgQUAAGAYgQUAAGAYgQUAAGAYgQUAAGAYgQUAAGAYgQUAAGAYgQUAAGAYgQUAAGAYgQUAAGAYgQUAAGAYgQUAAGAYgQUAAGAYgQUAAGAYgQUAAGAYgQUAAGAYgQUAAGAYgQUAAGAYgQUAAGAYgQUAAGAYgQUAAGAYgQUAAGAYgQUAAGAYgQUAAGAYgQUAAGAYgQUAAGAYgQUAAGAYgQUAAGAYgQUAAGAYgQUAAGAYgQUAAGAYgQUAAGAYgQUAAGAYgQUAAGAYgQUAAGAYgQUAAGAYgQUAAGAYgQUAAGAYgQUAAGAYgQUAAGAYgQUAAGAYgQUAAGAYgQUAAGAYgQUAAGAYgQUAAGAYgQUAAGAYgQUAAGAYgQUAAGAYgQUAAGAYgQUAAGAYgQUAAGAYgQUAAGAYgQUAAGAYgQUAAGAYgQUAAGAYgQUAAGAYgQUAAGAYgQUAAGAYgQUAAGAYgQUAAGAYgQUAAGAYgQUAAGAYgQUAAGAYgQUAAGAYgQUAAGAYgQUAAGAYgQUAAGAYgQUAAGAYgQUAAGAYgQUAAGAYgQUAAGAYgQUAAGAYgQUAAGAYgQUAAGAYgQUAAGAYgQUAAGAYgQUAAGAYgQUAAGAYgQUAAGAYgQUAAGAYgQUAAGAYgQUAAGAYgQUAAGAYgQUAAGAYgQUAAGAYgQUAAGAYgQUAAGAYgQUAAGAYgQUAAGAYgQUAAGAYgQUAAGAYgQUAAGAYgQUAAGAYgQUAAGAYgQUAAGAYgQUAAGAYgQUAAGAYgQUAAGAYgQUAAGAYgQUAAGAYgQUAAGAYgQUAAGAYgQUAAGAYgQUAAGAYgQUAAGAYgQUAAGAYgQUAAGAYgQUAAGAYgQUAAGAYgQUAAGAYgQUAAGAYgQUAAGAYgQUAAGAYgQUAAGAYgQUAAGAYgQUAAGAYgQUAAGAYgQUAAGAYgQUAAGAYgQUAAGAYgQUAAGAYgQUAAGAYgQUAAGAYgQUAAGAYgQUAAGAYgQUAAGAYgQUAAGAYgQUAAGAYgQUAAGAYgQUAAGAYgQUAAGAYgQUAAGAYgQUAAGAYgQUAAGAYgQUAAGAYgQUAAGAYgQUAAGAYgQUAAGAYgQUAAGAYgQUAAGAYgQUAAGAYgQUAAGAYgQUAAGAYgQUAAGAYgQUAAGAYgQUAAGAYgQUAAGAYgQUAAGAYgQUAAGAYgQUAAGAYgQUAAGAYgQUAAGAYgQUAAGAYgQUAAGAYgQUAAGAYgQUAAGAYgQUAAGAYgQUAAGAYgQUAAGAYgQUAAGAYgQUAAGAYgQUAAGAYgQUAAGAYgQUAAGAYgQUAAGAYgQUAAGAYgQUAAGAYgQUAAGAYgQUAAGAYgQUAAGAYgQUAAGAYgQUAAGAYgQUAAGAYgQUAAGAYgQUAAGAYgQUAAGAYgQUAAGAYgQUAAGAYgQUAAGAYgQUAAGAYgQUAAGAYgQUAAGAYgQUAAGAYgQUAAGAYgQUAAGAYgQUAAGAYgQUAAGAYgQUAAGAYgQUAAGAYgQUAAGAYgQUAAGAYgQUAAGAYgQUAAGAYgQUAAGAYgQUAAGAYgQUAAGAYgQUAAGAYgQVzZGBJz1KeLYKx38kXy/ZH7OQZZv1C4TWE8uuyqURDb0XKt5Srf8qGkNk/t26hpH71pHSFSngifVWTB3LssdSvZyP9ZaIhlH6p098P6nrP9Xm1AYMILJiRHLJHlGOp5PjeVFJ/QAr9GakJOx86nytW8nGiP3Iyf8XwaoFSviNsx0oehEkr2NLRKWD7WEbS1lu1EoESTcvuVFTywibl5CSPbenbMnk9k/20k7D6ZU921YRI9ojkgd55M98MgN5BYMEQmZ7Bsj01YvkP3eVdd96o68/388G99nx13YXuDRfaTz8uLTv7Vwyv4qrk43/uy+qem/yLj/eP+2Hz0E2jQzZuHrph4zAsk/CQDRpHbOr/Zif/hL2C0/f3Lzjavu5s9Y9r7Ufucl98Us1/SdRHhLQ7p7iU7q1A2Y4cras0trLfDIDeQWDBENn5Nuzas59uHLtDPNQXVwpxpa9dLuREnBgqxpWif8FRcsEC/a098xcNS0hXJtvQKfu011utXelv1wajWimsDca1wTaWTVwbiKtaVB0Iq4NhtaRfyXIxnjopXm+1+HurxetNimdMjrb9UOuAqd5p+7rXnqUeuVO++JSaM1suWjyS1JdwEsmukZ7T8joX1tNriH7n5NaSa4769zv/E4A3QGDBkPSgbElPPf9E46itk45pV/tzqRic9ys1f4EksPIl+cy2g1P2bU+dlPUW0ttKqaTD+vVXjiS5EtPWbO7+teDEvd3rL3AeuU0+96ScPUstWCQtR706sNKBcV7aWIGQAYEFvAkCC4akX3mTA656+uHG4RsRWFhOBNZKFVWLCZ1ZiUoxqq0RVwfj9VePv79aPG2t8Cf/5V74W3n/39znHrNfelkssiyrc9Yq+RLlWqOnsnzGbAFvgsCCIZ2rCdJXj97T/Fkl88+PN0Zg5ROBtbLFS1R0Y8W1QqRLq08/Hh6Ikt9frxBOmxzt+z/+hcc4d1/vPPmQmjtHjEgp0ltGJIEFvBkCC4aMTYVgP3Bb63//O876w+ONEVj5RGCtbK8EVq0/qhbiWklHVXVyNJRkVn+olVppbMVDhWiov7XtJ7wT9rSvP9u572/qhefEiBDSFel5686Xq845bOZ6ADoILJjidZLFvvumcM+vJwfrzD8/3gCBlU8EVn7pc1rVYtJh+mJiua+11UeC4/dUN54nH7xDzp1jCUeJQMpA6fsTG5bIfFsCcoHAgimjdx65d1zd2unzBBaWE4GVX0vOdUU1fbpL36tY7m+W+xs7fd4/9af29eeqx+5TixcLPYtvIAksIEVgwZDRawSud8tlre0+TmBhORFY+aXPYOmTWP3pNcTOg1Koe6sUDRXCaVOC/SveOUe6t15Zf3mO0DPEBhO/wQB5R2DBkE5gKc+7+ZJw6w8TWFhOBFZ+LTUcfrS00sel9FbEgu6tSn9r6qRoxy+4px/gXneumv2ipTwl/M7yO0J1lnbIfBsDVioCC4aM3VLk3nxpuBWBheVFYHW3JLzCWiku94WbvL/xu93si4/1nnpcn80SeuR73XYtJibFKobAgiEEFsaFwOpylf6o1heVi/Fwf1xOHk9pHrGZf+5R6qkHpHKFdEcILKxiCCwYQmBhXAisrqfn0yqno+BrhfZQf1gdCDdaNzhic/fiY9Tzj9eVk/U2BqxUBBYMIbAwLgRWtyumE5Zq7WpBn9CqlNKFEQfDjdcNfrGJe8kJYu5cpRed9PXNhnJsOnigRxFYMITAwrgQWD0o1qPg+6JqIaoNhFt+tPGLLd3rz5WL61IFeskdfWcM9xuiZxFYMITAwrgQWD0ondNBn9mK9FI8pTjJrB982j9uD/v+24RwpGwoPT0peyJ6E4EFQwgsjAuB1aNqA3F5YHSJQ70mTzHc6B3Nvb7pXHycenmuUq5+6xU7I3oQgQVDCCyMC4HVs/TArGqxPTqBVnpOq1pqbf6B4BebOXffoKSdbADW6EzFLCCN3kFgwRACC+NCYK1ColohrPXFM9ZqbfdJ+8LfyXmLlApGpBLpEPisN0XADAILhhBYGBcCaxWSHB+iWimsFKJyMdzkfcFRW6sn7pV1xV6JXkJgwRACC+NCYK1C4koxqvRF1b64pi8XRhus09jmE97fL5F1wXgs9AwCC4YQWBgXAmtVMrqm4diyhrXk50AwfR37nMOtl+cJGTjSE2lpCWlLGXDdEN2IwIIhBBbGhcBaVVX0rYVRpRhVS+G0ya39p8rZzygROFbLshuWdOuqKdhb0YUILBhCYGFcCKxVVedUlj6JlTye3B4eiDZ8h3j+MWdkRLqBFL6sZ75xAiuCwIIhBBbGhcBaVdW0dFRW57phfzyt1Fp/NXXbpXKRUI6nhGvpzSNdWkf6DNJCtyCwYAiBhXEhsPAq8fqre1eerBZZQnp1Ww/Dqts6sISemzTzzRV4awQWDCGwMC4EFl4lqg7EU1fzTtlHzZuljy1OIHRmBawPjW5BYMEQAgvjQmDhVaLqpKhSiKavHR66qXj+aSX0SSyVBBZ3FKJLEFgwJPeBNXpDeLXon3+0nL+QwMoZAguvom8tHBrQU5LOGGj8fIZ89okR4erbCZdaTkcwHgs5RmDBkNwHVjTWWN7Fx8mFiwmsnCGw8PqSfTaavmbjgIrz2P31dACW0oeaQOkx7+zFyC8CC4YQWBgXAguvr7M+dDR9Smuf74uH7hYySLYWPdS9sz509psu8PoILBhCYGFcCCy8vjjdecNyf7jB2/yfT5OP3m9Jz0pPZXGJEHlGYMGQ7gisIoGVVwQWXl+yz4bVgbjSH1VK0cx1gkM3Ug/faQlfL6GTNtbowKzst2HgVQgsGNIVgVUrxDUCK58ILLy1JLZaG77DO3wT+7F7k64SsiGkb0mXwVjIIQILhhBYGBcCC29ND8aqFlsbvys4bg/13JPpvKN64gYGYyGHCCwYQmBhXAgsvLX0QmExrBRaW/yLf8ZB9ksvWsqz0smxGI+FvCGwYAiBhXEhsPDWksCKK6VID6YsRFt/1L/4eDF/3kjSWEzZgPwhsGAIgYVxIbCwnMqF1s6fc64506qLTl2lo7LYr5EXBBYMIbAwLgQWllOlGFcKrT2/6txxjUgneV8i640Z0AgsGEJgYVwILCyfdPqGQjg82Dh0pv34fQQW8obAgiEEFsaFwMLyWbK6aLThO/w/7q9eeF4Iz9KBlfnGDGgEFgwhsDAuBBaWmx7zrge8l1qbvN+94mRrpC70HYWByH57BggsmEJgYVwILCy39KbCYmpy4weflndeLS032bWZsgF5QGDBEAIL40JgYfmMpZVe/6pdKcSVAf+QDe2nH0t3bfZuZI/AgiG5D6zOcI3kcOwSWHlEYGH5dOqq8zhKZ3gPh6fYl/1BLlwoLW9Eepbtc60QGSKwYEjuAys9CheiJLAuOZ7Ayh8CCysuLncmeR+MZq5j/+MaUVcjMlCK6d2RJQILhnRHYCVfc0vupSfKRSMEVs4QWFhxca0Yl4thrRDVBoP9vq+ee8LWi0A3uaMQGSKwYEjXBFY/gZVLBBZWXFQthLVk7y40K8Voap/31zPkyIji9BUyRWDBkC4IrGK7UmhXit4lJ8mFdQIrZwgsGFIpNWes4Tz+oFSKeUeRIQILhhBYGBcCC6bombEav9pGvTSLukKGCCwYQmBhXAgsmNIXVYrx+n3q9ktF3c56w8aqi8CCIQQWxiX/gVVMJw3vTB1ezPrJvLFKZ35zrf3KejJLfqeY7giJrJ/nxCkXmnparFK407+pubPZ05EVAguGEFgYl7wHVlzti2rFqDYYdkqlkj+dihoNrIGxB/1RtZSINT3XbrtaWPLne1KSVlFN39HilUvOxcdJIaVq1FXA7KNYyQgsGEJgYVzyHlhRpS/ulMrQYFwZiMul3EnColLSz60y0NYPktQotDsn29I1+6LhQjzcOfdWGt0jsn5VJ0LSkWE672hcKUYbvUfMeSHZ2euqRWBhJSOwYAiBhXHJe2DFtb6wVgp2/WLjgBmNg2YGB+dOQ//cIPnZOGiD4ODhxs/LzX2/29rr6+HOn4u3+EA0c6142pS4NqCzo9K5ytmjgVUppFMKJ7nZH5WLzukHSMu22N+x0hFYMESOcv5GYGEF5D2w2slndrXoXfQ7sVAKp5VD0m1aCacp7GBE2mLxiJr1gnrkbvfmi4MLfxOc/JPgmF0aR27Z2O+7za0/Fk17m75oWOmsH6X/aXHnrE96C55euFNfUuzKAhsdcJZGpJ6AdNoU+8kHkw2ss2wOEzdgpSGwYIqnk0UH1mUEFpZf/gOrv10reRf+Ti3M/Sy10hsl3JTeMaUTSLehq+vBO/wLf9c4fs/WEZu2dv1yNHOtdJbOJEqSn32t2qSoWgr1Mn+DXRpYS4v1qaz+4Lc7W0p0XhwCCysNgQUzlixJwRksrBACa0IkO6beN9OqsJLYkq4QrmV70muoBQvcv1/eOPPgxjE7RDt+NqrpUfCtaf1huRhW+6Lur6v26ID3UlgdUE/ct2QYA7ByEFgwSp/BuiTc6oMEFpYTgTUx5CvjIy3lSOEokTxIBEl4WcJTTsNZsMi56Tz/z0dEP5sWTX97NLUQpqv7Zf+Cj1s6M0UprhQav95OCLtz7oozWFg5CCwYJX33pouiLT4Q17I/tr5GMb1BvehdeqLsrs/IVQKBNeGE8oR0O5fyLRmkP5Pf9FXyIHn93ab3wB3OOb8KD5wRTnu7Hr1U7YvTuxG7d06HdJxZKfm3RJu+Xz37iBD6Hyv0S5H924GeR2DBjLFjVuDedGG8+ftzG1jJd1mPxZ7ziMDKhbrdch9/0L70xNYhM6La5Kg8ECVfS0Z3n6xf/+U3NudqMZ7+Nv+kvaToXDMNCCysBAQWzOiSwNJT4/iXnSQXcYkwbwisfKg3lLSFCuzHH/QvPL65x9diPWlWt87p0LmdMN3x+8NtPilnP2fp4Wg+c2JhJSCwYEZ3BJZeQKPoX/4HAit/CKxcEPWkPwKlGtLy7IVC3Xm1/4cfhzPXTjMl69d/+enJGsaeeTTznd45v1SdYVgEFiYegQUzuiGw+jtfxL0rTpaLrB7+jOxOBFYupLMYBPqxHqoVCOmKl170Lj+huee/t8u6VyI9XVZ/lM7nqe8ayfxNeVNL6kpP7z48Odzpi2rRPKkcLhFiJSCwYEZ3BFbyrCppYC0msPKGwMqpJLnUosXOfbcGx+wa1aaEtUJrWE8uFdUK6cqGWb8pyyZOnnCl2Nz43c6NF9hjk44CE4rAghkEFsaHwMobb3Sgkgws4dctV748yzvrsGjjd0e1gWh0VelinPmbsoySpzpUDIcHgv2GRLL3Z//yovcRWDCDwML4EFh5owMrvWLoW3ZQ12d9XLngZf/8o6NtPhGXi63RpXWyflOWTZxe1owqxfAHn1RPP5T1a4tVAoEFMwgsjA+BlUedhWXE6Bxa+oFabLnXnd/c5ctRTc+TrsOlVogqA3G+58pK11gshtVStMnb/TMOTI5Ulmoq2ZKywYB3TBACC2YQWBgfAqs7CMcbkbZ98+Xhrl9J79Hri8sDzeFiVCnmeT7S9AzWYFTtDyv9jR992x5ZrFR6v6RFYGGiEFgwg8DC+BBYXSKdCL5eV87NFzR3/7ewNhil08vp+/VyPJVDeqatpM+61YqtXb4g7r5Bz+ouPMWko5gwBBbMILAwPgRWd7CkK4UjpK2EG1x7QbjtJ6PKpLgy2K7kcPnRpelLhHpB61p/tME6zd/soFSgr3ty+goThsCCGfkPrPSmp/64XPCuJLByiMDqPsJpehcfH275kVat0C2j3fWhYKjQ2v1rcv4cWySN1WBWd0wQAgtm5D+wouroqmTuX04hsPKHwOpCMrC8pnfintFG63RTYFX6Wzt+1v3HtXJ09eusX0b0KAILZuQ/sOIlgXXVqXKEwMobAqsLSU/YgfAb3q93iDZYq1saS8/qvuE6jeP21PPUJ3VFYGFiEFgwg8DC+BBY3ccWgZ08sKS1cEFj/6FoeDCdejS/Q91fORpUio1911ML5nN9EBOHwIIZ3RZYgs/InCGwutLoRFnSs++4Ntj2o3ogeTXv6+foOworpeYeX3UfvEMRWJgwBBbMILAwPgRWVxLpS6Eby20EJ+8XbfKOOO+3E+rTV2G1GG7+Pu+coxiDhYlDYMEMAgvjQ2B1n865q85jla6l09y/EtbWyPtgrPSG4qg2EPxyK7m4TmBhghBYMKMLAkvPhUhg5RaB1X2WDiwhG3UZyLuuDTd9b/pNppDubsnrlrshWZ1pUaNyf3BA2X7uSTl2Hg4wi8CCGV0VWKcRWPlDYHU5GdSlX3ebwTE7RdVSmARWuRhV+3M4vXucTj0fVvubu3/F/dtFksDCxCCwYAaBhfEhsLqbSgLLDpTw5JwXoo3fE1UH4mohrPblcYHCSjoMq1aMNn6Xf+o+Uk/WwBsK8wgsmEFgYXwIrC4nOweBhnSawSn7R7V0gcLq6nkcj9W5RFjTI7EaR2wmF4+8cqEz85cRPYTAghndEFjpyFYdWKfL5COSz8h8IbC6n3SEClRyKFi0sLH5+6NKQY/EyuEYrPRoEKXnsVoHlO3nn0oXJVxyEAPMILBgRv4DSy9Gm4669a4+Q9UVn5E5Q2D1DstxvT8f1ion32fyOGVD54biKBXu+VXnzquF7VFXMI7AghndEFj9ncDyrzmTwMofAqt3COGq+XPCGW+Py3kMrHYnsGppY23xfvfiY/Thi8kaYBqBBTO6KLA8AiuPCKweInxhB94vtsztpKPxEsODwR/2lsJhnDuMI7BgRhcElqbHuXvX/InAyh8Cq3coK0h6xXnk3rg2EFdeCZrs38FX08+qXAiO/oFcvFAoFn6GYQQWzOiWwGpXit41ZynL5jMyZwis3pEeCjwxUg+3/li81Omi7N/B1xoqNA7dRM1+PqkrAgtmEVgwg8DC+BBYvcSVomEvEsFp++sJEfRwcj0zQvbv4GvomRr2+7566E4hA6ECydrPMIfAghkEFsaHwOodQjVtkTSWox67O65NifMcWNVSuNPnvBsvkLqufAILBhFYMIPAwnhJ1z/lp9FQIafXkqoE1rKykkwRvlK+N/vJcKsPJUeDuDqpXS5k/w6+RhJY8cbv9C/4jUovDjJTAwwisGAGgYVxUtILTj0gKhcJrG4n9HmgYER5au5L/q+2imoDerR7LY93FOp1CWuD/h8PFEIfEwgsGERgwQwCC+OUBFbjtJ8RWL2hrvRkDd4ix7ntiqhaSge5F9v5m9U9qhbDqX3e7/ceqY9YvK0wisCCGQQWxonA6hnKDqRsKBHUlSdmPRNNWyNMDgjlrN++NzLU1zh2Nzl/fuavG3oMgQUzCCyME4HVk5w5L4abvk+fwRoazOE7qy8Rlguto7a1X0xnasj65UIvIbBgBoGFcSKweo8+Jsyd2/zJd+LqQD4vEcbVQlQtBIfOVE89nC75zDsLYwgsmEFgYZwIrB4kPXveS/5Je8aVUlzJ512ExeRg1drvu/YDt1BXMIvAghkEFsaJwOpByQu12LKv+mOrWowqWb99r0dfu6yVWrt/1b79KgILZhFYMIPAwjgRWL1HSE9Yjn339VGtr5W/64Pt0TV8StEPPuX+7QJh87bCJAILZhBYGCcCq/cI6del7zx2V1wrxbkMrI5oiw+515yVLieQ/YuGnkFgwQwCC+NEYPWe5JhQtwP7qYei4TXjah7HYCXHhKT8oo3f5V15imSxZxhFYMEMAgvjRGD1nvS+PF8+9VA44+1RLY/vbJwGVrzBWt6lJwreVhhFYMEMAgvjRGD1HqHXJfTV0w+FM9dNVyTM+h18jfQuwmI8Yw3v4uMILJhFYMEMAgvjRGD1Hh1Ytq+efTjaaN18jsFKz2D1x9OnJO+sFK7kRkKYQ2DBDAIL40Rg9Z5XAmvjnAZWRzw86F/wGykcZmqAQQQWzCCwME4EVu/R0zQoTwfWhu/O59s6egar1gksl8CCQQQWzCCwME4EVu9JesWyXfHMQ9EG68bVUvbv4GuMBtbwZO/C3wrh8M7CIAILZhBYGCcCq/ekgeXbTz8UTV8nruU2sIrR9CnuRb8TwuWdhUEEFswgsDBOBFbv6dxFaD9xXzQ8Oarlch6sSn9c6Y82WNO7+AQpfAa5wyACC2YQWBgnAqv36DNY0nHuvzUcHozyeUzoBNbMddzLfi/0LKO8szCGwIIZBBbGicDqPXqQe91ybzw/rg7ElXzeRaifVbzxe7y/nJb5y4UeQ2DBDAIL40Rg9R4hfTF/UeOPB7TLpbjSn8uZGvRTCrf+mHv9OZy+glkEFswgsDBOBFZPUnPnNX42FOkrcXlc7zmuFJMnFu70BfeWywgsmEVgwQwCC+NEYPUMlY5tt5JXyfbsubObW35Id0w1j+9s5y7C5o++Yd91gz6CsdgzzCGwYAaBhXEisHpGOr+o/plklvPCc9G0KXG1kMj+HXwtfQar0Dxgqv3w3QQWzCKwYAaBhXEisHqGpbzkJVLSr48I99a/pGeJ8jrIXV+77At+sal69unMXzf0GAILZhBYGCcCq2eINLCk9O25c5u/2Cx5Q6PqQFTLY2Dpa5dTJzWO3l7NmcU6OTCLwIIZYpTn3nRRuPn7chlYyfG9GFWL3tV/UnXFZ2TeEFi9QzojrquUb8+Z3dz0vXG632X/9r2+QhJYwfF7ykWL0ijknYUxBBbMWBJYzo0Xhlvk8wxWMR1p2+9dfRaBlTdCX1EisHpE3Q48K7CU7T98Z1wtxemJouzfvteTPLFoqOCfvK+oS0t2TsMDZhBYMCZdFsN1broo2vJfchxYRe+vZxJYeUNg9RKhXEsF9cWL/d/ukM6DkNO6auu7CPvj6ZP9Px+ilMM0DTCLwIIxnXXH3Jsvibb6YA4Dq3M/dlwpeFf9USUfkXxG5o10g1P2J7B6gKUaynLVooXxqUOXTgAAIABJREFUJu/W84vmO7DCLT9kX3GyJV3GYMEsAguGyNE7nN2bLw23+nBcK2V+6HztkTRVdK86VY4IPiNzxpPSDk7Ztz11UuabyhsisJbNiGrUhe3f+pe43N/O7+ir0cNC84dfVbdfrSedJ7BgFIEFQwgsjAuB1TtsK1C209jrO1G11M7x6atEVCkEPx+STzzQOXwxBgsGEVgwhMDCuBBYvUPYrnzu8ag2OaoW2pWs37U3N9QXHLmlfPnl0clRs37p0EsILBjSZYFl8RmZMwRWl5OuVG76PvrJO9k4eHpUGWzV+rJ/117/UKBnjugMwPd/t6tVt4R0O42V/SuJXkFgwZDcB9bYsZXAyicCq7sJHVhO0ljK8u1nHo1qa0aV/latkMNbFjp1lTy3sNIfbbiOf+bBVvLkpaP0OPfsX0n0DAILhhBYGBcCq8vJQM8jJX3LdpsHbhAl+1q5P6r15TCw9PI41WJcSzKrv7XT57wbzhedQORthVEEFgzJfWAtuUToJYG1mMDKGwKruynhWbYvRaDuuiqsTm5XB+JyMczn8jhLlAvNfb8rn3yoszQ1lwhhFoEFQ8YCy7n50laeA6tS9K48hcDKn+TjTXmn7hcPTUpnLOvPnc4yABceIxcuFGw8ryFkIJTtLFrc/Mm3wnKy+5eidOa5zHf81zsUdAZg9cdDhcYhM+WC+aN1RWDBKAILhiwVWM2t8xhYWq1fL/Z8xckEVt6k82gr7/T946FiVClFtdzpLAPgX/Qbe9ECNp7XYQfCcf0LfhNusEZSV9nv7G8WWOklwkoxmrFGcOxuUtidusr+NURvIbBgyJLA+vtlrW0+SmBhuSjp2slH9GUnhT/8ZnOvbzf3/lbu7PXNcK+ve9efYy+WnU0dSyR1YlmO+9Bt4Q/+X1QdzOeJq6UDK0qHYbV2/Iz7l1P1WSveUEwAAguGpONbk0OVc8vl4XYfJ7CwXCzlSGE7Tz7m3v4X946/OHdelT9/se+4yn7hyUXK4ULS0jqnf+zFI83DNolnvC3K8dLOSwJLL0FdLjb3+758/D4CCxOEwIIZ6UFWN1aOA6vYQWDlkF4eWLpCeDK9YT6dUSl3LL2Uijtie6ypMvqu2V46wYEvXdc/+7Bow3fqdqnlfnJRffpKDxHzj9jYWrg485cRvYrAghlCpYMYdGBdlt/AqhT0vIKX/0EuqhNYwDhZMkjP/QTODWe3tv1Y3Bmplu/TV+2xdd/DTdZ1zzw4HXrFoQATgsCCGd0RWFUdWN5lvyewAAOkryxfPXZf84CheHhye+xey6z39LcKrIoW7vol+x/XWfofwqEAE4LAghndE1gF79IT5SKmMgLGSwlbzJ8bHL5Zc6N1wm44d7XkUJA81eZ+64t5c4UKCCxMEAILZqQz9SXfaD3nlita2/2/fAZWpPV7l51EYAErxlJOXTpCNiwVJF+r/ON+GM5cu1Ub6Ex8kPU+/ob0nYNjiw8m37LimWs1jttDKFeI7F9S9CoCC2YsmQrZueXKvAZWcoTtj2oll8ACVpRSgZRNITylXO/MI8IN3x1XC1G1FI/eRJL9bv5GgdVJwHSW0f5w+8+4t10h9BgyJhfFRCGwYMZoYCnfvfUv4fafynNgeZedQGABK0bYyc9AOA3/zAOjzT4QD6eTtlcG4kp/3m8eHD2P1R+Xi609/kPOn5ve+BwQWJggBBbMEJ1hWMpzbvtLuMOn8xpYBb3aySXHy4WLCSxgBQjZsB0/OOugaOa60fBgc7gUTe2Lh/vi9A6SzPfxN0yrSjGqFDtzdEUbvtM/7kd60g3ZOWpl/6qiJxFYMGNsDJbvJoG1fU4Dq10pJYKLj1cEFrDMOlPc6RkZRCDdhnvOr8Lp74yG++NqX/Y79TIGVrUY1Yphtdga7m/s/BXx6N0sj4OJRmDBjPwHlr4+WC3FOrCOJbCAZZeEyIjlLhaOtD3/rCOjaZP12aAksGpdMCnDqHRse1QZCCt94d7/7ViWkC6NhQlFYMGMbgiszgWCAe/CY+SCRQQWsKyEK0ekmDvHO2X/qDwQlpO9aZJebWZ0bHv2e/dbijvfr5KfW/yLe8nxdT01f9avKnodgQUzxNh1BPe2q/I6Biv5CltKAss972g5fyGBBbxW51YVka7N17lzRe8pI8J58M7Gr7aJpq4elvvCWimqDCa7UpROiZ71fr1sgVXp6Gvt+Hnx8ksyPXfF6StMKAILZogxzp1Xhzt/Pq+BpRsrOO8oNX8BgQW8lhCusANRb9nSr6tACMdeOOLdcmG482dblc5UUpnvyCsaWOWBaPpgcOTWI7bD5KJYCQgsmNEdgaWV/POOkvPnE1jAa+m6Eo4SrhS+LZR64Wl1xSmt4beFFT3FSVjtiyqFrHfkFQosPci90Nz8g86jd+srnlm/zlgVEFgwI/+BNTrNYKXfP/dIAgt4fXZLWd7CJEEWv6xuv6rxiy3jqZOi6qSwUgzTYUyZ78grfgSYtmZzn+8J6QgCCysFgQUzOgOwXgmsdL6ZzA+p/xRYUToXjnfO4XLePAILq7R05dB0t00ngkofSOXVXVeoQD1yl3fVqY1N1onKJa1W0DfhVgrtnO3Ub00Pu+zcQtgfbvo++5ZLhaUnF+USIVYCAgtmdOZEljKw77ymmdPASu8hqvT7fz5UznuZwMKqTAlPiXQec72wYFOphl79xg3kC0+4N57X3Pe78VDXzHH1poE1oFehHiqG1VJzr+8ISy6WniUaBBZWAgILZqRfgpPvhYG689rWLl/I5SVC3VhJYHlnHSJfJrCwSlPCTRpLP5auO9KwvIb9/HPO9WcFx+wUr1eMyqtF0wYz32dNKETDhbg6EM6Y4t5wvhC+nsBdsDwOVgYCC2aMjcEK7H9cF+72pXb+AqudrpWmLxGeeZCcO5fAwqpMpGewpN1QyrGffMy5/mzvD3tH06fEw4NRpRQNTYqrhfyvLfiW9JXB2qSoWmru9m9iZCT5V9eV/h4oOIOFiUdgwaQ0sG4Id/tKLgNLD3KPqkX/jJ+ruXMILPSsZNsW3lhD6J/pJMDe2LcgPf+TZTeEJZ17/9a48HfBkVtE096mr6HX+qJaKUmrKD3j2wOBpW9+rPSF5YJ7/TlK7/KBJXzqCisHgQVjRHqPt/OPG1u7/VseAyu9izA54Aan76/mvERgoTelCypYVrIzetJ208HsgSX1KSspXGUnv+/aTz7oXnK8e+p+zZ98K6oNxnrmhXyNmDRFl2K50NjrG8qyGHeFlYzAgjGddemdu25s7Z7HwOqMu08OuP5pPyWw0MukX9eX/9JTNentgZYb6PNVj9zlXnaie8aBjcM3bW36nnCoFNX6o1pfOht7bwZWu1pql/vsWy6Ttn4psn9rsCohsGDI2DUI5+4bwz2/msPAisbWI/NO3Ve+NJvAQo9R6VlkK6VHczstabvuc0/51/4pOHVf/7c7N/Yfam7+vlZ6HjeqFKLOYoLppfPMd8+J2utrg62DN5JCSOEKAgsrF4EFMzrzYCUP7LtvbO35HzkMrLgz4rVS9H//YzV7VuavGDImRyd/skYHJzX0nAWdUz4qsPTpWDf5pTU6/4hvS1+PCpe+1VmeLw10nTJ255edu2jf4j/aCaD0FjZvKZ0nE6STJqR/oPO3pf/F9Hc8S7kpL31i6cxVKrD1fOv6wp9lu8INrKAl3Iac97L9j2uCPx/mHb1D8/DNwgPK8Q6fag9PjocKermYdNVzfcqq0lnYYHSRvsx3T5PSE9VRtS/9OeA8/lDd9oXVzH6TwyqGwIIZnbkK9edQElg//HoOAys98uq7CBsn7aVmv8gZrFWclf7srPgr7KDuNoUeq+SmvzM6r5sl0vzqTMIpOkHmJn9GKU1Py5lEWKdy0uTSw6j1L9+M6vx5y+1Ip0tI/qP67xHCsSxbWL7+b+k/lvzSsXRgBZbdqDtN/ST9lgiaI8lPO3DmzHUfvsu54QLv7MOCY3cNjty68YstG4fNbO719WiL90a1Qnv9Qrucyz1xIsVVfdtgZ/SVd+Kedd3QgViG/AXMIrBgThcElp4HKzjhh/LFFwSBtWrrnLtKHqh0BQJpN23hi04Dpd0jk5ZSQd1pJU2jTw41kgdN4TSECOy6oxZa8qW54oVn1VMPqScfVI/dqx65y3ngdvuB297M/akH7rQfvMt56O7kZ/LYuf8274FbnPv+Ju+6Tt5+tX3rlc7fLvKuPtO/7CTvvKO9Mw4JTvxx4zc7+kdu5h08o/Hz4ebPasHPhhsH1lo/XT/c6z/Cnf61tdn74mkD7al9cXm1qLp6nE6tqU9Q1Uqj56sy3/VWZmClCzbEtWJzq4+6zz2ennFsaFlvcljVEFgwQ3SuayjPvuem1o++kdfA0mew/ON2ly88R2Ct0pJtVU9k4Nf1RTd992s9aI00Asvx7JfmePfdEfz17MbpBzZ/tWVwYLnxv//V/NG3W3t9p/Gjbzd/9K3kcXOvbzZ/9PXmj/6juefXGnv+e2OPf2/u/pVwty+Hu37xrXypldjty63dvtLa/Sv6p3785cbuX2rs9sXGLp9v7Pyv4U6fC3f4dLjdx8JtPhht9b5ws/dEG70rnr52XJscVUpxuRgl8TQ0Ka6sFlf72tXJ7fJAWC20p/XpZWH0rbL97fJge6igrwbWOvPrZr3frVzJPh7WBuLygPrrH4XlpGcfvbrD/o6VjcCCGWJsrh3n3r+He387j4GVjjVJPqIax+4sX3iWwOo9net9cmzaW0s2hL6u5ynp1/X/FEhbL0JnW8nHbVM2wuT31eMPeZf/vnHU1s19/ifY69tJQrV++I3Wrl8Jf/CpcPP3xzPXiocH0hNCBZ0sHeVUpdAZHh5Xly9i4tej7+Z75e8pjf3+2DCpdDR6Z6bcsb+h2K525lYopRt2sV0rjv4BrdQee2LZ73crRVQtRtWkKSe1R5tyoHHoxiNznkgvDnrp/Tfs71jZCCyYMRZYvnPvLa29v5PXwColmsfsqJ5/hsDqYdboBunV9cAmT4mGFJ7lBKrRcp59yr/guOZ+3w13/EJjl8+FP/hEuMWHo+lr64tK5dGpaJdOn+y3WyyDtHR1mIZJYNUGWtMH7IfusEckUzMgQwQWzHglsO67pfXjHAdW8tX2tz+Qzz9NYPWo0fnKk8eq7krLl35LzX/RP/eo1h5fa23+oWjrf4k3fEc8bY14qBSvPzkuT4qrfZ3b69pEVfeqFcbKuNhab5J7+UlJXQnhMDUDMkRgwYxOXSXc+24Jf/Kf+QwsfemkOhD8ehv53FMEVg8amz1BKrceNKw5L9i//0lzh883t/pwuOm7wuHBuJaYpCcun1pqVwbaQ8lPPc1mVOnLfvvEuBTj4eQbVKE5VAx++n359BN14SnH5WZhZIjAgiGdwFKB++AdzX3+J+uj7euI9L1FfXGt2PrFZvLZJwisLpZOEGUppUcuC1vPraBa+jdloJzAUtK76pRw5y9GM9aOpq+RzqW59CW/dF7NV4YrFceGNGW/iWKFReVCXOuLhwdb06c4t14uR89deQQWMkRgwRA5Ojui88hdzf3Xz/yA+zqH4ORztKZnIGweOF09/SiB1b1EOgGVUg2hgoaMLdGo246lPHvBnMYp+6Y31hXbtYGxNz37bQ8TrlaKE9+f5F57lhyxMt9EAUlgwZjO3IzKU4/f1zhoWvYH3NdI7zPSS+U0f/Lf9hMPsPJr99JbmtWU0nXsZl1a1mJbznoiOP6H8fqFsDoQJh+0lb5Ix3RRz1PQ00vBYFQlea8H/WN3Vi8+MzbTPZAxAgtmiCWB9fTDjSM26dy+nv1hdylxtaDPZ1RKzV2/Yj96T/qcxxY5yfrVw7JJp2BIb7lf7NiWCoRYLObNic46IhoqhrU1onISWOn8BeWCnhRqbBqFzLc9TJCl7vcsRNt92rnnpmSr0JsKOzVygMCCGa9MQfTCU96vt06Xks3++Ls0ffqqlt7Ivd3H1aP/UNK3BIHVTWzbVaop0rVlVBJbLz1v3355vPG7M9+0kAl9d0JtIKpNDiv9rZnreNf8UVmqbtudBSUz31wBAgtmvHJv/OwXgmN2isq5C6x0OsdiXClFG73fefgOmQaWILC6h5JNYTl23R2Rjrj/5tbPpsbr/d+wtnrmmxYyEVULYa0vrPbpurroGHvhYqlH47nMKYqcILBgyuhcyWrunOCEH8ZDfbm7NFMZHYYVzniH8+BtcnR2bwKra4woV0olnn0quPXyYP1JcXUgHupvT2WGhVWUXpihOhhusLb/ux3Vs0/opbLtzrKDPo2FPCCwYEgaKwm1YH5w8j5R/gIrHY7TWQF3DffevymVrvUrGa6Ra0IFncWYk03LFo564Obo8M2blf/brg0mG1irUmyXJ2W+aWHlGZ0uOF1HqFaMpk9u/nQ9+96bpfCUbNiqUR+bxz/zTRcgsGBIOsg9SRaxeJF/2gFJYKWXCIvt3MwwlNZVKb2RcLJ725WWlJa+1T/r1w1vSsimEg1LOmLRiH/LleG0tcPpb2sPr5b55oRMpKtdDXZm34hqA809/k3efLGlNxVORSN3CCwYIsdmaqgL/08Hp2ewinm7Qz69ppA8pX73yj9YI4uFcjs3P2b/6uENCMupy4b17GP+tadG5TXial9Y69c3CWa9LSET8eiizsk3pVJrm4/afz2tLm19vopT0cgfAgtmiLGJRqVwvXN/GXWux1UKOQqsSkk/Kz2pd7Fx0p5yzmwp3eTDm8DKp84V53ryJt1/W3DcntEGa4a1UlTrb1WL7XL+FmLCylHpfE0qtbb+uHfx8XpOUemp9G4VLgsibwgsmKEn99OfiH5ysPMuOS6esdbogKfMj8ivOjR31kXpb+7zX+qFJ5X0LNEksPJGiUCpIPngtLyGc+uljX2+F89YOx7uTwKrXRsIhwbaFcZdrUoqnZ03ncdOf23rCzf/gHPu0dbCRUroUXr6VDSTiyJ/CCwYI0aXfPbcq/8Ybf7+dCrt5ICYo5MNSy5Zhlt/RD73iJ08YcEZrFwQYzdJ6MHslh6trNxA3nZZc/cvR7WBHGU6Vr7RCWOLYbUQVkvhpu8L/rCvemmWsLksiFwjsGCec8vl4S6fj2rpgKfMj85jlh4QFk1by37yIWkHjMHKiSV1pX8pPGU3vBvPbezwqTBdqjnzjQcZitMh7XE6V3Bzk3d7p/xEznrWkb5S7LzINQIL5tkP3N7a53vpAVF/78z8AD16mF46sKoD3h3XSMu2ZMAxOidGVwLQg2lc+7qzWtt/koVu0B5bDCcaKiZ15Z74Y/XcU+mZcleK7Dda4E0QWDBPPfN487CN44peGC7KTWC96pBdGWiccZB4ea6w+BKcD8m7IAJp+bbjuTec1dj5c3rL4dzVKiws9+kbU/TjQlwthBuuGxy7u3zmMalXuEq+F7mj5zuBvCKwYJ56eU7wmx3joc7iytkfqV8rrg6Ge39bPfukEB6H6TzQo5Wlb9kN57pzWjt8ihNXCPWK3QNReZIebDBjbfv0/eQzTyk9pJ0dFt2BwIJ5YvHi4IS94qF0ToT8TNOwFL1mzobvkk8/lM5PyPE6B5J3wfbsmy4Idvps8oGa+RaCzMWVUpiO42xV1vTOOlzOeqEuHOoKXYTAwgSw7OC0n+ml4tKpsDI/Ur/Osbuq7/lXd/7VrtsEVh7UHV/ddnm41zfC4YG8LROObFRKUa2vVV5DXHSM/dKLsu4K6SgCC92DwMIEkJ534THhxut2phvN/kj9OgphpRAcu4ect4A7vTPcTqRwlfBt4bn/uDr88TfjaVPCcn+Uy8vKWAniaikuT0r2zbhcjKqD7fVXUzedLxcuGF3qlLpCVyGwYJ5QvnvTheEuX0hnasjjGazOBF3+dp+Qc15kfsIMtxPLbkkZuA/d0zpkk3h4UE/9n6c7T7GSxdVCXOkPK6WwWvRrk9UDN4sRpUQgSSt0IQIL5iUfnPYjdzX3Xy9dNSyPgZXe+F0Kh6eoZx7nEmGmPPni894Zh0Uz3xHp2077x9YIz34jwcoX1wrNcn9ULjW3+5R44BZpNYRlL1JW1lspsCIILEyAJFlemhUcsVlc7svp7WCVYqgnhh5onHGIHBHZv2KrJL2w0gLRuPj4aOZaYWVS+o50lrAksFZRYaUUTV3dO2wj6/lnXFuNOL6wlFVvcQYL3YjAwkTw5Eg9OHrHaKiQz8DS68VWBqPqYLjVh23LWmzbMvmwZzDWSqFsXyjXVbIuXfvvlzfLk4NaKa5MjjsrzRFYq5i4mnwNmxRXC1G1FH9/knvOUfZLs+pSXxYUo1P8+wQWuhGBhQmQDl4OTts33mCtXK1FuNQxvdjSE7sPxpWSeOFxR7lK36PkZv/S9brkw3JENGy7KZymff+t0bR1ks/XaLgYlbPfKpCJaLikh14ND8a1Kc4dly9eNFK3/XS17+w3V2A8CCyY17nZx7/qjGjHf23nMrDa1WJUK7aG+1q1/uCXW9cXW3XHt6zsX7qel2wbwnWU47j33x5t94lwxpTRFcGnDWS9SSArA/FQsbX3d+TTjyjXlYubSvl1O+SeQXQ7AgsTQK8UFtiP3N/4WW3pFQDzI/lQT4f7DIS1Yjy8lpo3R4qGVJzBmshNQn9e6kVO/JHQf/YR99ANolopnpZeExwqtIf6Mt8qMKHiUWNHg3QOl7hWimpruuf91pr7kiMaruUp5dUdRyglVZD9dguMA4GFCSADKV2xYG5w1Lbx1L4cBtbSokqfc+7RUjgc0CeOki2pHOm60mkF863G+b+Oa31xLdcbBszSCzbreVuSki6l8131hTPXbuzxVe/WK5Te+7LfSgGzCCyYJzoL9wrX+/3e0fBg5kf2tzruD0Qbvc9yfKEamb90PcsO6o7eJKTwvHuvj9ZfLSoX8rkQOCZInC79rq8I1/S4q9ZG7wpO2Fs9/7iVDmaXo+PZuSyI3kFgwbw0sPTFIO/Kk6NtP5LPGwmX6My95N94sV3n4D5xm4Rr1xs6sB64IZpaaFX6wuGBdi2f4/MwIfT1wdpAVBkIN3l38yf/bd90vpC2re8WDMY2EgILPYXAwoSRnv3oPc3//e/OMKxU9kf511Eu6BmYtviAsCz9TTodQMb07uPXGaTcWeFESMezI/vp+6NtP6XHvZX7oqG+diXvZzexgirpjYGvzLuhF33XC4BusE5zly95Zxwk58wWtmslO5rwiSr0KgILE0DqMxZC2WrB/MahG4VlvfBfmNfASg79UU1/2NvXn23ZgUqevGhakvFY41W3PaWaQrgjemy7pxbbzm+3iarcLbgKqJRatb5oWn+kd640sGr9ra0/HByxmXPP35XdUKOzWwG9jMCCeVa6Wk66Pqvrn7R3NPNtcWfsRS7H3KRPbFJcHWht8wk1b64U3ojtJFmQ+cvY7YQIpGwK260LTyrXuez38dBq0fTs33FMuOHVm9XJyfeWuKKnkA03f1/j4JnulacI6QjZEHqaK5clqtDzCCyYl15f65wB8pwbL2ru9Bk9TXNytM1lYLX1+rLptFgz1vRP+7m+nTAdQJb5y9jthJ4r0pOWp5KfN54Tr7d6PNwXlbks2Pvi4UK7PBCVi+Fm/9I4bEP3vKPlosWd2djr0rNsrsJjlUBgYQLIjuST1VcvPNP48X/GlUKY28CqFfV1q3I6Jc/GH5CP3SNEoJIPADk6hCj717M7CScQlmNJXzzyj2jGOnFtUvK5G1byuPg3VszYukZFPalVpZAOtEqHXpX74g3WaRy0oXfGQfbcOcL20muCejSepVxhO0L6BBZ6HoGFCWbJ4IjN42lrhLlfY04Pwh2e4h2+2ciIrIvR509gLa8l94Lp2+8ttz57trfvepm/uTClM1y98ziqTBr91lQppo/746HVw83e6/9qu+afDhFzX6yrgLFWWGURWJhw3mW/j7b9ZFzOf2AVw1oh2mhd58o/1F1uHV9Br7xiwreF7Z/w46g2OfM3F6Z0Amv0vuByf1zT9wlGlVI0tS/c5YvBiXt6lxwvFix0HX0Ouy4bnKnCKovAwgSTvnrykcbe/xnpawc5D6z+qFqKagPNPb5sP3ZX5/kTWCtg7EXzgktPiDZ4e8iM7T2ns+5Nu6yvBkbTBoJ9v+v94X/dG8+xFi20lGvXA+E46UBGbhbBqovAwgRLDrIjIjhy82j6YN4Dq9Kvv4jX+sMN124dtbW9qK5EYOlRI1m/ht3DFq5QnlK+sj3/suNam31AnxfM+p3FCki/b+i519O5rArpz/70a1L6uFKIyv3N7T/ZPH4378JjnQduFXWh7xhNLw0rq2HZvqXnaiGwsOoisDDB0lV+nb+e1trmYzmf0n1sXer0g2ST93p/PnLEbQjlWJKF0paVkkmSBsmb7t59Q3Onz4Z61bn+nF8axtKWvFlpTg1GegHBQljtC5OiqujACodWb2363savtvEuPVHddpWcPStde7TBuHXgnxBYmFhCesk3WvnCk63dv9otH7R6XsRqqbn9Z+wbzxEqILCWnWW7+j78Wc8Fh28WTV8z50mN11pq3YX0+0atFNeKYbkvWn9SvPF7mkdu4Vz8G3XjueqpR4SlFqsgneRMpxUX04F/QmBhgun5GhpS2P4vt45nvC3zz49l/ZhJvrgPD7b2+U/3H9cqi8scy0r3tCW8k34cbrR2XHvVHWfoClFnfFW5GJcL8fp97fJguMuXndN/7l5/nnf71eqZJ4RlW8kerXdqb0T6ddFQ+lZBj8AC/gmBhQkmR2c6cG67Mtz6Q517CTsH8cw/S97E6DJq09/WPGyaevpRKVzVWf+Hj5DX0ONsHM+RTak84fr+H/aPNnp3WO6PX7nqmv0bakA5/YfUCpHehkvt6jJ6k7+z0B6bu0SvhpmOUHzVK1bRa850/p70gl1KZ2v6+5Ulf4n+e9p6DaLkQZ+e1LeargaYrgAYVTsTj+lr3+nfUEyHQurfHN0N078qrg6kj/vi762m5ytahSMeAAAgAElEQVTZ4TPBaT9zbrnCu/sG55F7xNyX5ei0cMk7nuRU0JnoTl8WTGdhoK6A1yKwMLGE8uvK01fZFsxr7fxFPRthdVJ66M/68/JNdW6SioYK4cy1Gifubb88ry7c+tjHCV5Fj7tq6rHttudd9Ntw8w+ElUJDf8z3SlqlompfmJRHrRQNL+PXg9LY/zEdw/QakVZI9b/y+5VU5w/oqTtH95Q4TatROpX0YPNI/8nVkz8ZV/ra+nJevy42/WdKcW0gLpfioSSzBjpdlcZcKaoMhNWBKPlfk1+WJ8XfWz1eb3W9XOCOn24cta1/6cn2ndeo+25yHvqHmj1Lr2qgmG4XWEEEFiaWpQK9NKEM6sp1T9432nTd5Otyq9YVZ7D6k0+4Znkg2nBd/4zD5IgU0rH4pHkN/ebqxnK9q//U3OlLYWVy8oEdDeW9oZd7kygn/6K+uDYlrq2ZREy7VnxThVSxPdyZNar0OvR5qYExpVeM/YGoWgqHi9FwMf2ZNlNtUP/hmp5MJKmosFpqVQcTOpgSw1Patcnpf64QlVeLh1aL11tNn5H6n9Xj767e/n5fWJvS2vwDrd2/Ghy5pXvukc6N5zn3/915/C7/8fvkUw9bLz0tFy+wlSvSda7qMl0ukA0eWFEEFiaY9K30xI9Ok2cfafzgk8lHSFgr5n7KhmJSV+E0fZ0lKhfCDd/V+OPBjnCVYo3Cf6ZUw1V+cNtlzZ98K5yefNIX0krQy6dk/j6aNNwfDfc3tvlAY9ePhTt/Ntz5c29hp89GO36mtf0nw+0+EW338deKt/1IuPUHw60+qH9u97FI/7GO9A/84OPRDp9spf+h1i6fb+72lebuX2v98Jvh3t8O9v2uv//U4MBa85ANGr/cIvjN9v6Jewan7ev9+Rfehb91/3Kye+M59u1Xu/f93Xn0XvnMI/VZj1uznhSznpaznxOznpMvPi/nzrIXLFQjUilH2a4thZ18EbJ8O/lGlLSy3Vjsuoslc+0C40JgYYKldZXyLMtp/ny4OWONuLp6/gNrbIB2Mb2psD/e6F3++cfYUklljyhX6QWhs35tsyNkMKKCuu1LEY6opvvIg9FBM+LppSUTJqXvb67f4uUV1QpRreicf4R65jE16/llZL8xZ/ZzzqznnBf1T/XiK5b+M0v9VS8k7NmJF9XsF+VLs+RLs9Wcl9TcOXLuXPnyy3LefDl/oVywSC4akYvqsi6lpaRw9MBB5aV8MXa73+ipqXQKFe2V8VV+Z7aFzp8fe68JLGBFEFhYeZLvx+qem6JN3tOslXJ+ifDVsVWKK4PhcCmcubZ34a/rQkjhO3pB6Oxf0qykH7rpY0fac54Njtk+rJaiyuR2tWdXxdGDpZLAuuIEleRLBsExVkVLHrw5tbTsNxhgFURgYeWpy0AJ2fzBp5NY6aLA0oOUh/v0mOXy5Kg86J32c7VwvqUCsQpfLtRnOBzbFkLNfdk7Zb+4snq7Oim9Jvjm9811sVcHVvZvAYCcI7Cw8ugRHsp3rzy1OX1yF929ry8R6mmBinGt0B5OYmvAP3l/Ofd5oVblCUgbdRUuXmj5px4Yf2/19Ia4gais72vL/P0isADkAYGFlUh/LNly0WJ/43Wj2mpxeUo8PCke6qZzHnF5MC7rkmgdPNN+4iFbekIFjtVKJ3zv8WsxesYN25e2VxfCEtKZN69x5iHRerquMn9fVgICC8ByIbCw8ljKlbJpqUbzrMOjaevE5T59u1mta05ltUcHv/fFw8V4aPVoh885d10trboUgZC9P11QZ0ozIZRdd+Wsl/yzj4zW72tVi2G5kPn7shIQWACWC4GFlUqpQK9Vt3BeuMUHx24366aP53RayM40RYWw0h/OXMu79hw56wW1CkzyLnQie8Ky5XNP+6fsF0+dFJcLnRmYMn9fVtJbT2ABWGYEFlYyVzqBLRr+mYfFQ4VWbVJY66rA0rOkFkO9XMlAVNZTvSeZaJ+6n3zoLlu6lp75Wo98F+mtXmLCX8yVRP9DOjemWcp+9N7g9z+JhydFw8VWtdTSU25m/76sjLeewAKwPAgsZEBIz14wT69Yp+uqW89/jK61p6ur2Nz+s96d14i5c4QKbNkYUZ4tXD1iKeuXeoXfoCUn5GzpC6chLde2LHXnNcGBw/HUQneddzSCwAKwXAgsZEMo1z/nyHRpwm4a5L60V69kXIyqkxtnHWLdc51SgbBtW3TxPA6dwOpQSQ27vpw/4l19emu7T+qFgSt9UaVbs3iFEVgAlguBhWzoe+4WzA+3/HDUExeY4sokvXjccH+w/RedW65wXnhc2XrEUuav8/jZjhc89rB7+UlRbaBVG2zr9fj05KuZv+YrGYEFYLkQWMiGpRyhGs5Fx4d6wPjoaPcumn30n3TuLmzXilE5+edMbh69k/u3i+sL5wnbV8JJBzAFetWgTnLl8uNZKb+zfIqVnl/US6YIV9SFe93ZwSHT46nJv66vXSm0h/va5f52eZWYmmFpBBaA5UJgIRuOdIVoqHlzWnt+I66UQr3kXxcH1tLicjEanhJt+F7vj/s5t1yiFi3QN9/JQMiGngBdji76ljdJYFnCVbJRl55K0irJ39v/6p19eDRtjeRflPmrmjkCC8ByIbCQEREkn+iO5Tp/uySsDUZJXelTWdl/jhr4JC73RcMDUbkYD09u7fR59+wj5Z3XiBGZNJYenqU8PR9Y5q//a4jkuUlHCX0ey3/8Uffy34c/+kbUVbOUTezbSmABWB4EFrJh6QHgnlANsWhhcOhGelqparGL1s95s0/iSnqDYa2QVKNWW6O5+1f90w9x/n6FrAth+yKXk2bptatdz37iweCiY4NDNwxrU+LqQLRqzHG1TG8rgQVgeRBYyIxQjs4s6Tr3/z3c7L0tvZhd9p+j46cHgFf627X0oqcem5WO0Bpeo7nrl/zj93Sv+7N8+aU0s9LBWHJ0SJbojH+SnrB1exlZeMdKpf8JPS9X+monj109AC55IDrzdbkiHXTlPHyb96fDmgdOizZ6d5Q84aG+dnWweyfRMI7AArBcCCxkTF8yW7AgOGWfaGqxNwLrdSWZFSWmDbZ2+Xzw6+3c845WTz6cTkbqWcJTdpI7Ses0hfAsO/nNppHA6oz3SunAkknVCb8uXD0mTAWWcIUTyPoi55ZLg1P3bR7wvXDDdyRvQfyqKRh64ZyiEQQWgOVCYCFryQe/cO0nHmj96JthT0zZ8LriSjG9XFjUkk/rTd7b3Hf94Ogd5KUnyFnP2m5DSc8V+sSVpRpCNpa8PuO5mPjKgHp9S6Aj7EAIt27ZVvJAOer+W7zTf944ctPWrl+Kp63RHupLEjDUz1BPT5/5K5Y3BBaA5UJgIXvKDuQiy7n+3Cj5mM/6c3SipFNRJAXZqk3SF+Cqg1G5FNYGm1t/JNjne41DN3ZPP8h96F7bceuNqK6v4qWXCztnnlb0hRWjCwhqdduTnj8ysti+6YLGsbs2Dpre2vPr0Ubv1DPRV0t6dompxXSlxUKYXtbM/hXLGQILwHIhsJAxvc6d7duWo2a/GPxuV726n76dMB3GlPVnqnFpzaQDs/SK0elY+NFB8QPhpu9r7vWt1oHDwS82dc482L7nJjX/ZeH9//buPUiyqzDscAXtdM/sypFWioNd2I6BOC4npgLYVXmRP0ilkHbn0aPVChAIJEyiIOFQjpBskA2kLChjFzbYwo4QoJinKZmEYFvIPFwQEJQtQ7BsEqwtvSyhfW/3ffS7772Te3tmVyKIiDaH7Z6er+qrrq7d2Z2eO3+cX91z7jmjuDeM0kErHsTR+EZUtUC+U00snjnNJj59UGDcLlXTf1G7+qv24FR/FKfD5JGH08/e3r/lNcObXtz/pZXhtc8uLrsg33pms7515Hb5GVYWi/FzBuNFY9O/VrNGYAETEVhM2eaJyEnca0Vp+8ufH17znGJ9Kz6mPqaeVVXZ7MqW9xRr5+YveWp2zXMG1z1veMNFw19c6/3aFb3ffUPnjz/U/uoXowcPxUeORK1Oqz1sdQatTvUapcOomaaPfiM99LX23Z/s3PGe/q039m968eD1+4bX/9vhdc8b/bsfLw5emK/tGa3V861tXTe/b90qq++QwAImIrCYCUncT6Nuq3m0+99/K1stB7PdxQ487W7/Yra2lDd2jecTSwvVnqWNc/MD52WX/2B+5TPzV/7j7OpnZdc8O7v2uaNrf2p07U9nr/7p8k12Tem52auePbz6WfnPPCO/8oezF/9A0Siv4UKx9V/tysv/reqqpfnYC2MKvx2BBUxCYDFlUdxtxt1WPIjSbhIN0gcO9d75mmKlVjR23Gl32drmKvhqhm683n9h8zDssrrKWiqjc1R+2da8Xm0cT7UqxVZq42ZaGsdTGVV7xlevlm/NQi6V/zBfXRqNY2tj2x6tPXUCC5iIwGLKovFaomh8Tl8Sd9NWnH75s8P/9C+yRj2rkqLsg9pGZfpD7Pda8fgVUWvVpOHG46bzHjdtOp7XG//txuaXnZnmGy+fGofU1j/csrkXl3tX3wWBBUxEYDE7uuNH3oZR1On8wa3FJedV5+es1bJGObZNf3xlhxNYwEQEFrMk7iVRL4278dFHe7dcn++vF+PFWNVDhdMeX9nhBBYwEYHFDGnFvWbZWOmwmQyir3+5/5YXZadXZ099fGWHE1jARAQWM6oZt5PPfTS75tn5+p7C0mymTWABExFYzKq412p1Oh/61fzgXie3MHUCC5iIwGJGRXE/ibvR8aPdm3+uuOS8zUfhpj7KsmMJLGAiAosZFSXdKB6UmRU/cO/gV67ID+wd71NQtx6LqRBYwEQEFrNq85zjuJskvd6ff270i8vF+t/NxptFTX2sZQcSWMBEBBaz6/QepNWRxp1Pf3j0qp/K13cLLKZCYAETEVjMrjN1FaW9OGq3P/r27KqnmyJkKgQWMBGBxTYQJd1W3G9FSf99N+Uv+aEz58lsWPbO2SKwgIkILLaBagPSas17LzlxrP+uG4oXXlidYby65LlCzhqBBUxEYLEdxNWa9yjuR3E3OXJ4+NvX55fuzRq7TRdy1ggsYCICi+0g7sfVTaxOEveipJc8+o3eza/NDl7oDhZnjcACJiKw2C76rWS8cUMyKN8kD97fv/lni8aebK1eDntTH32ZewILmIjAYruJy9LqJUk3fejB3s2vzvbX8vVa1nBYId9bAguYiMBim2nFpX4cd1vxIH7ovt5/uSHft5A39kx9AGa+CSxgIgKL7SbuRVEvarWjpJtG/fTh+7q3vCHfb5aQ7y2BBUxEYLHdbD1R2I2Taj1WHPfbjzzS/8Cbh8u16rDC1YV8balYrZemPiQzTwQWMBGBxTbWTPpxPGimnfjw4e7vv220fM5ofWG0ulBtQzrt8Zg5I7CAiQgstrEoTlpxN47aSdLpHH44/oPfzle/Lx/XlTtYhCWwgIkILLaxJBo2k16nNao2boj70YkTvU9+cPSip1VThNMej5kzAguYiMBiOxvvOzp+7W6uzYpPRe3Pf3x4zT8tlmv56sKosasox8W1esk9Lb4bAguYiMBivowbK/nK5/tvWM/31Ueri8NGLV9ZyNcW8kZt6oM025fAAiYisJg75eDX6iQPHOr+5rXZci1bXcxW6/nqbnew+G4ILGAiAot5EyX9Zjo4mSTt4yeHt78jb+wplutZadojNNuawAImIrCYY90o6qSf+sjwlT+RrdWzRr2oTtRZ2Firbay5m8VkBBYwEYHFPIuidtxM06/9af/NlxWX7C7Wdg/W61m1Den0B2y2F4EFTERgMdeifhQPWmkvOnGs+55fGL30h/KVpXy1VriDxYQEFjARgcU8i5JOnKRRXL720qTX+eQHBq/+Z9n69423eq+Pt8sqS6t6lVxn39ZlX928/ovjk44WN381U/9s30pgARMRWMy5aGz8vp9Enfb99w5+9RWDl/9ofslScXporyYNqxVa0x/Fd5R8rZ6t7SpWa+XFzw+cm13x9OzyH8kb1Z9P/bM90acVWMAEBBY7RSvtNdNhUq3Kirofu6X/2ufnB/aWUTVa3zNaWSzWdufTHsJ3jmJLvVhZyFfq+eU/OHz9vvbnbu+++8b84tpsrpATWMBEBBY7RtpNkn6rVZ1dGMft6KH7+u+4JrvmOcPGnny9VqwslSP91EfxHaK6dzh+1CC/5Pzhtc/p3vZLrYcfPNUZtn/3jcVFu4qZ/EUILGAiAoudItk8rzAaRHH1vlX+Yavd+/SHhzdeml3+9/Pl2qixtHVnZbwYaOoj+jwp1mobq1vXNm+MX9d3Z1f8g8GvvKxz1x9GSaeZ9lvdQfe/vjHfd06xOot77gssYCICi53icYuxvkly/PDgPW8cvO4Fm12Vre0u1pby6v0s3kfZpvK1XRsri1mjWvc2Wq9nB7+/f9PBzu+/PTnZrH418fgoyc6wd9t/LvYtWOQOzAGBxU7XSvtx0m7d+9XBb/6Hwc/983z/YjmO5utn7mbN4mC/7WQrCxvL9equ1fp5/Rsv6r7/l9sP3BdVD3h2463A6m4G1sa+XbO5DazAAiYisNjpWukwjfrVza2TrfR/fmzwa1flr/yxYkVghTRaqxUXLWSvfV73ltelX/5CnPaSOG1F7c1fgcAC5o/AYqdrJYMk7lfLs6rXXnL8aPeO24a//u/zK3+0WK4Va5u7OSyNV2XVH9tAS3g9sVoZIkX1ulg0FsbrrmrFcj1/zb/q3Pq6/hfvjOJ2spmzcaeVtB/7RZyeIhRYwHwQWFDqnnmfVAfspO1HHup+4n39X3/V6Kp/OFquZWt7itUz+2Zt7Z419SF/Bo3Tale1r1WjvETnjJYXhtf9y/773px+4TPNOEqjXisebF7w/3dJnMAC5ovAgm8R95K4m7Q60X1/3bnjvf23Xz162TOK/YvVXZnV2tYWA9Me72fN1mVZWRwHVnWtRq+7qPO+N6Z3fTxutk5Fg2aUxkl/vLf+E19zgQXME4EFT2S8KqgVd6JmK3no3vaffKR/6+uzq5+Vr9S2TnQxS3haccZqPd9fz9fPy256Yeejv9W+50utU8ejuNOKOs2k14zbSTxqCixgZxBY8IS642msbhSXOtXKocOPdv7sM/2PvC27/vlFNWO4uf69vrneKK8mEJeyaUfA91b1Iy+NDxSqj7tqIR9XZra2VKwtbSwvZFc+s/+uX+j+ye3tQ38VlxFSplV56ZJ+dQ2rCcGyWfutb3fBBRYwXwQWPInxiuxKFHWiI0eTv/hi9873j95yRXbggmKlXlndfOSwfF3I5nqH0vLHzBtlUO4uVnePf+pavlzPGnsGP/9vurf/RueLdyZ/82AUpdHmmrbxRfvmi9n9ttdZYAHzRWDBkxvfx+pu7SaQ9JrNJL3/UHr3p3u3v230qp/MlmtFtTv5Ul4GVqM+t5s7rC4WK3vKyMjKH3Clnu9byF7xzMG7b+zc9Yfp1/8iOX4iLgP09IXaulzf+UUWWMB8EVjwHTmTC0k8SKJqkVYUd+JjJ1qH/rJz92eyW2/ILn9qsW9X3lia1yXwWwfd7F8YveSp3d+5rrpfdeir0eHDUTS+RHG3vCxJ9NjlEljATiawYEKbM19VQPQqSXV6dPTo33T+958ld3+y/87/mL/w72UX7yqqI3fGt7VW6hsrm6u1FrO1er62OZ9Yq+baGrXisfF78exkWTH+Xvnpb1q9Wa1vrC5trO4uP+T4I9WrvazKP2zUxmcH1apqvPicwUuf1ntn2VV/1PnaV9JHHo5bSXURxivVTq9X+9Y5wUmuqsAC5ojAgiC6zbjbabXjI0eSh+7v3POFzoffOrj6n+T7zhntK9Pq3I3GnqKxJx/f3Coa9Uq1YeljXVWcxcA68702N6yqsq866Lr8SAvj193Zaq0Kwf21Yt9C7zXP7Xz05s7/+fPkgUPNwyfTZmdzufrW0rRxXW0urvp2pz1+RwQWMF8EFgRwogystDdehDSI0kESd+JmnBw7Gj18qHvXnYO3XlW86Afyi3flywvVE4gr544fOaxlm0GzOoWt4fO1za4a7wi6ud/6er16QnD/rmz/rvzKHxvcekN6z5eiIw+3TpxKT8RlOZ2KOyeqBwPTOO234m+z28LfmsAC5ovAggCaUT8tsyMdnIr6nerInWESD+K4m0ZlaTXj40fio4/GD/51+tmPtd/2M/0rfzjb95Ti4qdUu2p98y2ls6DYmo6sjx8JrOer5xQXnTO65Lz+df+698G3dO65K33kofjY8ej4qSRKmnEaRb20Ot8mG29X0WvG/TgeRlsbsocjsID5IrAgjOhxb06vTHr8rNljD9YlSTuKTiUPfr3/qfcP3/ry4qp/tLG8kL/gKdm+v1Os7ioatXx9aaOxe6O6rVXLxqf75Y3aRnXGX5lES9WkXmMhq5ZwLW4q1mpbUVLtU1WtoKpuUK0vZuu16tTq0vpSccnu6nV5oXjBU4qLdmWX7R3+/PP7v/cbna98qXXskVb5kU5/8q0FVY/bUuGb5/66/7/dFv7WBBYwXwQWnG1RdROoOvGwFXfGO5t3oiSNTx7tHzrU/uwdvQ++ZfDLl+Y/+5PZS5+WHdg7PLB3dMn5owPnjS49Pz+4Nz94YXbwwtFlF2aXXViUDo5ddkFx8ILs0r3Zwb3Fgb3FpRdkjfOz9b2jA+fnL/z+4St/on/jxf3fub7/ifen99ydHH44jltR2h0vUS+7avz03+kdKKZGYAHzRWDB2dZMuqVWNKgWbEW9OCp7q5/EnSRpJ1G7GSfNuN1Ky68s0ydJmifbJw/H37g/ufcv03u+1P7TO5PP/bfkUx9M73hv+kfvKrXveHfnjg90PnV7+wufaP+vu9pf/6v0wUPRkW+0ouPNKIrjTrUyLCk7rrrzVJ2xGHfa4y0V4qhbbbM+3ml98zNM87IILGC+CCw421pJ/9Tpo2PKoboV95rj6trayLTU6iXVaqfyK3vVcvLxlz2maqNqCVSUpKVWkoxXR3VbSbvVTpO0XdVU1UxbR9NESS+Ne+3yX6X9JN6cARyUWqfn/saB9V3ssBCEwALmi8CCOTbVWb+JCCxgvggsYAYILGC+CCxgBggsYL4ILGAGCCxgvggsYAYILGC+CCxgBggsYL4ILGAGCCxgvggsYAYILGC+CCxgBggsYL4ILGAGCCxgvggsYAYILGC+CCxgBggsYL4ILGAGCCxgvggsYAYILGC+CCxgBggsYL4ILGAGCCxgvggsYAYILGC+CCxgBggsYL4ILGAGCCxgvggsYAYILGC+CCxgBggsYL4ILGAGCCxgvggsYAYILGC+CCxgBggsYL4ILGAGCCxgvggsYAYILGC+CCxgBggsYL4ILGAGCCxgvggsYAYILGC+CCxgBggsYL4ILGAGCCxgvggsYAYILGC+CCxgBggsYL4ILGAGCCxgvggsYAYILGC+CCxgBggsYL4ILGAGCCxgvggsYAYILGC+CCxg+qK40+r0u7e9qbh4YWN1+jn1rbK1erG20Pkft6QnTsRxd+pXDJhxAguYDd1h971vyi9ayKvbRTOnWN1d3cH6+C3RiZORwAKejMACZkE76nY6t70p37e7WNtTNBZnTd4oA2tP+2O3pCePxonAAp6EwAJmQDSIklH3w+/Irnhm9opn5LNn9PKn91/2I4M//lD7eGwNFvCkBBYwA+JelPSjU1F89Fh8bCYdPRYdO56cSqoFWAILeDICCwAgMIEFABCYwAIACExgAQAEJrAAAAITWAAAgQksAIDABBYAQGACCwAgMIEFABCYwAIACExgAQAEJrAAAAITWAAAgQksAIDABBYAQGACCwAgMIEFABCYwAIACExgAQAEJrAAAAITWAAAgQksAIDABBYAQGACCwAgMIEFABCYwAIACExgAQAEJrAAAAITWAAAgQksAIDABBYAQGACCwAgMIEFABCYwAIACExgAQAEJrAAAAITWAAAgQksAIDABBYAQGACCwAgMIEFABCYwAIACExgAQAEJrAAAAITWAAAgQksAIDABBYAQGACCwAgMIEFABCYwAIACExgAQAEJrAAAAITWAAAgQksAIDABBYAQGACCwAgMIEFABCYwAIACExgAQAEJrAAAAITWAAAgQksAIDABBYAQGACCwAgMIEFABCYwAIACExgAQAEJrAAAAITWAAAgQksAIDABBYAQGACCwAgMIEFABCYwAIACExgAQAEJrAAAAITWAAAgQksAIDABBYAQGACCwAgMIEFABCYwAIACExgAQAEJrAAAAITWAAAgQksAIDABBYAQGACCwAgMIEFABCYwAIACExgAQAEJrAAAAITWAAAgQksAIDABBYAQGACCwAgMIEFABCYwAIACExgAQAEJrAAAAITWAAAgQksAIDABBYAQGACCwAgMIEFABCYwAIACExgAQAEJrAAAAITWAAAgQksAIDABBYAQGACCwAgMIEFABCYwAIACExgAQAEJrAAAAITWAAAgQksAIDABBYAQGACCwAgMIEFABCYwAIACExgAQAEJrAAAAITWAAAgQksAIDABBYAQGACCwAgMIEFABCYwAIACExgAQAEJrAAAAITWAAAgQksAIDABBYAQGACCwAgMIEFABCYwAIACExgAQAEJrAAAAITWAAAgQksAIDABBYAQGACCwAgMIEFABCYwAIACExgAQAEJrAAAAITWAAAgQksAIDABBYAQGACCwAgMIEFABCYwAIACExgAQAEJrAAAAITWAAAgQksAIDABBYAQGACCwAgMIEFABCYwAIACExgAQAEJrAAAAITWAAAgQksAIDABBYAQGACCwAgMIEFABCYwAIACExgAQAEJrAAAAITWAAAgQksAIDABBYAQGACCwAgMIEFABCYwAIACExgAQAEJrAAAAITWAAAgQksAIDABBYAQGACCwAgMIEFABCYwAIACExgAQAEJrAAAAITWAAAgQksAIDABDksY6AAAADcSURBVBYAQGACCwAgMIEFABCYwAIACExgAQAEJrAAAAITWAAAgQksAIDABBYAQGACCwAgMIEFABCYwAIACExgAQAEJrAAAAITWAAAgQksAIDABBYAQGACCwAgMIEFABCYwAIACExgAQAEJrAAAAITWAAAgQksAIDABBYAQGACCwAgMIEFABCYwAIACExgAQAEJrAAAAITWAAAgQksAIDABBYAQGACCwAgMIEFABCYwAIACExgAQAEJrAAAAITWAAAgQksAIDABBYAQGACCwAgMIEFABCYwAIACOz/AnKZLoc0YeDtAAAAAElFTkSuQmCC"></div>
+  </div>
+  <h1 class="doc-title">CONTRATO DE PRESTACIÓN DE SERVICIOS</h1>
+  <p class="doc-sub">+REFORMAS SYSTEM</p>
+  <div class="rule"></div>
+
+  <h3 class="big-title">REUNIDOS</h3>
+  <p>De una parte, D. Daniel von Zedlitz, con DNI 53856334V y domicilio a estos efectos en Viña del Mar 9, 28055 Madrid, actuando como empresario autónomo y representante legal de Closeup Marketing LLC (Registro nº 20246318759) y Closeup Marketing, S.L., en adelante <b>«LA AGENCIA»</b>.</p>
+  <p>De otra parte, <span class="sig-fill">[NOMBRE_COMPLETO_CLIENTE]</span>, con DNI/NIE <span class="sig-fill">[DNI_NIE_CLIENTE]</span>, actuando en representación de <span class="sig-fill">[NOMBRE_SOCIEDAD_CLIENTE]</span>, con CIF/NIF <span class="sig-fill">[CIF_CLIENTE]</span> y domicilio en <span class="sig-fill">[DIRECCION_CLIENTE]</span>, en adelante <b>«EL CLIENTE»</b>.</p>
+
+  <h3 class="big-title">ANTECEDENTES</h3>
+  <p>LA AGENCIA está especializada en la implantación de +Reformas System, un sistema de captación y optimización comercial para empresas de reformas que integra auditoría inicial, campañas publicitarias, cualificación, automatizaciones, CRM, seguimiento comercial y medición de resultados.</p>
+  <p>EL CLIENTE desarrolla su actividad en el sector de la reforma y está interesado en implantar +Reformas System para incrementar sus oportunidades comerciales y mejorar su proceso de conversión, contratando el presente servicio en el marco de su actividad empresarial o profesional.</p>
+
+  <h3 class="big-title">DEFINICIONES</h3>
+  <h4 class="sub">Definición de Presupuesto Computable</h4>
+  <p>A efectos de la garantía, se considerará <b>PRESUPUESTO COMPUTABLE</b> aquel generado a partir de una oportunidad de +Reformas System que cumpla los criterios acordados, haya sido elaborado y enviado al potencial cliente y quede correctamente registrado en el CRM.</p>
+  <p>Una vez enviado, el presupuesto computará aunque posteriormente el potencial cliente no responda, cambie de opinión, contrate a otra empresa, aplace la reforma o decida no ejecutarla. La garantía se refiere a presupuestos realizados y enviados, no a su aceptación.</p>
+</div>
+
+<!-- PÁGINA 2 -->
+<div class="page">
+  <div class="run-header"><span>Closeup Marketing · Contrato de prestación de servicios · +Reformas System</span><span>2</span></div>
+
+  <h3 class="big-title">CLÁUSULAS</h3>
+
+  <h4 class="clause-title"><span class="n">1.</span> Contenido de +Reformas System</h4>
+  <p>El servicio +Reformas System incluye:</p>
+  <ul>
+    <li>Auditoría comercial inicial: presencia digital, oferta y comunicación.</li>
+    <li>Diseño y gestión de campañas de captación, con la inversión publicitaria incluida.</li>
+    <li>Formularios, cualificación automatizada y atención por WhatsApp.</li>
+    <li>CRM, automatizaciones y seguimiento comercial de cada oportunidad.</li>
+    <li>Optimización comercial continua y medición de resultados.</li>
+  </ul>
+  <p>Las oportunidades generadas específicamente para EL CLIENTE no se cederán a otros clientes.</p>
+  <p>Las recomendaciones de LA AGENCIA sobre presupuestos, seguimiento y conversión tienen naturaleza comercial y de marketing. La valoración técnica de los trabajos, mediciones, precios finales, plazos de obra y compromisos propios del servicio de reformas corresponden exclusivamente a EL CLIENTE.</p>
+
+  <h4 class="guarantee-title"><span class="n">2.</span> Garantía +Reformas System</h4>
+  <div class="guarantee-rule"></div>
+  <p class="guarantee-line">15 presupuestos garantizados · 90 días</p>
+  <p class="guarantee-sub">Sujeto a las condiciones de colaboración establecidas en este contrato.</p>
+  <p>LA AGENCIA garantiza que, cumpliéndose las condiciones de colaboración de la Cláusula 3, +Reformas System permitirá alcanzar un mínimo de quince (15) presupuestos, conforme a la definición anterior, en el plazo de 90 días desde la activación efectiva de las campañas de captación.</p>
+  <p>El CRM es el sistema de referencia para verificar el estado de las oportunidades y el cumplimiento de esta garantía. EL CLIENTE tiene acceso a sus propios registros. Las actuaciones que no consten registradas y no puedan verificarse razonablemente podrán no computarse hasta que sean acreditadas o actualizadas.</p>
+  <p>Si, transcurridos los 90 días, EL CLIENTE ha cumplido la Cláusula 3 y no se ha alcanzado el mínimo de quince (15) presupuestos, LA AGENCIA continuará el servicio —incluida la inversión publicitaria necesaria— sin honorarios adicionales hasta completarlo.</p>
+
+  <h4 class="clause-title"><span class="n">3.</span> Condiciones de colaboración para mantener activa la garantía</h4>
+  <p>Para que la garantía de la Cláusula 2 se mantenga activa, EL CLIENTE se compromete a:</p>
+  <ul>
+    <li><b>Contacto.</b> Contactar cada oportunidad con prontitud razonable y, si no logra contacto inicial, realizar un mínimo de tres intentos en momentos distintos, siguiendo razonablemente la Guía Comercial de +Reformas System.</li>
+    <li><b>Visitas.</b> Mantener disponibilidad comercial suficiente y, cuando no pueda adaptarse a la fecha propuesta, ofrecer una alternativa próxima.</li>
+    <li><b>Presupuesto.</b> Elaborar y enviar el presupuesto en un plazo máximo de cinco (5) días hábiles tras la visita, salvo causa objetiva derivada de la complejidad del proyecto, que quedará registrada.</li>
+  </ul>
+</div>
+
+<!-- PÁGINA 3 -->
+<div class="page">
+  <div class="run-header"><span>Closeup Marketing · Contrato de prestación de servicios · +Reformas System</span><span>3</span></div>
+
+  <ul>
+    <li><b>Seguimiento.</b> Aplicar razonablemente la Guía Comercial y colaborar en el proceso de seguimiento de cada oportunidad.</li>
+    <li><b>CRM.</b> Mantener actualizado el estado de cada oportunidad, visita, presupuesto y resultado relevante.</li>
+    <li><b>Capacidad.</b> Mantener durante el periodo capacidad suficiente para atender las oportunidades, coordinar las visitas y prestar su servicio, disponiendo de los medios y personal necesarios. Asimismo, deberá mantener los criterios comerciales acordados al inicio; los cambios posteriores no afectarán a las oportunidades ya generadas conforme a dichos criterios.</li>
+  </ul>
+
+  <h4 class="clause-title"><span class="n">4.</span> Suspensión de la garantía</h4>
+  <p>Si LA AGENCIA detecta un incumplimiento relevante de la Cláusula 3, lo comunicará a EL CLIENTE y solicitará su corrección; si el incumplimiento persiste y afecta materialmente al sistema, la garantía quedará suspendida. También quedará suspendida cuando el servicio no pueda ejecutarse por causa imputable a EL CLIENTE, como impago, pausa voluntaria de las campañas, o falta prolongada de disponibilidad o de accesos necesarios.</p>
+
+  <h4 class="clause-title"><span class="n">5.</span> Precio, forma de pago y continuidad</h4>
+  <div class="price-block">
+    <div class="price-row"><span class="k">Precio del servicio</span><span class="v">2.997 € + IVA</span></div>
+    <div class="price-row"><span class="k">IVA (21%)</span><span class="v">629,37 €</span></div>
+    <div class="price-row total"><span class="k">Total</span><span class="v">3.626,37 €</span></div>
+    <div class="price-note">Periodo inicial: 90 días. Inversión publicitaria incluida.</div>
+    <div class="continuity-label">Continuidad</div>
+    <div class="price-row"><span class="k">A partir de los 15 presupuestos</span><span class="v">1.497 € + IVA / mes</span></div>
+  </div>
+  <p>La forma prioritaria de pago es transferencia bancaria: Banco Santander, IBAN <span style="white-space:nowrap;">ES05 0049 5175 7121 1653 9086</span>, titular Daniel Guillermo von Zedlitz / Closeup Marketing, concepto <span class="sig-fill">[NOMBRE_SOCIEDAD_CLIENTE]</span> +REFORMAS SYSTEM.</p>
+  <p>Una vez alcanzados los quince (15) presupuestos, se entenderá cumplida la garantía inicial y +Reformas System continuará mediante la tarifa mensual indicada. Esta continuidad podrá finalizarse por cualquiera de las partes con un preaviso de 10 días naturales antes de la siguiente mensualidad.</p>
+</div>
+
+<!-- PÁGINA 4 -->
+<div class="page">
+  <div class="run-header"><span>Closeup Marketing · Contrato de prestación de servicios · +Reformas System</span><span>4</span></div>
+
+  <h4 class="clause-title"><span class="n">6.</span> Duración y cancelación</h4>
+  <p>El periodo inicial del servicio será de hasta 90 días desde la activación efectiva de las campañas, durante los cuales LA AGENCIA desarrollará +Reformas System para alcanzar el objetivo acordado. Si EL CLIENTE decide desistir del servicio o deja de cumplir las obligaciones comerciales necesarias para su desarrollo, no tendrá derecho a la devolución de las cantidades abonadas.</p>
+
+  <h4 class="clause-title"><span class="n">7.</span> Confidencialidad</h4>
+  <p>Ambas partes mantendrán la confidencialidad de la información comercial, estratégica, operativa y de datos a la que tengan acceso, y no la revelarán a terceros salvo empleados o colaboradores autorizados, durante la vigencia del contrato y un año tras su resolución. La metodología, procesos, automatizaciones, guiones y demás elementos propios de +Reformas System son conocimiento exclusivo de LA AGENCIA.</p>
+
+  <h4 class="clause-title"><span class="n">8.</span> Protección de datos</h4>
+  <p>Ambas partes cumplirán el Reglamento (UE) 2016/679 (RGPD) y la LO 3/2018 (LOPDGDD). EL CLIENTE es responsable del tratamiento de los datos de sus potenciales clientes; LA AGENCIA podrá actuar como encargada del tratamiento cuando corresponda.</p>
+
+  <h4 class="clause-title"><span class="n">9.</span> Disposiciones generales</h4>
+  <p>Cualquier modificación de este contrato requerirá acuerdo por escrito. Las partes actuarán de buena fe y colaborarán razonablemente para aprovechar las oportunidades generadas. Si algún Juzgado o Tribunal declara la nulidad de alguna disposición, el resto del contrato conservará plena eficacia.</p>
+
+  <h4 class="clause-title"><span class="n">10.</span> Ley aplicable y jurisdicción</h4>
+  <p>Este contrato se rige por la legislación española. Las partes se someten a los Juzgados y Tribunales de Madrid.</p>
+
+  <h3 class="big-title">FIRMA DE LAS PARTES</h3>
+  <p>Las partes declaran haber leído y aceptado el contenido del presente contrato, firmándolo en la fecha indicada.</p>
+  <div class="signatures">
+    <div class="sig-block">
+      <div class="role">POR LA AGENCIA</div>
+      <div class="sig-line">
+        <div class="sig-name">Daniel von Zedlitz</div>
+        <div>DNI 53856334V · Closeup Marketing</div>
+      </div>
+      <p class="sig-date">Fecha: <span class="sig-fill">[FECHA_CONTRATO]</span></p>
+    </div>
+    <div class="sig-block">
+      <div class="role">POR EL CLIENTE</div>
+      <div class="sig-line">
+        <div class="sig-name sig-fill">[NOMBRE_COMPLETO_CLIENTE]</div>
+        <div class="sig-fill">[DNI_NIE_CLIENTE] · [NOMBRE_SOCIEDAD_CLIENTE]</div>
+      </div>
+      <p class="sig-date">Fecha: <span class="sig-fill">[FECHA_CONTRATO]</span></p>
+    </div>
+  </div>
+</div>
+
+</body>
+</html>
+
+```
+
+===============================================================
+COMO CONVERTIR EL RESULTADO EN PDF (identico al contrato oficial)
+===============================================================
+
+1. Copia el HTML completo que te ha devuelto la IA (todo el contenido del
+   bloque de codigo, sin nada mas).
+2. Abre el Bloc de notas (Windows) o TextEdit en modo texto plano (Mac) y
+   pega el HTML.
+3. Guarda el archivo como:
+   Contrato_+Reformas_System_[NOMBRE_CLIENTE].html
+   Importante: al guardar, elige "Todos los archivos" como tipo, no ".txt",
+   para que la extension final sea .html y no .html.txt.
+4. Haz doble clic en ese archivo para abrirlo en Google Chrome.
+5. Pulsa Ctrl+P (Imprimir).
+6. En "Destino" elige "Guardar como PDF". El nombre de archivo sugerido
+   deberia salir ya como "Closeup x [Nombre de la sociedad]" (ver regla 5 de
+   las instrucciones para la IA); si no es asi, escribelo tu mismo.
+7. Entra en "Mas ajustes" y comprueba:
+   - Tamano de papel: A4
+   - Margenes: Ninguno
+   - Casilla "Graficos de fondo" ACTIVADA (si no la activas, el logo y los
+     colores no saldran bien)
+8. Pulsa "Guardar".
+
+===============================================================
+CHECKLIST ANTES DE ENVIAR AL CLIENTE
+===============================================================
+
+[ ] El PDF tiene exactamente 4 paginas.
+[ ] El nombre completo del cliente aparece bien en REUNIDOS (pagina 1) y en
+    la firma (pagina 4), en texto normal (no naranja).
+[ ] El DNI aparece bien en REUNIDOS y en la firma.
+[ ] El nombre de la sociedad aparece bien en REUNIDOS, en el concepto de
+    pago de la Clausula 5 (pagina 3) y en la firma.
+[ ] El CIF aparece bien.
+[ ] La direccion comercial aparece bien.
+[ ] La fecha aparece bien en las dos firmas de la pagina 4.
+[ ] El archivo se ha guardado como "Closeup x [nombre de la sociedad]".
+[ ] El logo de CloseUp (el simbolo "UP") se ve correctamente en la parte
+    superior de la pagina 1.
+[ ] El IBAN (ES05 0049 5175 7121 1653 9086) aparece completo en una sola
+    linea, sin cortarse a mitad.
+[ ] No queda ningun marcador entre corchetes sin rellenar.
+[ ] El precio (2.997 euros + IVA / 3.626,37 euros IVA incluido) y la
+    continuidad (1.497 euros + IVA / mes) aparecen igual que en el contrato
+    oficial.
+[ ] La garantia "15 presupuestos garantizados - 90 dias" sigue destacada en
+    naranja en la pagina 2, sin cambios.
+
+Si algo de esto falla: NO lo envies. Repite el proceso desde el paso 2 de
+las instrucciones para el closer, en una conversacion nueva.

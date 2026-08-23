@@ -1,17 +1,18 @@
 "use client";
 
 import { useCallback, useEffect, useState } from "react";
+import Link from "next/link";
 import { Logo } from "@/components/Logo";
 import { StatTile } from "@/components/StatTile";
+import { GrowthSummaryReadOnly } from "@/components/GrowthSummaryReadOnly";
 import { MonthlyIncomeChart, type IncomePoint } from "@/components/MonthlyIncomeChart";
 import { OnboardingStageBar, type StageCount } from "@/components/OnboardingStageBar";
 import { PendingFollowUpTable, type PendingRow } from "@/components/PendingFollowUpTable";
 import { PausedClientsTable, type PausedRow } from "@/components/PausedClientsTable";
 import { DataIssuesAlert, type DataIssue } from "@/components/DataIssuesAlert";
-import { EditableClientTable, type RosterRow } from "@/components/EditableClientTable";
-import { ReunionesTable, type ReunionRow } from "@/components/ReunionesTable";
-import { ReunionStatsTable, type ReunionStatsRow } from "@/components/ReunionStatsTable";
-import { formatEUR, formatMonths, formatPercent } from "@/lib/format";
+import { EditableClientTable, type PeriodRoster } from "@/components/EditableClientTable";
+import { RoasTable, type RoasRow } from "@/components/RoasTable";
+import { formatEUR, formatMonths, formatPercent, formatRatio } from "@/lib/format";
 
 type CacResult = {
   periodo: string;
@@ -38,6 +39,8 @@ type LtvResult = {
   motivo: string | null;
 };
 
+type LtvCacResult = { ratio: number | null; motivo: string | null };
+
 type IncomePointWithIssues = IncomePoint & { entradasNoInterpretables: { cliente: string; raw: string }[] };
 
 type ApiResponse = {
@@ -46,13 +49,13 @@ type ApiResponse = {
   cac: CacResult[];
   churn: ChurnResult[];
   ltv: LtvResult;
+  ltvCacRatio: LtvCacResult;
+  roas: RoasRow;
   seguimientoPendientes: PendingRow[];
   estadoOnboarding: StageCount[];
   clientesEnPausa: PausedRow[];
   periodoEditable: string | null;
-  rosterEditable: RosterRow[];
-  reunionStats: ReunionStatsRow[];
-  reunionRoster: ReunionRow[];
+  rostersPorPeriodo: PeriodRoster[];
 };
 
 type ApiError = { error: "MISSING_CREDENTIALS" | "UPSTREAM_ERROR"; detail?: string };
@@ -69,6 +72,11 @@ function lastReportedIndex(data: ApiResponse["ingresoMensualConfirmado"]): numbe
 export default function Home() {
   const [data, setData] = useState<ApiResponse | null>(null);
   const [error, setError] = useState<ApiError | null>(null);
+  // Selector de mes de las tarjetas superiores — independiente del selector
+  // de "Editar ingresos por mes" (ese ya tenía el suyo). null = seguir el
+  // último mes reportado automáticamente; con navegación manual se fija un
+  // índice concreto sobre ingresoMensualConfirmado hasta volver a "Ahora".
+  const [statsIdx, setStatsIdx] = useState<number | null>(null);
 
   const load = useCallback(async () => {
     try {
@@ -111,10 +119,12 @@ export default function Home() {
     return <Centered>Cargando…</Centered>;
   }
 
-  const idx = lastReportedIndex(data.ingresoMensualConfirmado);
+  const autoIdx = lastReportedIndex(data.ingresoMensualConfirmado);
+  const idx = statsIdx !== null && statsIdx >= 0 && statsIdx < data.ingresoMensualConfirmado.length ? statsIdx : autoIdx;
   const ultimoIngreso = data.ingresoMensualConfirmado[idx];
   const ultimoCac = data.cac[idx];
   const ultimoChurn = data.churn[idx];
+  const roas = data.roas;
 
   const dataIssues: DataIssue[] = data.ingresoMensualConfirmado.flatMap((p) =>
     p.entradasNoInterpretables.map((e) => ({ cliente: e.cliente, raw: e.raw, periodo: p.periodo }))
@@ -134,6 +144,9 @@ export default function Home() {
             </p>
           </div>
         </div>
+        <Link href="/growth" className="text-xs underline" style={{ color: "var(--ink-secondary)" }}>
+          Ir al dashboard comercial
+        </Link>
       </header>
 
       {dataIssues.length > 0 && (
@@ -141,6 +154,33 @@ export default function Home() {
           <DataIssuesAlert data={dataIssues} />
         </div>
       )}
+
+      <div className="mb-3 flex items-center gap-2">
+        <button
+          onClick={() => setStatsIdx(Math.max(0, idx - 1))}
+          disabled={idx <= 0}
+          className="text-sm disabled:opacity-30"
+          style={{ color: "var(--ink-secondary)" }}
+        >
+          ←
+        </button>
+        <span className="text-sm font-medium tabular" style={{ color: "var(--ink)" }}>
+          {ultimoIngreso?.periodo ?? "—"}
+        </span>
+        <button
+          onClick={() => setStatsIdx(Math.min(data.ingresoMensualConfirmado.length - 1, idx + 1))}
+          disabled={idx >= data.ingresoMensualConfirmado.length - 1}
+          className="text-sm disabled:opacity-30"
+          style={{ color: "var(--ink-secondary)" }}
+        >
+          →
+        </button>
+        {idx !== autoIdx && (
+          <button onClick={() => setStatsIdx(null)} className="text-xs underline" style={{ color: "var(--ink-secondary)" }}>
+            Volver al mes actual
+          </button>
+        )}
+      </div>
 
       <section className="mb-8 grid grid-cols-2 gap-4 md:grid-cols-4">
         <StatTile
@@ -170,6 +210,21 @@ export default function Home() {
         />
       </section>
 
+      <section className="mb-8 grid grid-cols-2 gap-4 md:grid-cols-2">
+        <StatTile
+          label={`ROAS CBO_LEADS_REFOR — acumulado${roas.ultimoPeriodo ? ` hasta ${roas.ultimoPeriodo}` : ""}`}
+          value={formatRatio(roas.roas)}
+          caption={roas.motivo ?? undefined}
+        />
+        <StatTile
+          label="Ratio LTV : CAC"
+          value={formatRatio(data.ltvCacRatio.ratio)}
+          caption={data.ltvCacRatio.motivo ?? undefined}
+        />
+      </section>
+
+      <GrowthSummaryReadOnly />
+
       <section className="mb-8 rounded-lg border p-5" style={{ borderColor: "var(--border)", background: "var(--surface)" }}>
         <h2 className="mb-4 text-sm font-medium" style={{ color: "var(--ink-secondary)" }}>
           Ingreso mensual confirmado
@@ -182,14 +237,14 @@ export default function Home() {
           <h2 className="mb-4 text-sm font-medium" style={{ color: "var(--ink-secondary)" }}>
             Seguimiento de pendientes de cobro
           </h2>
-          <PendingFollowUpTable data={data.seguimientoPendientes} />
+          <PendingFollowUpTable data={data.seguimientoPendientes} onSaved={load} />
         </div>
 
         <div className="rounded-lg border p-5" style={{ borderColor: "var(--border)", background: "var(--surface)" }}>
           <h2 className="mb-4 text-sm font-medium" style={{ color: "var(--ink-secondary)" }}>
             Clientes en pausa
           </h2>
-          <PausedClientsTable data={data.clientesEnPausa} />
+          <PausedClientsTable data={data.clientesEnPausa} onSaved={load} />
         </div>
       </section>
 
@@ -200,27 +255,20 @@ export default function Home() {
         <OnboardingStageBar data={data.estadoOnboarding} />
       </section>
 
-      {data.periodoEditable && (
+      {data.rostersPorPeriodo.length > 0 && (
         <section className="mb-8 rounded-lg border p-5" style={{ borderColor: "var(--border)", background: "var(--surface)" }}>
           <h2 className="mb-4 text-sm font-medium" style={{ color: "var(--ink-secondary)" }}>
-            Editar {data.periodoEditable}
+            Editar ingresos por mes
           </h2>
-          <EditableClientTable periodo={data.periodoEditable} roster={data.rosterEditable} onSaved={load} />
+          <EditableClientTable rostersPorPeriodo={data.rostersPorPeriodo} defaultPeriodo={data.periodoEditable} onSaved={load} />
         </section>
       )}
 
-      <section className="mb-8 rounded-lg border p-5" style={{ borderColor: "var(--border)", background: "var(--surface)" }}>
-        <h2 className="mb-4 text-sm font-medium" style={{ color: "var(--ink-secondary)" }}>
-          Reuniones agendadas vs asistidas
-        </h2>
-        <ReunionStatsTable data={data.reunionStats} />
-      </section>
-
       <section className="rounded-lg border p-5" style={{ borderColor: "var(--border)", background: "var(--surface)" }}>
         <h2 className="mb-4 text-sm font-medium" style={{ color: "var(--ink-secondary)" }}>
-          Marcar reunión agendada / asistencia
+          ROAS — detalle por cliente
         </h2>
-        <ReunionesTable roster={data.reunionRoster} onSaved={load} />
+        <RoasTable data={data.roas} onSaved={load} />
       </section>
     </main>
   );

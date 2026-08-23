@@ -1,0 +1,323 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<title>Guía de uso — Dashboard comercial GROWTH</title>
+<style>
+  @page { size: A4; margin: 16mm 15mm; }
+  * { box-sizing: border-box; }
+  body {
+    font-family: -apple-system, "Segoe UI", Arial, sans-serif;
+    color: #0b0b0b;
+    background: #fcfcfb;
+    margin: 0;
+    font-size: 10.5pt;
+    line-height: 1.5;
+  }
+  .page { page-break-after: always; padding: 3mm 0; min-height: 258mm; }
+  .page:last-child { page-break-after: avoid; }
+  h1 { color: #0b0b0b; font-size: 22pt; margin: 0 0 4mm; }
+  h2 { color: #ff4e08; font-size: 15pt; margin: 0 0 5mm; border-bottom: 2px solid #ff4e08; padding-bottom: 2mm; }
+  h3 { font-size: 11pt; margin: 5mm 0 2mm; color: #0b0b0b; }
+  p { margin: 0 0 2.5mm; color: #33322f; }
+  .kicker { color: #898781; font-size: 9pt; text-transform: uppercase; letter-spacing: 0.06em; margin-bottom: 1.5mm; }
+  .brand-bar { height: 5mm; background: #ff4e08; border-radius: 2mm; margin-bottom: 8mm; }
+  .cover { display: flex; flex-direction: column; justify-content: center; align-items: flex-start; height: 245mm; background: #f4ede1; border-radius: 4mm; padding: 16mm; }
+  .cover h1 { font-size: 28pt; max-width: 130mm; }
+  .cover .sub { color: #52514e; font-size: 12.5pt; margin-top: 4mm; }
+  .cover .logo { font-size: 13pt; font-weight: 700; color: #ff4e08; margin-bottom: 18mm; }
+  ul, ol { margin: 0 0 2.5mm; padding-left: 5mm; }
+  li { margin-bottom: 1.3mm; color: #33322f; }
+  .callout {
+    background: #fff8f0; border-left: 3px solid #ff4e08; border-radius: 2mm;
+    padding: 3.5mm 5mm; margin: 3mm 0; font-size: 10pt;
+  }
+  .rule-box {
+    display: flex; align-items: center; justify-content: center; gap: 3mm;
+    background: #0b0b0b; color: #fff; border-radius: 3mm; padding: 5mm; margin: 3mm 0 4mm;
+    font-size: 11.5pt; font-weight: 700; text-align: center; flex-wrap: wrap;
+  }
+  .rule-box span.plus { color: #ff4e08; font-weight: 400; }
+  table { width: 100%; border-collapse: collapse; font-size: 9.5pt; margin: 2.5mm 0; }
+  th, td { text-align: left; padding: 2mm 2.5mm; border-bottom: 1px solid #e1e0d9; vertical-align: top; }
+  th { color: #898781; font-weight: 600; font-size: 8.5pt; text-transform: uppercase; letter-spacing: 0.02em; }
+  td strong { color: #0b0b0b; }
+  .arrow { color: #ff4e08; font-weight: 700; }
+  .stage-row td:first-child { white-space: nowrap; font-weight: 600; color: #0b0b0b; }
+  .case { border: 1px solid #e1e0d9; border-radius: 3mm; padding: 3.5mm 5mm; margin-bottom: 2.5mm; background: #fff; }
+  .case .q { font-weight: 600; color: #0b0b0b; margin-bottom: 1mm; font-size: 10pt; }
+  .case .a { color: #52514e; font-size: 9.5pt; }
+  .case .a b { color: #0b0b0b; }
+  .case.result { border-color: #0ca30c; }
+  .steps { counter-reset: step; list-style: none; padding: 0; }
+  .steps li { counter-increment: step; position: relative; padding-left: 8mm; margin-bottom: 2.5mm; }
+  .steps li::before {
+    content: counter(step); position: absolute; left: 0; top: 0;
+    width: 5.5mm; height: 5.5mm; border-radius: 50%; background: #ff4e08; color: #fff;
+    font-size: 8.5pt; font-weight: 700; display: flex; align-items: center; justify-content: center;
+  }
+  .rules { counter-reset: rule; list-style: none; padding: 0; margin: 3mm 0; }
+  .rules li { counter-increment: rule; position: relative; padding: 2.5mm 3.5mm 2.5mm 11mm; margin-bottom: 2mm; background: #fff; border: 1px solid #e1e0d9; border-radius: 2.5mm; font-size: 9.5pt; }
+  .rules li::before {
+    content: counter(rule); position: absolute; left: 3.5mm; top: 2.5mm;
+    width: 5mm; height: 5mm; border-radius: 50%; background: #0b0b0b; color: #fff;
+    font-size: 8pt; font-weight: 700; display: flex; align-items: center; justify-content: center;
+  }
+  .rules li b { color: #0b0b0b; }
+
+  /* Capturas con callouts numerados superpuestos */
+  .shot { position: relative; border: 1px solid #e1e0d9; border-radius: 2.5mm; overflow: hidden; margin: 3mm 0; box-shadow: 0 1px 3px rgba(11,11,11,0.08); }
+  .shot img { display: block; width: 100%; height: auto; }
+  .badge {
+    position: absolute; width: 6mm; height: 6mm; border-radius: 50%;
+    background: #ff4e08; color: #fff; font-size: 8.5pt; font-weight: 700;
+    display: flex; align-items: center; justify-content: center;
+    transform: translate(-50%, -50%); box-shadow: 0 0 0 2px #fff;
+  }
+  .shot-caption { font-size: 9pt; color: #898781; margin: -1.5mm 0 3mm; }
+  .legend-inline { display: flex; flex-wrap: wrap; gap: 3mm 6mm; font-size: 9pt; color: #52514e; margin: 2mm 0 3mm; }
+  .legend-inline b { color: #0b0b0b; }
+
+  /* Árbol de decisión */
+  .tree { display: flex; flex-direction: column; align-items: center; margin: 4mm 0 6mm; }
+  .tree-node {
+    border: 2px solid #0b0b0b; border-radius: 3mm; padding: 2.5mm 6mm;
+    font-weight: 700; font-size: 10.5pt; background: #fff; text-align: center;
+  }
+  .tree-node.q { border-color: #ff4e08; color: #ff4e08; }
+  .tree-branches { display: flex; justify-content: center; gap: 30mm; width: 100%; margin-top: 2mm; }
+  .tree-branch { display: flex; flex-direction: column; align-items: center; }
+  .tree-branch .label { font-weight: 700; font-size: 9.5pt; margin: 1.5mm 0; }
+  .tree-branch.si .label { color: #0ca30c; }
+  .tree-branch.no .label { color: #d03b3b; }
+  .tree-branch .tree-node { font-size: 9pt; font-weight: 600; padding: 2mm 4mm; }
+  .tree-line { width: 1px; height: 5mm; background: #c3c2b7; }
+</style>
+</head>
+<body>
+
+<div class="page">
+  <div class="cover">
+    <div class="logo">CLOSEUP MARKETING</div>
+    <h1>Guía de uso<br>Dashboard comercial GROWTH</h1>
+    <p class="sub">Para setters y closers.<br>En qué situación está cada contacto y qué hay que hacer ahora.</p>
+  </div>
+</div>
+
+<div class="page">
+  <div class="brand-bar"></div>
+  <h2>1. Cómo utilizar el dashboard</h2>
+  <p>El Dashboard Comercial permite consultar reuniones, actualizar asistencia, gestionar próximos pasos, organizar
+  follow-ups y medir el rendimiento comercial. <b>GHL sigue siendo la fuente de verdad</b> — lo que haces aquí se
+  escribe de verdad ahí.</p>
+
+  <div class="rule-box">
+    ESTADO ACTUAL <span class="plus">+</span> RESPONSABLE <span class="plus">+</span> PRÓXIMA ACCIÓN <span class="plus">+</span> FECHA
+  </div>
+  <p style="text-align:center; margin-top:-2mm; font-size:9.5pt; color:#898781;">Toda oportunidad abierta tiene que poder responder a esto de un vistazo.</p>
+
+  <h3>Los 4 bloques del dashboard</h3>
+  <div class="shot">
+    <img src="assets/guia-01-dashboard-completo.jpg" alt="Dashboard comercial completo" style="width:102%; margin-left:-1%;">
+    <span class="badge" style="left:19.1%; top:23.7%;">1</span>
+    <span class="badge" style="left:19.1%; top:38.9%;">2</span>
+    <span class="badge" style="left:19.1%; top:61.5%;">3</span>
+  </div>
+  <div class="legend-inline">
+    <span><b>1 · Métricas</b> — reuniones, asistencia y ventas del periodo.</span>
+    <span><b>2 · Agenda</b> — tus reuniones, agrupadas por día.</span>
+    <span><b>3 · Follow-ups</b> — seguimientos pendientes, vencidos primero.</span>
+    <span><b>4 · Leads sin reunión</b> — más abajo en la misma página, mismo criterio de lectura.</span>
+  </div>
+  <p>El selector <b>Hoy / Semana / Mes</b> filtra los cuatro bloques a la vez — nunca ves datos de periodos
+  distintos mezclados.</p>
+</div>
+
+<div class="page">
+  <div class="brand-bar"></div>
+  <h2>2. Antes de la reunión</h2>
+  <p>Organizado por la etapa real en la que está el contacto — no por función del dashboard.</p>
+
+  <table>
+    <tr><th style="width:38%">Etapa</th><th>Situación · qué hacer</th></tr>
+    <tr class="stage-row">
+      <td>Nuevo cualificado<br>| Sin agenda</td>
+      <td>Lead cualificado sin reunión todavía. Contactarlo, revisar su ficha/formulario, cualificar y, si encaja,
+      agendar. Registrar el responsable de contacto. → pasa a <b>Agendado | Pendiente confirmación</b>.</td>
+    </tr>
+    <tr class="stage-row">
+      <td>Agendado<br>| Pendiente confirmación</td>
+      <td>La cita existe pero todavía no hay confirmación expresa. Revisar fecha, hora y decisores. No marcar como
+      confirmado si no lo ha confirmado de verdad. → pasa a <b>Agendado | Confirmado</b>.</td>
+    </tr>
+    <tr class="stage-row">
+      <td>Agendado<br>| Confirmado</td>
+      <td>El contacto ha confirmado que asistirá, con los decisores necesarios. No hay que hacer nada más — solo
+      revisar cuando llegue la hora.</td>
+    </tr>
+  </table>
+
+  <h3>Cuando llega la hora, abre la Agenda</h3>
+  <div class="shot">
+    <img src="assets/guia-02-agenda.png" alt="Bloque Agenda con botón Actualizar">
+    <span class="badge" style="left:95.1%; top:88.3%;">1</span>
+  </div>
+  <p class="shot-caption">1 · Pulsa el botón de la fila para abrir el panel de la reunión.</p>
+
+  <div class="callout">
+    Aquí empieza la decisión más importante de toda la guía: <b>¿asistió?</b> — se resuelve en la página
+    siguiente.
+  </div>
+</div>
+
+<div class="page">
+  <div class="brand-bar"></div>
+  <h2>3. Ha llegado la hora de la reunión</h2>
+
+  <div class="tree">
+    <div class="tree-node">REUNIÓN</div>
+    <div class="tree-line"></div>
+    <div class="tree-node q">¿ASISTIÓ?</div>
+    <div class="tree-branches">
+      <div class="tree-branch si">
+        <div class="tree-line"></div>
+        <div class="label">SÍ</div>
+        <div class="tree-node">Registrar resultado</div>
+      </div>
+      <div class="tree-branch no">
+        <div class="tree-line"></div>
+        <div class="label">NO</div>
+        <div class="tree-node">No show → página 4</div>
+      </div>
+    </div>
+  </div>
+
+  <h3>Asiste — 4 situaciones posibles</h3>
+  <div class="case result">
+    <div class="q">1 · Compra</div>
+    <div class="a">Marca <b>PAGADO</b>. No queda ninguna acción comercial pendiente — debe verse como
+    completado.</div>
+  </div>
+  <div class="case">
+    <div class="q">2 · Está interesado pero no cierra</div>
+    <div class="a"><b>Reunión realizada | Interesado.</b> Define SIEMPRE un próximo paso con fecha: hablar con
+    socio, revisar propuesta, decidir la semana siguiente, segunda llamada, pendiente de pago.</div>
+  </div>
+  <div class="case">
+    <div class="q">3 · Necesita segunda reunión</div>
+    <div class="a"><b>Follow-up / Call 2</b> sobre la misma oportunidad, con fecha de la Call 2. Nunca se crea otra
+    oportunidad.</div>
+  </div>
+  <div class="case">
+    <div class="q">4 · No quiere continuar</div>
+    <div class="a"><b>Perdido</b> (o el estado equivalente que corresponda). Registrar el motivo real.</div>
+  </div>
+
+  <div class="callout">
+    <b>Nunca dejar:</b> "Reunión realizada" + "Próximo paso: No definido". Si la oportunidad sigue viva, tiene
+    que existir una próxima acción con fecha.
+  </div>
+
+  <div class="shot">
+    <img src="assets/guia-04-panel-reunion.png" alt="Panel de actualización de reunión">
+    <span class="badge" style="left:92%; top:24.0%;">1</span>
+    <span class="badge" style="left:92%; top:42.4%;">2</span>
+    <span class="badge" style="left:92%; top:61.6%;">3</span>
+    <span class="badge" style="left:92%; top:74.4%;">4</span>
+  </div>
+  <div class="shot" style="margin-top:-1mm;">
+    <img src="assets/guia-05-panel-pagado.png" alt="Botón Guardar cambios del panel">
+    <span class="badge" style="left:95%; top:51.6%;">5</span>
+  </div>
+  <p class="shot-caption">1 Resultado de la reunión · 2 Próximo paso · 3 Fecha de seguimiento · 4 Acción concreta · 5 Guardar cambios (te muestra el resumen antes de confirmar).</p>
+</div>
+
+<div class="page">
+  <div class="brand-bar"></div>
+  <h2>4. No show, reagendar y follow-ups</h2>
+
+  <div class="case">
+    <div class="q">Llega la reunión y no asiste</div>
+    <div class="a">Marca <b>Asistió = No</b> → pasa a No-show | Recuperación. Después decide: ¿intentamos
+    recuperarlo? Si sí, reprograma directamente o crea un follow-up. Si no, ciérrala según corresponda. Nunca
+    marques una reunión como realizada si la persona no ha asistido.</div>
+  </div>
+  <div class="case">
+    <div class="q">Avisa antes de la reunión que no puede</div>
+    <div class="a">NO es un no-show. → <b>Solicita Reagendar</b>. Elige nueva fecha — la reunión original deja de
+    ser la cita activa.</div>
+  </div>
+  <div class="case">
+    <div class="q">"Llámame la semana que viene"</div>
+    <div class="a">No lo dejes solo en notas. <b>Crea un follow-up</b> con fecha concreta y acción escrita — se
+    guarda como tarea real en GHL.</div>
+  </div>
+  <div class="case">
+    <div class="q">"Lo tengo que hablar con mi socio"</div>
+    <div class="a">Si sigue interesado: próximo paso + fecha, o Call 2 si corresponde. No termines simplemente con
+    "pendiente socio".</div>
+  </div>
+  <div class="case">
+    <div class="q">"Envíame la información y te digo"</div>
+    <div class="a">Si la oportunidad sigue siendo real: follow-up con fecha concreta. No dejes oportunidades
+    abiertas sin fecha.</div>
+  </div>
+
+  <h3>Cómo se ve un follow-up en el dashboard</h3>
+  <div class="shot">
+    <img src="assets/guia-03-followups.png" alt="Bloque Follow-ups">
+  </div>
+  <p class="shot-caption">Vencidos aparece siempre arriba, en rojo, sin importar el periodo (Hoy/Semana/Mes) que estés mirando — revísalo antes que nada al empezar el día.</p>
+</div>
+
+<div class="page">
+  <div class="brand-bar"></div>
+  <h2>5. Reglas de uso diario</h2>
+  <p style="text-align:center; font-weight:700; font-size:12pt; color:#0b0b0b; margin-bottom:4mm;">5 MINUTOS AL DÍA PARA TENER EL PIPELINE BAJO CONTROL</p>
+
+  <ol class="steps">
+    <li>Revisa las reuniones del día.</li>
+    <li>Después de cada reunión, actualiza asistencia inmediatamente.</li>
+    <li>Si asistió: registra resultado y próximo paso.</li>
+    <li>Si no asistió: marca No show y decide recuperación o reagenda.</li>
+    <li>Revisa Follow-ups con frecuencia — completa los que tocan ese día.</li>
+    <li>Si una oportunidad sigue abierta, tiene que existir una próxima acción con fecha.</li>
+    <li>No muevas etapas manualmente solo para "ordenar" el pipeline.</li>
+  </ol>
+  <div class="callout">
+    <b>Mover una etapa puede activar workflows, WhatsApps, recordatorios o tareas.</b> Mueve un contacto
+    únicamente cuando el evento haya ocurrido de verdad.
+  </div>
+
+  <h3>Tabla — qué hago en cada situación</h3>
+  <table>
+    <tr><th>Situación</th><th></th><th>Acción</th></tr>
+    <tr><td>Lead sin cita</td><td class="arrow">→</td><td>Contactar / agendar</td></tr>
+    <tr><td>Cita creada</td><td class="arrow">→</td><td>Pendiente confirmación</td></tr>
+    <tr><td>Confirma asistencia</td><td class="arrow">→</td><td>Confirmado</td></tr>
+    <tr><td>Avisa que no puede</td><td class="arrow">→</td><td>Solicita reagendar</td></tr>
+    <tr><td>Llega la hora y no aparece</td><td class="arrow">→</td><td>No show</td></tr>
+    <tr><td>Asiste</td><td class="arrow">→</td><td>Actualizar asistencia</td></tr>
+    <tr><td>Asiste + interesado</td><td class="arrow">→</td><td>Próximo paso + fecha</td></tr>
+    <tr><td>Quiere segunda reunión</td><td class="arrow">→</td><td>Call 2</td></tr>
+    <tr><td>"Llámame la semana que viene"</td><td class="arrow">→</td><td>Follow-up + fecha</td></tr>
+    <tr><td>Tiene que hablar con socio</td><td class="arrow">→</td><td>Follow-up / Call 2</td></tr>
+    <tr><td>Compra</td><td class="arrow">→</td><td>Pagado</td></tr>
+    <tr><td>No quiere continuar</td><td class="arrow">→</td><td>Perdido</td></tr>
+  </table>
+
+  <h3>Colores</h3>
+  <p>
+    <b style="color:#0ca30c">Verde</b> = completado, no queda nada pendiente ·
+    <b style="color:#d03b3b">Rojo</b> = queda una acción pendiente importante ·
+    Gris/negro = información neutra ·
+    <b style="color:#ff4e08">Naranja</b> = identidad Closeup, no un estado.
+  </p>
+  <div class="callout">
+    Dudas o algo no funciona como aquí se describe: avisa al equipo antes de improvisar un cambio manual en GHL
+    que pueda desajustar el histórico.
+  </div>
+</div>
+
+</body>
+</html>
