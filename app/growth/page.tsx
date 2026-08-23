@@ -10,6 +10,7 @@ import { GrowthLeadsSecondary, type LeadsFunnel, type LeadRow } from "@/componen
 import { GrowthCloserComparison, type PeriodCloserRow } from "@/components/growth/GrowthCloserComparison";
 import { GrowthEditPanel, type CloserOption, type PanelOpportunity } from "@/components/growth/GrowthEditPanel";
 import { GrowthClosersConfig, type CloserRow } from "@/components/growth/GrowthClosersConfig";
+import { UserMenu } from "@/components/growth/UserMenu";
 
 type PeriodoInfo = {
   tipo: "hoy" | "semana" | "mes";
@@ -198,9 +199,7 @@ export default function GrowthPage() {
           >
             {reconciling ? "Actualizando…" : "Actualizar"}
           </button>
-          <Link href="/" className="underline">
-            Dashboard financiero
-          </Link>
+          <UserMenu />
         </div>
       </header>
 

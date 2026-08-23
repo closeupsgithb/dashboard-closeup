@@ -1,4 +1,5 @@
 import { NextResponse } from "next/server";
+import { requireAdmin } from "@/lib/auth/requireRole";
 import {
   getAllTabsData,
   getManualAttendanceOverrides,
@@ -37,7 +38,9 @@ export const dynamic = "force-dynamic";
 export const runtime = "nodejs";
 export const maxDuration = 30;
 
-export async function GET() {
+export async function GET(request: Request) {
+  const session = await requireAdmin(request);
+  if (session instanceof Response) return session;
   try {
     const [tabsData, onboarding, fbFormNativoPostMeeting, calendarMeetings, manualOverrides] = await Promise.all([
       getAllTabsData(),

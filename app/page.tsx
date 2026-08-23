@@ -144,9 +144,21 @@ export default function Home() {
             </p>
           </div>
         </div>
-        <Link href="/growth" className="text-xs underline" style={{ color: "var(--ink-secondary)" }}>
-          Ir al dashboard comercial
-        </Link>
+        <div className="flex items-center gap-3 text-xs">
+          <Link href="/growth" className="underline" style={{ color: "var(--ink-secondary)" }}>
+            Ir al dashboard comercial
+          </Link>
+          <button
+            onClick={async () => {
+              await fetch("/api/auth/logout", { method: "POST" });
+              window.location.href = "/login";
+            }}
+            className="underline"
+            style={{ color: "var(--ink-secondary)" }}
+          >
+            Cerrar sesión
+          </button>
+        </div>
       </header>
 
       {dataIssues.length > 0 && (

@@ -7,6 +7,7 @@ import {
   ClientRowNotFoundError,
   MissingCredentialsError,
 } from "@/lib/sheets";
+import { requireAdmin } from "@/lib/auth/requireRole";
 
 export const dynamic = "force-dynamic";
 export const runtime = "nodejs";
@@ -23,6 +24,8 @@ type Body = {
 };
 
 export async function POST(request: Request) {
+  const session = await requireAdmin(request);
+  if (session instanceof Response) return session;
   let body: Body;
   try {
     body = await request.json();

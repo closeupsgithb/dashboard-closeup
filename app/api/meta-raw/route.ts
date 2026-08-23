@@ -1,10 +1,13 @@
 import { NextResponse } from "next/server";
 import { fetchOwnCampaignSpendByMonth, MissingCredentialsError } from "@/lib/metaAds";
+import { requireAdmin } from "@/lib/auth/requireRole";
 
 export const dynamic = "force-dynamic";
 export const maxDuration = 30;
 
 export async function GET(request: Request) {
+  const session = await requireAdmin(request);
+  if (session instanceof Response) return session;
   const { searchParams } = new URL(request.url);
   const since = searchParams.get("since") ?? "2026-01-01";
   const until = searchParams.get("until") ?? new Date().toISOString().slice(0, 10);

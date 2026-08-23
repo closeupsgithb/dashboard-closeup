@@ -3,6 +3,7 @@
 import { useState } from "react";
 import Link from "next/link";
 import { Logo } from "@/components/Logo";
+import { UserMenu } from "@/components/growth/UserMenu";
 
 const PIPELINE_STAGES: { name: string; situacion: string }[] = [
   { name: "Nuevo cualificado | Sin agenda", situacion: "Lead cualificado que todavía no tiene reunión." },
@@ -170,9 +171,12 @@ export default function CentroComercialPage() {
             </p>
           </div>
         </div>
-        <Link href="/growth" className="text-xs underline" style={{ color: "var(--ink-secondary)" }}>
-          ← Volver al dashboard comercial
-        </Link>
+        <div className="flex items-center gap-3">
+          <Link href="/growth" className="text-xs underline" style={{ color: "var(--ink-secondary)" }}>
+            ← Volver al dashboard comercial
+          </Link>
+          <UserMenu />
+        </div>
       </header>
 
       <div
