@@ -2,8 +2,8 @@ import type { Metadata } from "next";
 import "./globals.css";
 
 export const metadata: Metadata = {
-  title: "Dashboard Financiero — Closeup Marketing",
-  description: "MRR, CAC, LTV, churn y seguimiento de cobros de Closeup Marketing.",
+  title: "Closeup Marketing",
+  description: "Dashboard interno de Closeup Marketing.",
 };
 
 export default function RootLayout({

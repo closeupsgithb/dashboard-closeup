@@ -94,6 +94,10 @@ export default function Home() {
   }, []);
 
   useEffect(() => {
+    document.title = "Dashboard Financiero — Closeup Marketing";
+  }, []);
+
+  useEffect(() => {
     load();
     const interval = setInterval(load, REFRESH_MS);
     return () => {
