@@ -68,6 +68,12 @@ export async function proxy(request: NextRequest) {
   return response;
 }
 
+// logo-closeup.png esta excluido a proposito: es el logo de marca, se ve en
+// la propia pagina de /login antes de autenticarse — si quedara detras del
+// proxy, la imagen se redirige a /login y el optimizador de imagenes de
+// Next.js la recibe como "recurso invalido" (400), asi que el logo del
+// login nunca cargaba. No es informacion sensible, a diferencia de
+// /materiales-comerciales (esos si quedan protegidos, ver COMMERCIAL_PREFIXES).
 export const config = {
-  matcher: ["/((?!_next/static|_next/image|favicon.ico|icon.png).*)"],
+  matcher: ["/((?!_next/static|_next/image|favicon.ico|icon.png|logo-closeup.png).*)"],
 };
