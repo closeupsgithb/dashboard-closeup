@@ -58,21 +58,10 @@ function OpenButton({ href, label }: { href: string; label: string }) {
   );
 }
 
-function PendingBadge() {
-  return (
-    <span
-      className="rounded px-1.5 py-0.5 text-[10px] font-semibold uppercase tracking-wide"
-      style={{ background: "var(--baseline)", color: "var(--ink-secondary)" }}
-    >
-      Pendiente de configurar
-    </span>
-  );
-}
-
 type QuickLink = { label: string; sectionId: string; href?: string; pending?: boolean };
 
 const QUICK_LINKS: QuickLink[] = [
-  { label: "Presentación", sectionId: "presentacion", pending: true },
+  { label: "Presentación", sectionId: "presentacion", href: "/materiales-comerciales/presentacion-ventas-reformas-system.pdf" },
   { label: "Contrato", sectionId: "contratos" },
   { label: "Pago", sectionId: "pagos", href: "/materiales-comerciales/guia-pagos-reformas-system.html" },
   { label: "Pre-Call", sectionId: "precall", href: "/materiales-comerciales/mas-reformas-system.pdf" },
@@ -308,9 +297,24 @@ export default function CentroComercialPage() {
             &quot;¿Qué presentación utilizo para vender +Reformas System?&quot;
           </p>
           <Resource
-            title="+Reformas System — Presentación de ventas"
-            description="Daniel añadirá aquí la versión definitiva. Todavía no hay una presentación confirmada para usar en llamada."
-            actions={<PendingBadge />}
+            title="+Reformas System — Presentación de ventas (versión final)"
+            description="Versión definitiva para usar en la llamada de venta."
+            actions={
+              <>
+                <OpenButton href="/materiales-comerciales/presentacion-ventas-reformas-system.pdf" label="Abrir presentación" />
+                <CopyButton path="/materiales-comerciales/presentacion-ventas-reformas-system.pdf" />
+              </>
+            }
+          />
+          <Resource
+            title="+Reformas System — Presentación comercial"
+            description="Versión alternativa/complementaria de la presentación comercial."
+            actions={
+              <>
+                <OpenButton href="/materiales-comerciales/presentacion-comercial-reformas-system.pdf" label="Abrir presentación" />
+                <CopyButton path="/materiales-comerciales/presentacion-comercial-reformas-system.pdf" />
+              </>
+            }
           />
         </Accordion>
 
