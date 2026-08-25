@@ -316,6 +316,16 @@ export default function CentroComercialPage() {
               </>
             }
           />
+          <Resource
+            title="Guion comercial — +Reformas System (Call 1 y Call 2)"
+            description="Guion completo para la llamada: discovery, pitch, precio, objeciones y Call 2."
+            actions={
+              <>
+                <OpenButton href="/materiales-comerciales/GUION_COMERCIAL_+REFORMAS_SYSTEM_FINAL.pdf" label="Abrir guion" />
+                <CopyButton path="/materiales-comerciales/GUION_COMERCIAL_+REFORMAS_SYSTEM_FINAL.pdf" />
+              </>
+            }
+          />
         </Accordion>
 
         <Accordion
