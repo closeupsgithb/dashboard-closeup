@@ -6,7 +6,8 @@ const path = require("path");
 const puppeteer = require("puppeteer");
 
 async function main() {
-  const htmlPath = path.join(__dirname, "..", "public", "materiales-comerciales", "guion-comercial-reformas-system.html");
+  const htmlName = process.argv[3] || "guion-comercial-reformas-system.html";
+  const htmlPath = path.join(__dirname, "..", "public", "materiales-comerciales", htmlName);
   const outPath = process.argv[2] || path.join(__dirname, "..", "public", "materiales-comerciales", "guion-comercial-reformas-system.pdf");
 
   const browser = await puppeteer.launch();

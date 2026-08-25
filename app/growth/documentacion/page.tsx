@@ -321,8 +321,8 @@ export default function CentroComercialPage() {
             description="Guion completo para la llamada: discovery, pitch, precio, objeciones y Call 2."
             actions={
               <>
-                <OpenButton href="/materiales-comerciales/GUION_COMERCIAL_+REFORMAS_SYSTEM_FINAL.pdf" label="Abrir guion" />
-                <CopyButton path="/materiales-comerciales/GUION_COMERCIAL_+REFORMAS_SYSTEM_FINAL.pdf" />
+                <OpenButton href="/materiales-comerciales/GUION_COMERCIAL_+REFORMAS_SYSTEM_FINAL_V2.pdf" label="Abrir guion" />
+                <CopyButton path="/materiales-comerciales/GUION_COMERCIAL_+REFORMAS_SYSTEM_FINAL_V2.pdf" />
               </>
             }
           />
