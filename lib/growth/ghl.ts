@@ -137,13 +137,20 @@ export type GrowthOpportunity = {
   createdAt: string;
   updatedAt: string;
   lastStageChangeAt?: string;
-  customFields: GhlCustomFieldValue[];
+  customFields: GhlCustomFieldValue[] | null; // visto null en real para alguna oportunidad puntual, no solo []
   contact?: { name: string; companyName: string | null; email?: string; phone?: string };
   calenders?: GhlCalendarEvent[];
 };
 
+// customFields llega null en la respuesta real de opportunities/search para
+// alguna oportunidad puntual (comprobado en real, 2026-08-27: una oportunidad
+// nueva de un contacto reciclado lo devolvió así) — no siempre es un array
+// vacío. Sin este guard, `.find` sobre null tiraba una excepción que
+// reconcileGrowth() capturaba en silencio (errores.push), dejando a esa
+// oportunidad completamente fuera de Postgres y del dashboard, aunque
+// siguiera abierta y real en GHL.
 function customFieldValue(o: GrowthOpportunity, fieldId: string): string | null {
-  const f = o.customFields.find((c) => c.id === fieldId);
+  const f = o.customFields?.find((c) => c.id === fieldId);
   return f?.fieldValueString ?? null;
 }
 

@@ -757,5 +757,24 @@ contra la API de GHL en vivo antes de tocar nada**:
 falta: los tres dejan de aparecer en el dashboard en cuanto corre la
 reconciliación con el fix de arriba, sin marcar manualmente nada como
 Perdido/Abandonado (que además habría sido incorrecto para "Guillermo Cc",
-una oportunidad real en otro pipeline). Confirmado tras desplegar (ver
-verificación en el historial de esta sesión).
+una oportunidad real en otro pipeline). Confirmado en producción tras
+desplegar: `growth_opportunities` marcó `eliminado_en_ghl` a 7 filas
+(Rubén Rubén, Alberto Javier Alia Gornals, Guillermo Cc, 2× "TEST CRM
+Reformas E2E 16Ago", "TEST DASHBOARD — Follow-up", y una oportunidad vieja
+del contacto "Ivan" que GHL ya había sustituido por una nueva) — contrastado
+1:1 contra las 9 oportunidades reales que devuelve hoy la búsqueda de GHL
+para el pipeline GROWTH, ninguna coincide con las archivadas.
+
+**Bug real encontrado de paso durante esta verificación (mismo día),
+corregido en el mismo cambio**: la oportunidad NUEVA del contacto "Ivan"
+(la que sí sigue viva en GROWTH, `snnjtKY8rVIcnejlOGrO`) no aparecía en
+Postgres en absoluto, ni antes ni después del fix — `customFieldValue()`
+(`lib/growth/ghl.ts`) asumía que `o.customFields` siempre es un array y
+llamaba `.find(...)` directamente; esa oportunidad concreta lo devuelve
+`customFields: null` en la respuesta real de `opportunities/search` (no
+`[]`), lo que tiraba una excepción capturada en silencio por el `try/catch`
+de `reconcileGrowth()` — la oportunidad simplemente nunca se guardaba, sin
+error visible en el dashboard. Corregido con `o.customFields?.find(...)` y
+el tipo `GrowthOpportunity.customFields` ajustado a `GhlCustomFieldValue[] |
+null`. Verificado: `npx tsc --noEmit -p .` y `npx eslint lib/growth/ghl.ts`
+limpios.
