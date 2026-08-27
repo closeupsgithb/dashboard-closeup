@@ -10,7 +10,6 @@ import {
   computeFollowUpQueue,
   isPendingAttention,
   isGanadoSinPagado,
-  isArchivedStatus,
 } from "@/lib/growth/metrics";
 import { resolvePeriod, type PeriodType } from "@/lib/growth/period";
 import { MissingCredentialsError as GhlMissingCredentials } from "@/lib/growth/ghl";
@@ -75,7 +74,6 @@ export async function GET(request: Request) {
     // Las métricas del periodo se calculan sobre el MISMO conjunto que
     // alimenta la agenda — nunca pueden descuadrar con las filas que se ven.
     const opportunitiesEnPeriodo = opportunities.filter((o) => {
-      if (isArchivedStatus(o.status)) return false;
       if (!o.activeAppointmentAt) return false;
       const t = new Date(o.activeAppointmentAt).getTime();
       return t >= periodoStartMs && t < periodoEndMs;

@@ -704,21 +704,39 @@ como lost/abandoned), vía `logAudit`. Nunca se borra la fila ni su
 historial de citas/asistencia — mismo principio que ya aplicaba a
 Perdido/Abandonado.
 
-**Bug relacionado, encontrado de paso y corregido en el mismo cambio**:
-`computeAgenda` (`lib/growth/metrics.ts`) y `opportunitiesEnPeriodo`
-(`app/api/growth/metrics/route.ts`) no filtraban por `status` en absoluto
-— a diferencia de Follow-ups/Leads sin reunión, una oportunidad Perdida o
-Abandonada con una cita activa futura seguía contando en la Agenda y en las
-tarjetas de KPI del periodo, contradiciendo lo ya documentado en §5
-("Archivan la oportunidad — deja de contar en agenda/funnel del periodo").
-Se añadió `isArchivedStatus()` (nuevo helper exportado de
-`lib/growth/metrics.ts`, engloba `lost`/`abandoned`/`eliminado_en_ghl`) y se
-usa como filtro en ambos sitios. **Deliberadamente NO incluye `won`**: una
-venta confirmada (fase Pagado) pone `status="won"` en GHL (acción "pagado",
-`app/api/growth/opportunity/route.ts`) y debe seguir contando en Agenda y
-en el funnel del periodo — filtrar por `status === "open"` a secas ahí
-habría ocultado las ventas reales, así que se usa una lista de exclusión
-explícita en vez de una whitelist.
+**Intento revertido el mismo día — regresión real detectada por Daniel**:
+en un primer pase se añadió también un filtro de estado archivado a
+`computeAgenda` y a `opportunitiesEnPeriodo` (excluyendo
+lost/abandoned/`eliminado_en_ghl`, con "won" preservado a propósito), 
+razonando que debía coincidir con lo documentado en §5 ("Archivan la
+oportunidad — deja de contar en agenda/funnel del periodo"). Se desplegó,
+y Daniel reportó de inmediato que las tarjetas de KPI del periodo (Agenda)
+mostraban "0 Realizadas" y "0 Asistidas" habiendo reuniones reales que sí
+se habían celebrado. Causa: dos de las oportunidades que
+`reconcileGrowth()` marca `eliminado_en_ghl` (ver arriba) SÍ tenían una
+reunión real ya ocurrida antes de desaparecer de GROWTH — "Guillermo Cc"
+llegó a estar en fase "Reunión realizada | Interesado", y la oportunidad
+vieja de "Ivan" llegó a "No-show | Recuperación" — y esa reunión real
+seguía teniendo su cita activa en `growth_appointments` con fecha dentro
+del periodo. Al excluir por `status`, esas reuniones reales dejaban de
+contar en las tarjetas de KPI, aunque de verdad sucedieron. **Revertido**:
+`computeAgenda` y `opportunitiesEnPeriodo` volvieron a su forma anterior a
+esta sesión (sin ningún filtro de `status`, solo por `activeAppointmentAt`
+dentro del periodo) — una reunión que ocurrió de verdad sigue contando en
+Agenda/KPIs del periodo pase lo que pase después con la oportunidad
+(archivada, movida de pipeline o borrada). El único sitio que sí sigue
+excluyendo `eliminado_en_ghl` (y lost/abandoned) es
+`computeFollowUpQueue`/`leadsSinReunion`, que ya filtraban `status ===
+"open"` desde antes de esta sesión — ahí sí es correcto que una fila
+archivada deje de pedir seguimiento activo, porque no representa una
+reunión ya sucedida, sino una tarea pendiente que ya no aplica.
+**Lección para el futuro**: no asumir que un principio documentado en otra
+sección (§5, sobre una decisión de negocio explícita como Perdido/
+Abandonado) se aplica igual a un estado inferido automáticamente
+(`eliminado_en_ghl`) que puede cubrir casos muy distintos — un contacto
+borrado sin historial real (Ruben Ruben, fixtures TEST) y una oportunidad
+con una reunión real que solo cambió de pipeline o se recreó (Guillermo Cc,
+Ivan) no deben tratarse igual en los bloques de métricas agregadas.
 
 **No se tocó** `computeFollowUpQueue`/`leadsSinReunion` (ya filtraban
 `status === "open"`, que ya excluye correctamente lost/abandoned/won/
