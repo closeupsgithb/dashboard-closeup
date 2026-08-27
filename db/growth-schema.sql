@@ -23,7 +23,7 @@ create table if not exists growth_opportunities (
   phone text,
   email text,
   pipeline_stage_id text not null,
-  status text not null,                     -- open | won | lost | abandoned (valor real de GHL)
+  status text not null,                     -- open | won | lost | abandoned (valor real de GHL) | eliminado_en_ghl (local, ver lib/growth/sync.ts: contacto/oportunidad borrado directamente en GHL, detectado por reconcileGrowth)
   closer_id text references growth_closers(id) on delete set null,
   -- Mes (YYYY-MM, hora Madrid) de la PRIMERA entrada observada en "Nuevo
   -- cualificado | Sin agenda". Se congela la primera vez que se ve al lead:

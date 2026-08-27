@@ -676,3 +676,86 @@ patrón `mx-auto max-w-6xl` sin `w-full` y probablemente tiene el mismo
 problema si contiene tablas anchas, pero no estaba en el alcance de esta
 tarea (solo Dashboard Comercial) y no se ha modificado sin que se pida
 explícitamente.
+
+## 17. Bug real corregido (2026-08-27): un contacto borrado en GHL se quedaba para siempre en el dashboard
+
+Daniel reportó que al eliminar un contacto directamente en el pipeline de
+GHL, ese lead seguía apareciendo en Follow-ups/Leads sin reunión del
+dashboard — y que no encontraba forma de quitarlo desde ahí.
+
+**Causa raíz**: `reconcileGrowth()` (`lib/growth/sync.ts`) solo hace upsert
+de las oportunidades que `fetchGrowthOpportunities()` (status=all) devuelve
+YA MISMO desde GHL. Si un contacto/oportunidad se borra directamente en GHL
+(no vía "Perdido"/"Abandonado", que sí siguen devolviéndose con su nuevo
+status), simplemente deja de aparecer en esa respuesta — y la fila ya
+guardada en `growth_opportunities` nunca vuelve a tocarse, así que se queda
+con `status='open'` para siempre y sigue contando como lead activo en todos
+los bloques que filtran por `status === "open"` (Follow-ups, Leads sin
+reunión). No existe (ni debía crearse) un botón de "eliminar" en esas
+tablas — el modelo de edición (§5) es deliberadamente "Perdido"/"Abandonado"
+vía el panel, nunca un borrado directo de una fila.
+
+**Corregido**: al final de `reconcileGrowth()`, se compara el conjunto de
+`opportunity_id` recién traído de GHL contra las filas de Postgres que
+seguían `status='open'`. Las que ya no aparecen en GHL se marcan con un
+status LOCAL nuevo, `eliminado_en_ghl` (GHL nunca escribe este valor —
+distingue en la auditoría "se borró en GHL" de una decisión de negocio real
+como lost/abandoned), vía `logAudit`. Nunca se borra la fila ni su
+historial de citas/asistencia — mismo principio que ya aplicaba a
+Perdido/Abandonado.
+
+**Bug relacionado, encontrado de paso y corregido en el mismo cambio**:
+`computeAgenda` (`lib/growth/metrics.ts`) y `opportunitiesEnPeriodo`
+(`app/api/growth/metrics/route.ts`) no filtraban por `status` en absoluto
+— a diferencia de Follow-ups/Leads sin reunión, una oportunidad Perdida o
+Abandonada con una cita activa futura seguía contando en la Agenda y en las
+tarjetas de KPI del periodo, contradiciendo lo ya documentado en §5
+("Archivan la oportunidad — deja de contar en agenda/funnel del periodo").
+Se añadió `isArchivedStatus()` (nuevo helper exportado de
+`lib/growth/metrics.ts`, engloba `lost`/`abandoned`/`eliminado_en_ghl`) y se
+usa como filtro en ambos sitios. **Deliberadamente NO incluye `won`**: una
+venta confirmada (fase Pagado) pone `status="won"` en GHL (acción "pagado",
+`app/api/growth/opportunity/route.ts`) y debe seguir contando en Agenda y
+en el funnel del periodo — filtrar por `status === "open"` a secas ahí
+habría ocultado las ventas reales, así que se usa una lista de exclusión
+explícita en vez de una whitelist.
+
+**No se tocó** `computeFollowUpQueue`/`leadsSinReunion` (ya filtraban
+`status === "open"`, que ya excluye correctamente lost/abandoned/won/
+eliminado_en_ghl para esos dos bloques) ni `computeFunnel`/`leadsFunnel`
+(cohorte de leads que entraron en el periodo — se mantiene el conteo total
+histórico, no es un bloque operativo de filas accionables).
+
+Verificado: `npx tsc --noEmit -p .` y `npx eslint lib/growth/sync.ts
+lib/growth/metrics.ts app/api/growth/metrics/route.ts` limpios.
+
+**Los 3 casos que reportó Daniel (Ruben Ruben, TEST DASHBOARD — Follow-up,
+Guillermo Cc) eran precisamente ejemplos reales de este bug — verificado
+contra la API de GHL en vivo antes de tocar nada**:
+- **"Ruben Ruben"**: no existe ningún contacto ni oportunidad con ese nombre
+  en GHL (búsqueda por nombre y por contacto, en toda la location, 0
+  resultados) — se borró por completo. Fila fantasma pura.
+- **"TEST DASHBOARD — Follow-up"**: el contacto (`8UQuwovLOPM1njC4uV6o`,
+  fixture documentado en §8) sigue existiendo, pero su oportunidad
+  (`ph3f4yhWoUdKixOTaf9r`) devuelve `404 OPPORTUNITY_NOT_FOUND` — se borró.
+  El contacto ya no tiene ninguna oportunidad vinculada. Este fixture deja
+  de estar disponible para pruebas futuras del bloque de Follow-ups; si hace
+  falta reproducir ese caso de nuevo, crear uno nuevo con el mismo patrón
+  (contacto "TEST - No usar", sin teléfono ni email).
+- **"Guillermo Cc"**: la oportunidad sigue existiendo en GHL
+  (`P1tPneT9JHgHTtcvFqAq`, contacto con companyName "Prueba", email de
+  Daniel von Zedlitz) pero ya NO está en el pipeline GROWTH — está en
+  "Agosto II FB Form Nativo || Pipeline" (`yBbQHzclrO3XVP6FVwnB`). Se movió
+  o se recreó fuera de GROWTH en algún momento; **no se ha tocado esta
+  oportunidad en GHL** (sigue abierta y real en su pipeline actual, no era
+  correcto marcarla "Abandonado" sin confirmar con Daniel si el traslado fue
+  intencional) — su fila fantasma en `growth_opportunities` (asociada al
+  pipeline GROWTH) queda cubierta por el mismo fix: al no aparecer más en el
+  fetch de GROWTH, se marca `eliminado_en_ghl` igual que los otros dos.
+
+**No se ha escrito nada en GHL para limpiar estos 3 casos** — no hacía
+falta: los tres dejan de aparecer en el dashboard en cuanto corre la
+reconciliación con el fix de arriba, sin marcar manualmente nada como
+Perdido/Abandonado (que además habría sido incorrecto para "Guillermo Cc",
+una oportunidad real en otro pipeline). Confirmado tras desplegar (ver
+verificación en el historial de esta sesión).

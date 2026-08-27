@@ -18,6 +18,18 @@ export type GrowthOpportunityView = {
 
 export type Attendance = "asistio" | "no_show" | "pendiente";
 
+// Estados que archivan una oportunidad fuera del pipeline activo: decisión
+// de negocio real (lost/abandoned, vía "Perdido"/"Abandonado" en el panel) o
+// borrado directo en GHL detectado por la reconciliación
+// (`eliminado_en_ghl`, ver lib/growth/sync.ts). Deliberadamente NO incluye
+// "won": una venta confirmada (fase Pagado) pone status="won" (ver
+// app/api/growth/opportunity/route.ts, acción "pagado") y debe seguir
+// contando en Agenda y en el funnel del periodo.
+const ARCHIVED_STATUSES = new Set(["lost", "abandoned", "eliminado_en_ghl"]);
+export function isArchivedStatus(status: string): boolean {
+  return ARCHIVED_STATUSES.has(status);
+}
+
 const AGENDA_REACHED_STAGES = new Set<string>([
   GROWTH_STAGES.agendadoPendiente,
   GROWTH_STAGES.agendadoConfirmado,
@@ -224,6 +236,7 @@ export function computeAgenda(
   const startMs = new Date(periodStartIso).getTime();
   const endMs = new Date(periodEndIso).getTime();
   return opportunities
+    .filter((o) => !isArchivedStatus(o.status))
     .filter((o) => o.activeAppointmentAt !== null)
     .filter((o) => {
       const t = new Date(o.activeAppointmentAt!).getTime();

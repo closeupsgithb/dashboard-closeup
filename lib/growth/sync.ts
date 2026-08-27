@@ -285,6 +285,26 @@ export async function reconcileGrowth(): Promise<SyncResult> {
     }
   }
 
+  // Oportunidades que existían en Postgres (abiertas) pero ya NO aparecen en
+  // la búsqueda de GHL — el contacto o la oportunidad se borró directamente
+  // en GHL, sin pasar por Perdido/Abandonado. Sin esto se quedaban "vivas"
+  // para siempre con su último estado conocido (bug real reportado por
+  // Daniel: un contacto borrado del pipeline seguía en Follow-ups/Leads sin
+  // reunión). Se marcan con un status LOCAL que GHL nunca escribe
+  // (`eliminado_en_ghl`, distinto de lost/abandoned, que sí son decisiones
+  // de negocio reales) para no confundir el motivo en la auditoría — nunca
+  // se borra la fila ni su historial de citas/asistencia, solo deja de
+  // contar como abierta (mismo criterio que ya aplican Perdido/Abandonado).
+  // Solo se tocan las que seguían "open": una ya archivada (won/lost/
+  // abandoned) que desaparezca de GHL no necesita reclasificarse.
+  const fetchedIds = new Set(opportunities.map((o) => o.id));
+  const desaparecidas = existingRows.filter((r) => r.status === "open" && !fetchedIds.has(r.opportunity_id));
+  for (const r of desaparecidas) {
+    await query`update growth_opportunities set status = 'eliminado_en_ghl', updated_at = now() where opportunity_id = ${r.opportunity_id}`;
+    await logAudit(r.opportunity_id, "status", r.status, "eliminado_en_ghl", "ghl_reconciliation");
+    cambiosDetectados += 1;
+  }
+
   await query`
     insert into growth_sync_state (key, value, updated_at) values ('last_reconciliation', now()::text, now())
     on conflict (key) do update set value = excluded.value, updated_at = now()
