@@ -1,6 +1,8 @@
 import { GROWTH_STAGES, FOLLOW_UP_REQUIRED_STEPS } from "@/lib/growth/ghl";
 import { madridDateOnly } from "@/lib/format";
 
+export type Attendance = "asistio" | "no_show" | "pendiente";
+
 export type GrowthOpportunityView = {
   opportunityId: string;
   contactName: string | null;
@@ -10,13 +12,19 @@ export type GrowthOpportunityView = {
   closerId: string | null;
   entryMonth: string;
   entryAt: string; // fecha/hora real de entrada (congelada la primera vez que se ve el lead)
-  asistioReunion: string | null; // Sí | No | Pendiente | null
+  asistioReunion: string | null; // Sí | No | Pendiente | null — valor crudo de GHL, solo para mostrar/auditar
   proximoPaso: string | null;
   activeAppointmentAt: string | null; // scheduled_at de la cita activa (is_active=true), si existe
+  // Resultado de la reunión ACTIVA (growth_appointments.attendance de la fila
+  // is_active=true), NUNCA derivado de asistio_reunion/pipeline_stage_id
+  // directamente (corregido 2026-08-28, ver docs/MEETING_ARCHITECTURE.md):
+  // ese campo es mutable por oportunidad y se sobrescribe con cada reunión
+  // nueva (Call 2 pisaba el resultado de Call 1). Cada reunión guarda su
+  // propio resultado en su propia fila — esto solo lee el de la ACTIVA, que
+  // es lo que importa para "¿qué necesito hacer ahora con este lead?".
+  activeAttendance: Attendance;
   hasAnyAppointment: boolean; // alguna vez tuvo al menos una cita (activa o no)
 };
-
-export type Attendance = "asistio" | "no_show" | "pendiente";
 
 const AGENDA_REACHED_STAGES = new Set<string>([
   GROWTH_STAGES.agendadoPendiente,
@@ -28,20 +36,12 @@ const AGENDA_REACHED_STAGES = new Set<string>([
   GROWTH_STAGES.pagado,
 ]);
 
-const MEETING_HAPPENED_STAGES = new Set<string>([
-  GROWTH_STAGES.reunionRealizada,
-  GROWTH_STAGES.followUpCall2,
-  GROWTH_STAGES.pagado,
-]);
-
-// Nunca se infiere "No show" solo porque la fecha ya pasó — solo cuenta una
-// señal explícita: el campo asistio_reunion marcado "No", o la fase
-// "No-show | Recuperación". Igual para "asistió": el campo marcado "Sí", o
-// haber avanzado a una fase que solo existe si hubo reunión.
+// Nunca se infiere "No show" solo porque la fecha ya pasó, y nunca se lee de
+// un campo de la oportunidad que pueda haber sido pisado por una reunión
+// posterior — se lee directamente el resultado ya resuelto de la reunión
+// ACTIVA (ver GrowthOpportunityView.activeAttendance).
 export function resolveAttendance(o: GrowthOpportunityView): Attendance {
-  if (o.asistioReunion === "Sí" || MEETING_HAPPENED_STAGES.has(o.pipelineStageId)) return "asistio";
-  if (o.asistioReunion === "No" || o.pipelineStageId === GROWTH_STAGES.noShowRecuperacion) return "no_show";
-  return "pendiente";
+  return o.activeAttendance;
 }
 
 // Regla definitiva de ventas (Daniel, 2026-08-21): la fuente canónica de una
@@ -183,10 +183,12 @@ export type AgendaOpportunity = GrowthOpportunityView & {
   companyName: string | null;
   stageName: string;
   activeMeetingNumber: number | null;
+  activeAppointmentId: string | null;
 };
 
 export type AgendaRow = {
   opportunityId: string;
+  appointmentId: string | null;
   contactName: string | null;
   companyName: string | null;
   closerId: string | null;
@@ -231,6 +233,7 @@ export function computeAgenda(
     })
     .map((o) => ({
       opportunityId: o.opportunityId,
+      appointmentId: o.activeAppointmentId,
       contactName: o.contactName,
       companyName: o.companyName,
       closerId: o.closerId,
@@ -273,42 +276,84 @@ export type PeriodFunnel = {
   closeRate: number | null;
 };
 
-// Se calcula sobre el MISMO conjunto que ya alimenta la agenda del periodo
-// (citas activas cuya fecha cae en el rango) — así las tarjetas de arriba
-// nunca pueden descuadrar con lo que se ve debajo en la agenda.
-export function computePeriodFunnel(periodOpportunities: GrowthOpportunityView[], asOf: Date): PeriodFunnel {
-  const asistieron = periodOpportunities.filter((o) => resolveAttendance(o) === "asistio");
-  const noShows = periodOpportunities.filter((o) => resolveAttendance(o) === "no_show");
-  const celebrables = periodOpportunities.filter((o) => isMeetingCelebrable(o, asOf));
-  const pagados = periodOpportunities.filter(isVentaConfirmada);
+// ---------------------------------------------------------------------------
+// KPIs del periodo (Hoy / Semana / Mes): corregido 2026-08-28 para que
+// cuenten REUNIONES (una fila = un evento de growth_appointments, con su
+// propio resultado ya resuelto), no oportunidades. Antes de esta corrección
+// se contaba 1 oportunidad = máximo 1 resultado de asistencia, así que una
+// Call 1 asistida se perdía en cuanto se agendaba una Call 2 — la causa raíz
+// documentada en docs/MEETING_ARCHITECTURE.md. Con esto: una oportunidad con
+// Call 1 asistida en agosto y Call 2 agendada en septiembre aporta al show
+// rate de AGOSTO (por la fecha real de Call 1), no al de septiembre.
+// ---------------------------------------------------------------------------
+
+export type MeetingRow = {
+  opportunityId: string;
+  appointmentId: string;
+  closerId: string | null;
+  scheduledAt: string;
+  attendance: Attendance;
+  cancelled: boolean;
+};
+
+// ghl_status es texto libre de GHL (confirmed/booked/cancelled/...) — solo
+// "cancelled" saca una reunión del recuento (Fase "no contar cancelled en
+// show rate"); cualquier otro valor (incluido desconocido) sigue contando.
+export function meetingRowFromAppointment(a: { attendance: string; ghlStatus: string | null }): { attendance: Attendance; cancelled: boolean } {
+  const attendance: Attendance = a.attendance === "si" ? "asistio" : a.attendance === "no" ? "no_show" : "pendiente";
+  return { attendance, cancelled: a.ghlStatus === "cancelled" };
+}
+
+// ventasPagadas se pasa aparte (no se deriva de las reuniones): una venta es
+// un evento de OPORTUNIDAD (fase Pagado, fecha = pagado_confirmado_at), no de
+// reunión — closeRate = ventas / reuniones asistidas del mismo periodo
+// (regla explícita, Fase 19).
+//
+// Show rate = ATTENDED / (ATTENDED + NO_SHOW) — definición explícita de
+// Daniel (2026-08-28). NO se usa como denominador "reuniones celebrables"
+// (asistidas + no-shows + pasadas todavía sin marcar): una reunión pasada sin
+// marcar no es ni un show ni un no-show todavía, así que no entra en ninguno
+// de los dos lados — sí sigue contando en "Agendadas" y sigue generando la
+// alerta de pendiente de actualizar (ver isPendingAttention).
+export function computeMeetingsPeriodFunnel(meetings: MeetingRow[], ventasPagadas: number): PeriodFunnel {
+  const activas = meetings.filter((m) => !m.cancelled);
+  const asistieron = activas.filter((m) => m.attendance === "asistio");
+  const noShows = activas.filter((m) => m.attendance === "no_show");
+  const resueltas = asistieron.length + noShows.length;
   return {
-    reunionesAgendadas: periodOpportunities.length,
+    reunionesAgendadas: activas.length,
     reunionesRealizadas: asistieron.length,
     noShows: noShows.length,
-    ventasPagadas: pagados.length,
-    showRate: celebrables.length > 0 ? asistieron.length / celebrables.length : null,
-    closeRate: asistieron.length > 0 ? pagados.length / asistieron.length : null,
+    ventasPagadas,
+    showRate: resueltas > 0 ? asistieron.length / resueltas : null,
+    closeRate: asistieron.length > 0 ? ventasPagadas / asistieron.length : null,
   };
 }
 
 export type PeriodCloserRow = PeriodFunnel & { closerId: string | null; closerName: string };
 
-export function computePeriodFunnelByCloser(
-  periodOpportunities: GrowthOpportunityView[],
-  asOf: Date,
+export function computeMeetingsPeriodFunnelByCloser(
+  meetings: MeetingRow[],
+  ventasPagadasByCloser: Map<string | null, number>,
   closerNames: Map<string, string>
 ): PeriodCloserRow[] {
-  const byCloser = new Map<string | null, GrowthOpportunityView[]>();
-  for (const o of periodOpportunities) {
-    const list = byCloser.get(o.closerId) ?? [];
-    list.push(o);
-    byCloser.set(o.closerId, list);
+  const byCloser = new Map<string | null, MeetingRow[]>();
+  for (const m of meetings) {
+    const list = byCloser.get(m.closerId) ?? [];
+    list.push(m);
+    byCloser.set(m.closerId, list);
+  }
+  // Un closer con venta(s) pero sin reuniones propias en el periodo (venta
+  // cerrada por otro canal, o desfase de fechas) no debe desaparecer de la
+  // comparativa por closer.
+  for (const closerId of ventasPagadasByCloser.keys()) {
+    if (!byCloser.has(closerId)) byCloser.set(closerId, []);
   }
   return [...byCloser.entries()]
     .map(([closerId, list]) => ({
       closerId,
       closerName: closerId ? (closerNames.get(closerId) ?? "Otros closers") : "Sin asignar",
-      ...computePeriodFunnel(list, asOf),
+      ...computeMeetingsPeriodFunnel(list, ventasPagadasByCloser.get(closerId) ?? 0),
     }))
     .sort((a, b) => {
       const rank = (id: string | null) => (id === null ? 1 : 0);
@@ -421,4 +466,34 @@ export function computeFollowUpQueue(
   buckets.enPeriodo.sort(byDueDate);
 
   return buckets;
+}
+
+// ---------------------------------------------------------------------------
+// Corrección histórica auditada (growth_metric_adjustments) — Fase 21/22 del
+// brief de reconciliación de Daniel (2026-08-28): cuando el histórico real
+// conocido no se puede reconstruir con identidad exacta desde GHL/Neon, se
+// aplica aquí un ajuste explícito y trazable en vez de fabricar reuniones o
+// contactos falsos. Solo admin puede crear filas (ver
+// app/api/growth/metric-adjustments/route.ts); nunca se aplican en silencio.
+// ---------------------------------------------------------------------------
+
+export type MetricAdjustment = { metricType: "attended" | "no_show"; delta: number };
+
+export function applyMetricAdjustments(funnel: PeriodFunnel, adjustments: MetricAdjustment[]): PeriodFunnel {
+  if (adjustments.length === 0) return funnel;
+  let reunionesRealizadas = funnel.reunionesRealizadas;
+  let noShows = funnel.noShows;
+  for (const adj of adjustments) {
+    if (adj.metricType === "attended") reunionesRealizadas += adj.delta;
+    else noShows += adj.delta;
+  }
+  const resueltas = reunionesRealizadas + noShows;
+  return {
+    ...funnel,
+    reunionesAgendadas: funnel.reunionesAgendadas + adjustments.reduce((s, a) => s + a.delta, 0),
+    reunionesRealizadas,
+    noShows,
+    showRate: resueltas > 0 ? reunionesRealizadas / resueltas : funnel.showRate,
+    closeRate: reunionesRealizadas > 0 ? funnel.ventasPagadas / reunionesRealizadas : funnel.closeRate,
+  };
 }

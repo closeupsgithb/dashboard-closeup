@@ -124,6 +124,7 @@ export default function GrowthPage() {
   function openPanelFromAgenda(row: AgendaRow) {
     setEditing({
       opportunityId: row.opportunityId,
+      appointmentId: row.appointmentId,
       contactName: row.contactName,
       companyName: row.companyName,
       closerId: row.closerId,

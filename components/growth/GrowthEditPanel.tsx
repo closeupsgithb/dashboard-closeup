@@ -7,6 +7,13 @@ export type CloserOption = { id: string; displayName: string; active: boolean };
 
 export type PanelOpportunity = {
   opportunityId: string;
+  // Cita concreta a la que se le asigna el resultado de "Asistió/No show"
+  // (growth_appointments.attendance) — sin esto, el panel no sabría a QUÉ
+  // reunión pertenece un "Sí"/"No" si la oportunidad ya tuviera más de una
+  // cita (Call 1 + Call 2). Null cuando el panel se abre desde Follow-ups o
+  // Leads (sin una cita concreta a la vista): el servidor usa entonces la
+  // cita activa de la oportunidad como respaldo.
+  appointmentId?: string | null;
   contactName: string | null;
   companyName: string | null;
   closerId: string | null;
@@ -213,7 +220,17 @@ export function GrowthEditPanel({
       await runStep("Closer", () => postAction({ action: "closer", closerId: draftCloser || null }));
     }
     if (draftAsistio !== originalAsistio && (draftAsistio === "Sí" || draftAsistio === "No")) {
-      await runStep("Resultado de la reunión", () => postAction({ action: "asistio", value: draftAsistio }));
+      try {
+        const res = await postAction({ action: "asistio", value: draftAsistio, appointmentId: opportunity.appointmentId ?? undefined });
+        // El resultado ya quedó guardado en el histórico aunque GHL falle
+        // (Fase 36) — se muestra como éxito con una nota, no como fallo.
+        results.push({
+          label: res.ghlSyncWarning ? "Resultado de la reunión (no se reflejó en GHL, revisa el pipeline)" : "Resultado de la reunión",
+          ok: true,
+        });
+      } catch (err) {
+        results.push({ label: "Resultado de la reunión", ok: false, error: err instanceof Error ? err.message : "Error" });
+      }
     }
     if (reagendarOpen && draftReagendarFecha) {
       await runStep("Nueva fecha de reunión", () =>

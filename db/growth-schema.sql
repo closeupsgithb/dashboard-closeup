@@ -51,15 +51,31 @@ create index if not exists idx_growth_opportunities_closer on growth_opportuniti
 -- la fila anterior (se marca replaces vía replaces_appointment_id en la
 -- nueva); una reunión 2 es una fila nueva con meeting_number = 2 sobre la
 -- MISMA opportunity_id.
+-- SIN "on delete cascade" a propósito (corregido 2026-08-28, ver
+-- docs/MEETING_ARCHITECTURE.md): una reunión es un hecho histórico
+-- independiente de la oportunidad que la originó. Si algún día se borra una
+-- fila de growth_opportunities, debe fallar de forma ruidosa en vez de
+-- arrastrar en silencio el historial de reuniones — hoy nada del código borra
+-- oportunidades (solo se marca el status), así que esta restricción no
+-- debería dispararse nunca en operación normal.
 create table if not exists growth_appointments (
   id bigserial primary key,
-  opportunity_id text not null references growth_opportunities(opportunity_id) on delete cascade,
+  opportunity_id text not null references growth_opportunities(opportunity_id),
   appointment_id text not null,             -- id real del evento de calendario en GHL
   meeting_number integer not null,
   scheduled_at timestamptz not null,
   original_scheduled_at timestamptz,        -- primera hora conocida, antes de reprogramar (si aplica)
-  ghl_status text,                          -- appointmentStatus crudo de GHL (confirmed/cancelled/showed/noshow/...)
-  attendance text not null default 'pendiente', -- pendiente | si | no
+  ghl_status text,                          -- appointmentStatus crudo de GHL (confirmed/cancelled/showed/noshow/...) — GHL NO trackea asistencia aquí, solo confirmación/cancelación
+  -- FUENTE DE VERDAD de asistencia (corregido 2026-08-28): pendiente | si | no.
+  -- Se escribe UNA SOLA VEZ por reunión, directamente desde el dashboard
+  -- (app/api/growth/opportunity/route.ts, acción "asistio"), identificando la
+  -- fila exacta por appointment_id — nunca se infiere de un campo mutable de
+  -- la oportunidad (asistio_reunion/pipeline_stage_id), que solo puede
+  -- describir el estado ACTUAL de la oportunidad, no el histórico de cada
+  -- reunión. reconcileGrowth() (lib/growth/sync.ts) nunca escribe esta
+  -- columna — solo el dashboard, para que un resync de GHL no pueda pisar un
+  -- resultado ya registrado.
+  attendance text not null default 'pendiente',
   closer_id text references growth_closers(id) on delete set null,
   replaces_appointment_id text,
   is_active boolean not null default true,  -- false = reprogramada/sustituida/cancelada, ya no es la cita vigente
@@ -133,3 +149,33 @@ alter table growth_opportunities add column if not exists follow_up_task_id text
 -- primera vez, igual que entry_at/pagado_confirmado_at — mide velocidad de
 -- respuesta real del setter, no se recalcula si el lead retrocede después.
 alter table growth_opportunities add column if not exists first_contact_at timestamptz;
+
+-- Corrección estructural 2026-08-28 (ver docs/MEETING_ARCHITECTURE.md): quita
+-- el "on delete cascade" de una tabla ya creada en producción con esa
+-- cláusula — "create table if not exists" de arriba no la toca porque la
+-- tabla ya existe. Una sola sentencia (drop + add de la misma constraint) a
+-- propósito: lib/growth/db.ts trocea este archivo por ";\n", así que un
+-- bloque DO/BEGIN con punto y coma dentro se rompería a medias. Segura de
+-- repetir: si ya se aplicó, vuelve a dejar la misma constraint sin cascada.
+alter table growth_appointments
+  drop constraint if exists growth_appointments_opportunity_id_fkey,
+  add constraint growth_appointments_opportunity_id_fkey
+    foreign key (opportunity_id) references growth_opportunities(opportunity_id);
+
+-- Corrección histórica auditada (Fase 21 del brief de Daniel, 2026-08-28):
+-- cuando el histórico real conocido no puede reconstruirse con identidad
+-- exacta (reunión, contacto, fecha) desde GHL/Neon, se registra aquí un
+-- ajuste explícito en vez de fabricar reuniones o contactos falsos. Nunca se
+-- usa para inflar métricas sin motivo documentado — cada fila debe explicar
+-- su "reason" y quién la creó. Los ajustes de un mes concreto se suman a las
+-- métricas de ese periodo (ver lib/growth/metrics.ts); "all" se aplica en
+-- todos los periodos que lo incluyan (uso pensado solo para el arranque).
+create table if not exists growth_metric_adjustments (
+  id bigserial primary key,
+  metric_type text not null,       -- 'attended' | 'no_show'
+  period text not null,            -- 'YYYY-MM' o 'all'
+  delta integer not null,
+  reason text not null,
+  created_by text not null,
+  created_at timestamptz not null default now()
+);

@@ -23,7 +23,7 @@ export const runtime = "nodejs";
 export const maxDuration = 30;
 
 type Action =
-  | { action: "asistio"; opportunityId: string; value: "Sí" | "No" }
+  | { action: "asistio"; opportunityId: string; value: "Sí" | "No"; appointmentId?: string }
   | { action: "reagendar"; opportunityId: string; nuevaFechaIso?: string }
   | { action: "reunion2"; opportunityId: string; nuevaFechaIso: string }
   | { action: "closer"; opportunityId: string; closerId: string | null }
@@ -68,18 +68,60 @@ export async function POST(request: Request) {
         if (!ASISTIO_REUNION_VALUES.includes(body.value)) {
           return NextResponse.json({ error: "INVALID_VALUE" }, { status: 400 });
         }
-        await updateOpportunityCustomFields(body.opportunityId, [{ fieldId: GROWTH_FIELDS.asistioReunion, value: body.value }]);
 
-        const current = await currentOpportunity(body.opportunityId);
-        // No se retrocede una oportunidad que ya avanzó a una fase comercial
-        // posterior (Follow-up/Call 2 o Pagado) — mismo criterio que ya usa
-        // el pipeline FB Form Nativo para no borrar progreso comercial real.
-        const yaAvanzada = current ? TERMINAL_STAGES.has(current.pipeline_stage_id) : false;
-        if (!yaAvanzada) {
-          const targetStage = body.value === "Sí" ? GROWTH_STAGES.reunionRealizada : GROWTH_STAGES.noShowRecuperacion;
-          await updateOpportunityStage(body.opportunityId, targetStage);
+        // Corregido 2026-08-28 (ver docs/MEETING_ARCHITECTURE.md): el
+        // resultado se escribe PRIMERO en la fila de la reunión concreta
+        // (growth_appointments.attendance, identificada por appointment_id)
+        // — nunca en un campo de la oportunidad que una reunión posterior
+        // pueda pisar. Si no llega appointmentId desde el panel (paneles
+        // abiertos desde Follow-ups/Leads, que no tienen una cita concreta a
+        // la vista), se usa la cita ACTIVA de la oportunidad como hoy.
+        let targetAppointmentId = body.appointmentId ?? null;
+        if (!targetAppointmentId) {
+          const activeAppt = await query<{ appointment_id: string }>`
+            select appointment_id from growth_appointments where opportunity_id = ${body.opportunityId} and is_active = true limit 1
+          `;
+          targetAppointmentId = activeAppt[0]?.appointment_id ?? null;
         }
-        break;
+        if (!targetAppointmentId) {
+          return NextResponse.json(
+            { error: "SIN_CITA", detail: "Esta oportunidad no tiene ninguna reunión registrada a la que asignarle un resultado." },
+            { status: 400 }
+          );
+        }
+
+        const attendanceValue = body.value === "Sí" ? "si" : "no";
+        await query`
+          update growth_appointments set attendance = ${attendanceValue}, updated_at = now()
+          where appointment_id = ${targetAppointmentId}
+        `;
+        await logAudit(body.opportunityId, "appointment_attendance", null, `${targetAppointmentId}:${attendanceValue}`, "ok");
+
+        // Efectos en GHL (campo visible + fase del pipeline): best-effort. Si
+        // fallan, el resultado histórico YA quedó guardado arriba — nunca se
+        // deshace por un fallo externo (Fase 36 del brief: "no perder datos
+        // reales por error externo de GHL"). Se avisa al panel con un warning
+        // en vez de marcar la acción entera como fallida.
+        let ghlSyncWarning: string | null = null;
+        try {
+          await updateOpportunityCustomFields(body.opportunityId, [{ fieldId: GROWTH_FIELDS.asistioReunion, value: body.value }]);
+          const current = await currentOpportunity(body.opportunityId);
+          // No se retrocede una oportunidad que ya avanzó a una fase comercial
+          // posterior (Follow-up/Call 2 o Pagado) — mismo criterio que ya usa
+          // el pipeline FB Form Nativo para no borrar progreso comercial real.
+          const yaAvanzada = current ? TERMINAL_STAGES.has(current.pipeline_stage_id) : false;
+          if (!yaAvanzada) {
+            const targetStage = body.value === "Sí" ? GROWTH_STAGES.reunionRealizada : GROWTH_STAGES.noShowRecuperacion;
+            await updateOpportunityStage(body.opportunityId, targetStage);
+          }
+        } catch (err) {
+          ghlSyncWarning = err instanceof Error ? err.message : String(err);
+          await logAudit(body.opportunityId, "appointment_attendance_ghl_sync", null, ghlSyncWarning, "failed", ghlSyncWarning);
+        }
+
+        await syncSingleOpportunity(body.opportunityId).catch(() => {});
+        await logAudit(body.opportunityId, body.action, null, JSON.stringify(body), "ok");
+        return NextResponse.json({ ok: true, ghlSyncWarning });
       }
 
       case "reagendar": {

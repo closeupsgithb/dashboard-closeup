@@ -5,15 +5,19 @@ import {
   computeFunnel,
   computeAgenda,
   groupAgendaByDay,
-  computePeriodFunnel,
-  computePeriodFunnelByCloser,
+  computeMeetingsPeriodFunnel,
+  computeMeetingsPeriodFunnelByCloser,
   computeFollowUpQueue,
   isPendingAttention,
   isGanadoSinPagado,
+  isVentaConfirmada,
+  applyMetricAdjustments,
+  meetingRowFromAppointment,
+  type MeetingRow,
 } from "@/lib/growth/metrics";
 import { resolvePeriod, type PeriodType } from "@/lib/growth/period";
 import { MissingCredentialsError as GhlMissingCredentials } from "@/lib/growth/ghl";
-import { MissingCredentialsError as DbMissingCredentials } from "@/lib/growth/db";
+import { query, MissingCredentialsError as DbMissingCredentials } from "@/lib/growth/db";
 import { madridDateOnly } from "@/lib/format";
 
 export const dynamic = "force-dynamic";
@@ -71,17 +75,65 @@ export async function GET(request: Request) {
     const agendaFiltrada = porCloser(agendaRows);
     const agendaPorDia = tipo === "hoy" ? null : groupAgendaByDay(agendaFiltrada);
 
-    // Las métricas del periodo se calculan sobre el MISMO conjunto que
-    // alimenta la agenda — nunca pueden descuadrar con las filas que se ven.
-    const opportunitiesEnPeriodo = opportunities.filter((o) => {
-      if (!o.activeAppointmentAt) return false;
-      const t = new Date(o.activeAppointmentAt).getTime();
+    // KPIs del periodo (corregido 2026-08-28, ver docs/MEETING_ARCHITECTURE.md):
+    // se calculan sobre REUNIONES (growth_appointments), no sobre
+    // oportunidades — cada reunión cuenta en el periodo de SU PROPIA fecha,
+    // con SU PROPIO resultado ya resuelto, exista o no todavía otra reunión
+    // más reciente para la misma oportunidad. Así una Call 1 asistida en
+    // agosto sigue contando en agosto aunque en septiembre se agende (y
+    // pierda) una Call 2 — antes de esta corrección esa Call 1 desaparecía en
+    // cuanto la oportunidad avanzaba, porque solo se guardaba UN resultado de
+    // asistencia por oportunidad, no uno por reunión.
+    const todasLasCitas: MeetingRow[] = [];
+    for (const list of appointmentsByOpportunity.values()) {
+      for (const a of list) {
+        const { attendance, cancelled } = meetingRowFromAppointment(a);
+        todasLasCitas.push({
+          opportunityId: a.opportunityId,
+          appointmentId: a.appointmentId,
+          closerId: a.closerId,
+          scheduledAt: a.scheduledAt,
+          attendance,
+          cancelled,
+        });
+      }
+    }
+    const meetingsEnPeriodo = todasLasCitas.filter((m) => {
+      const t = new Date(m.scheduledAt).getTime();
       return t >= periodoStartMs && t < periodoEndMs;
     });
-    const opportunitiesEnPeriodoFiltradas = porCloser(opportunitiesEnPeriodo);
+    const meetingsEnPeriodoFiltradas = porCloser(meetingsEnPeriodo);
 
-    const metricasPeriodo = computePeriodFunnel(opportunitiesEnPeriodoFiltradas, now);
-    const closerBreakdown = computePeriodFunnelByCloser(opportunitiesEnPeriodo, now, closerNames);
+    // Ventas: evento de OPORTUNIDAD (fase Pagado), con su propia fecha de
+    // cierre congelada (pagado_confirmado_at) — nunca la fecha de una cita,
+    // que es un concepto distinto (Fase 18/19 del brief).
+    const opportunitiesPagadasEnPeriodo = opportunities.filter((o) => {
+      if (!isVentaConfirmada(o) || !o.pagadoConfirmadoAt) return false;
+      const t = new Date(o.pagadoConfirmadoAt).getTime();
+      return t >= periodoStartMs && t < periodoEndMs;
+    });
+    const ventasPagadasFiltradas = porCloser(opportunitiesPagadasEnPeriodo).length;
+    const ventasPagadasByCloser = new Map<string | null, number>();
+    for (const o of opportunitiesPagadasEnPeriodo) {
+      ventasPagadasByCloser.set(o.closerId, (ventasPagadasByCloser.get(o.closerId) ?? 0) + 1);
+    }
+
+    // Corrección histórica auditada (Fase 21/22): solo se aplica en la vista
+    // "mes", contra el mes exacto (o "all") — ver
+    // app/api/growth/metric-adjustments/route.ts y docs/MEETING_ARCHITECTURE.md.
+    const adjustmentRows =
+      tipo === "mes"
+        ? await query<{ metric_type: "attended" | "no_show"; delta: number }>`
+            select metric_type, delta from growth_metric_adjustments where period = ${periodo.ref} or period = 'all'
+          `
+        : [];
+    const adjustments = adjustmentRows.map((r) => ({ metricType: r.metric_type, delta: r.delta }));
+
+    const metricasPeriodo = applyMetricAdjustments(
+      computeMeetingsPeriodFunnel(meetingsEnPeriodoFiltradas, ventasPagadasFiltradas),
+      adjustments
+    );
+    const closerBreakdown = computeMeetingsPeriodFunnelByCloser(meetingsEnPeriodo, ventasPagadasByCloser, closerNames);
 
     // Pendientes vencidos: siempre GLOBAL (todos los periodos y closers) —
     // un pendiente atrasado no debe desaparecer solo porque se cambie de

@@ -796,3 +796,48 @@ error visible en el dashboard. Corregido con `o.customFields?.find(...)` y
 el tipo `GrowthOpportunity.customFields` ajustado a `GhlCustomFieldValue[] |
 null`. Verificado: `npx tsc --noEmit -p .` y `npx eslint lib/growth/ghl.ts`
 limpios.
+
+## 18. Corrección estructural del modelo de reuniones (2026-08-28)
+
+Encargo explícito de Daniel tras la regresión del §17: auditoría profunda +
+corrección de arquitectura, no un parche puntual más. Documentación completa
+en `docs/MEETING_ARCHITECTURE.md` (diseño), `docs/MEETINGS_METRICS_AUDIT.md`
+(causa raíz y reconciliación de datos) y `docs/MEETING_QA_MATRIX.md` (casos
+probados) — este apartado es solo el resumen ejecutivo.
+
+**Causa raíz real** (más profunda que el §17): el resultado de una reunión
+(Asistió/No show) se guardaba como un único valor mutable por OPORTUNIDAD
+(`asistio_reunion` + `pipeline_stage_id`), nunca por reunión. Una Call 2
+sobrescribía en silencio el resultado de la Call 1 en cuanto se marcaba —
+`growth_appointments` ya tenía desde el origen una columna `attendance`
+pensada exactamente para esto, pero nunca se escribía ni se leía en ningún
+sitio del código.
+
+**Corrección**: `growth_appointments.attendance` pasa a ser la única fuente
+de verdad, escrita una sola vez por reunión desde
+`app/api/growth/opportunity/route.ts` (acción `asistio`, ahora dirigida a un
+`appointment_id` concreto), con el efecto en GHL desacoplado en un
+`try/catch` propio (un fallo de GHL nunca borra el resultado ya guardado en
+Neon). Las métricas del periodo (`computeMeetingsPeriodFunnel`,
+`lib/growth/metrics.ts`) pasan a contar reuniones por su propia fecha, no
+oportunidades por su cita activa. Se quitó el `on delete cascade` de
+`growth_appointments.opportunity_id` (nada lo usa hoy, pero antes permitía
+que un borrado futuro de una oportunidad arrastrara su historial en
+silencio). Se añadió `growth_metric_adjustments` (tabla + endpoint
+admin-only) para correcciones históricas auditadas cuando el dato exacto no
+se puede reconstruir sin fabricarlo.
+
+**Backfill ejecutado** (`scripts/backfill-meeting-attendance.js --apply`):
+10 reuniones existentes reconstruidas desde la señal legacy disponible antes
+de la corrección — 4 asistidas, 6 no-shows a esa fecha. Un caso (oportunidad
+abierta de "Ivan") quedó sin reunión a la que atribuir su resultado — no se
+inventó una fila; queda documentado en `MEETINGS_METRICS_AUDIT.md` §4 como
+pendiente de decisión de Daniel (revisar el sync en origen, o crear un
+ajuste manual con motivo).
+
+**Verificado**: `npx tsc --noEmit -p .` y `npx next build` limpios; schema
+verificado contra producción antes de desplegar (FK sin cascada, tabla
+nueva creada); casos de QA 7 y 8 del brief confirmados con datos reales de
+producción (Francisco Pizarro / Guillermo Cc conservan su asistencia pese a
+estar archivados; Luis Carlos Ramirez Cruz / Miguel Méndez muestran Call 1
+asistida + Call 2 futura sin resolver, cada una en su propia fila).

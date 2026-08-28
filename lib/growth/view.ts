@@ -1,6 +1,6 @@
 import { query } from "@/lib/growth/db";
 import { GROWTH_STAGE_NAMES } from "@/lib/growth/ghl";
-import type { GrowthOpportunityView } from "@/lib/growth/metrics";
+import type { GrowthOpportunityView, Attendance } from "@/lib/growth/metrics";
 import { listClosers, type Closer } from "@/lib/growth/closers";
 
 type OpportunityRow = {
@@ -25,6 +25,7 @@ type OpportunityRow = {
   active_scheduled_at: string | null;
   active_appointment_id: string | null;
   active_meeting_number: number | null;
+  active_attendance: string | null;
 };
 
 export type AppointmentRow = {
@@ -35,6 +36,7 @@ export type AppointmentRow = {
   ghlStatus: string | null;
   attendance: string;
   isActive: boolean;
+  closerId: string | null;
 };
 
 export type GrowthOpportunityFull = GrowthOpportunityView & {
@@ -52,6 +54,12 @@ export type GrowthOpportunityFull = GrowthOpportunityView & {
   activeMeetingNumber: number | null;
 };
 
+function toAttendance(raw: string | null): Attendance {
+  if (raw === "si") return "asistio";
+  if (raw === "no") return "no_show";
+  return "pendiente";
+}
+
 export async function loadGrowthView(): Promise<{
   opportunities: GrowthOpportunityFull[];
   appointmentsByOpportunity: Map<string, AppointmentRow[]>;
@@ -67,7 +75,8 @@ export async function loadGrowthView(): Promise<{
         coalesce(ca.appt_count, 0) as appt_count,
         act.scheduled_at as active_scheduled_at,
         act.appointment_id as active_appointment_id,
-        act.meeting_number as active_meeting_number
+        act.meeting_number as active_meeting_number,
+        act.attendance as active_attendance
       from growth_opportunities o
       left join (select opportunity_id, count(*) as appt_count from growth_appointments group by opportunity_id) ca
         on ca.opportunity_id = o.opportunity_id
@@ -82,8 +91,9 @@ export async function loadGrowthView(): Promise<{
       ghl_status: string | null;
       attendance: string;
       is_active: boolean;
+      closer_id: string | null;
     }>`
-      select opportunity_id, appointment_id, meeting_number, scheduled_at, ghl_status, attendance, is_active
+      select opportunity_id, appointment_id, meeting_number, scheduled_at, ghl_status, attendance, is_active, closer_id
       from growth_appointments
       order by scheduled_at asc
     `,
@@ -101,6 +111,7 @@ export async function loadGrowthView(): Promise<{
       ghlStatus: a.ghl_status,
       attendance: a.attendance,
       isActive: a.is_active,
+      closerId: a.closer_id,
     });
     appointmentsByOpportunity.set(a.opportunity_id, list);
   }
@@ -127,6 +138,7 @@ export async function loadGrowthView(): Promise<{
     activeAppointmentAt: r.active_scheduled_at,
     activeAppointmentId: r.active_appointment_id,
     activeMeetingNumber: r.active_meeting_number,
+    activeAttendance: toAttendance(r.active_attendance),
     hasAnyAppointment: Number(r.appt_count) > 0,
   }));
 

@@ -7,6 +7,7 @@ export type RowStatus = "pendiente_vencido" | "pendiente_paso" | "trabajada" | "
 
 export type AgendaRow = {
   opportunityId: string;
+  appointmentId: string | null;
   contactName: string | null;
   companyName: string | null;
   closerId: string | null;
