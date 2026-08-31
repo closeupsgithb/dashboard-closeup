@@ -128,7 +128,15 @@ export function GrowthEditPanel({
 
   const yaPagado = opportunity.stageId === STAGE_PAGADO;
   const needsFollowUp = FOLLOW_UP_STEPS.has(draftProximoPaso);
-  const followUpValid = !needsFollowUp || followUpCompletar || (followUpFecha.trim() !== "" && followUpAccion.trim() !== "");
+  // Prioridad 1 (resultado de la reunión) y prioridad 2 (próximo paso) NUNCA
+  // dependen de esto — la fecha/acción del follow-up es prioridad 3 y es
+  // opcional: si falta, el próximo paso se guarda igual y el lead aparece en
+  // Follow-ups dentro del cajón "Sin fecha" (computeFollowUpQueue ya lo
+  // soporta sin necesidad de fecha). Este flag ya NO bloquea el guardado —
+  // solo decide qué mensaje mostrar y si se intenta crear/editar la tarea de
+  // GHL (que sí necesita fecha+acción para poder crearse).
+  const followUpComplete = followUpFecha.trim() !== "" && followUpAccion.trim() !== "";
+  const followUpPartial = !followUpComplete && (followUpFecha.trim() !== "" || followUpAccion.trim() !== "");
   const reagendarValid = !reagendarOpen || draftReagendarFecha.trim() !== "";
 
   const followUpOriginalFecha = opportunity.followUpDueAt ? isoToMadridLocalInput(opportunity.followUpDueAt) : "";
@@ -173,12 +181,18 @@ export function GrowthEditPanel({
     }
     if (followUpCompletar) {
       diffs.push({ label: "Follow-up", before: followUpOriginalAccion || "—", after: "Completado" });
-    } else if (needsFollowUp && followUpFecha && followUpAccion.trim() && (!hasExistingFollowUp || followUpChanged)) {
+    } else if (needsFollowUp && followUpComplete && (!hasExistingFollowUp || followUpChanged)) {
       diffs.push({
         label: hasExistingFollowUp ? "Follow-up (editar tarea en GHL)" : "Follow-up (nueva tarea en GHL)",
         before: hasExistingFollowUp ? `${fmtLocal(opportunity.followUpDueAt ?? "")} — ${followUpOriginalAccion}` : "—",
         after: `${fmtLocal(followUpFecha)} — ${followUpAccion.trim()}`,
       });
+    } else if (needsFollowUp && !followUpCompletar && !followUpComplete && (draftProximoPaso !== originalProximoPaso || followUpChanged)) {
+      // Sin fecha y/o sin acción: el próximo paso se guarda igual (diff
+      // separado, arriba) y el lead queda en Follow-ups → "Sin fecha". No es
+      // un error — es el flujo normal cuando el closer todavía no sabe la
+      // fecha exacta de seguimiento.
+      diffs.push({ label: "Follow-up", before: "—", after: "Pendiente, sin fecha definida" });
     }
     if (draftPagado) {
       diffs.push({ label: "PAGADO", before: opportunity.stageName, after: "Pagado — cuenta como venta confirmada", warn: true });
@@ -199,7 +213,10 @@ export function GrowthEditPanel({
 
   function irARevisar() {
     setError(null);
-    if (!followUpValid || !reagendarValid) return;
+    // Reagendar sí requiere fecha (crea/mueve una cita real en GHL — Fase B
+    // del brief de Daniel, "nueva reunión"). El follow-up (Fase A, "acción
+    // pendiente") nunca bloquea aquí: su fecha es opcional.
+    if (!reagendarValid) return;
     setStep("reviewing");
   }
 
@@ -245,7 +262,7 @@ export function GrowthEditPanel({
     }
     if (followUpCompletar && opportunity.followUpTaskId) {
       await runStep("Follow-up completado", () => postAction({ action: "followUpComplete", taskId: opportunity.followUpTaskId }));
-    } else if (needsFollowUp && followUpFecha && followUpAccion.trim() && (!hasExistingFollowUp || followUpChanged)) {
+    } else if (needsFollowUp && followUpComplete && (!hasExistingFollowUp || followUpChanged)) {
       await runStep(hasExistingFollowUp ? "Follow-up (editado)" : "Follow-up (creado)", () =>
         postAction({
           action: "followUp",
@@ -444,9 +461,9 @@ export function GrowthEditPanel({
             </Field>
 
             {needsFollowUp && (
-              <div className="flex flex-col gap-1.5 rounded-lg border p-3" style={{ borderColor: "var(--status-critical)", background: "rgba(208,59,59,0.05)" }}>
-                <span className="text-xs font-medium" style={{ color: "var(--status-critical)" }}>
-                  {hasExistingFollowUp ? "Follow-up pendiente para este lead" : "Este próximo paso requiere fecha y acción concreta de seguimiento"}
+              <div className="flex flex-col gap-1.5 rounded-lg border p-3" style={{ borderColor: "var(--border)", background: "var(--page)" }}>
+                <span className="text-xs font-medium" style={{ color: "var(--ink-secondary)" }}>
+                  {hasExistingFollowUp ? "Follow-up pendiente para este lead" : "Follow-up de seguimiento (fecha y acción opcionales)"}
                 </span>
 
                 {hasExistingFollowUp && (
@@ -459,7 +476,7 @@ export function GrowthEditPanel({
                 {!followUpCompletar && (
                   <>
                     <label className="text-xs" style={{ color: "var(--ink-secondary)" }}>
-                      Fecha y hora de seguimiento
+                      Fecha y hora de seguimiento (opcional)
                     </label>
                     <input
                       type="datetime-local"
@@ -469,7 +486,7 @@ export function GrowthEditPanel({
                       style={{ borderColor: "var(--border)", background: "var(--page)", color: "var(--ink)" }}
                     />
                     <label className="text-xs" style={{ color: "var(--ink-secondary)" }}>
-                      Acción concreta (se guarda como tarea en GHL)
+                      Acción concreta (se guarda como tarea en GHL, opcional)
                     </label>
                     <input
                       type="text"
@@ -486,9 +503,16 @@ export function GrowthEditPanel({
                         el panel de nuevo.
                       </span>
                     )}
-                    {!followUpValid && (
-                      <span className="text-xs" style={{ color: "var(--status-critical)" }}>
-                        No se puede guardar sin fecha y acción concreta cuando el próximo paso es de seguimiento.
+                    {followUpPartial && (
+                      <span className="text-xs" style={{ color: "var(--status-warning)" }}>
+                        Falta la fecha o la acción — sin ambas no se crea la tarea en GHL, pero el próximo paso se
+                        guarda igual y el lead queda en Follow-ups como pendiente.
+                      </span>
+                    )}
+                    {!followUpComplete && !followUpPartial && (
+                      <span className="text-xs" style={{ color: "var(--ink-muted)" }}>
+                        Sin fecha: se guarda igual. El lead aparece en Follow-ups → &quot;Sin fecha&quot; hasta que se
+                        defina una.
                       </span>
                     )}
                   </>
@@ -525,7 +549,7 @@ export function GrowthEditPanel({
 
             <button
               onClick={irARevisar}
-              disabled={!followUpValid || !reagendarValid}
+              disabled={!reagendarValid}
               className="rounded px-3 py-1.5 text-sm font-medium disabled:opacity-40"
               style={{ background: "var(--brand)", color: "white" }}
             >
