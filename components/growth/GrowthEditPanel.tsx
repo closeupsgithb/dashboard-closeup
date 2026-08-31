@@ -21,7 +21,16 @@ export type PanelOpportunity = {
   stageId: string;
   stageName: string;
   status: string;
+  // Campo crudo de GHL (asistio_reunion), a nivel de OPORTUNIDAD — puede
+  // quedar desactualizado respecto a la reunión activa real (p. ej. un valor
+  // de una Call 1 anterior, o editado a mano en GHL). Se conserva solo para
+  // mostrar/auditar; el punto de partida real del selector es
+  // activeAttendance (ver abajo).
   asistioReunionRaw: string | null;
+  // Resultado YA guardado de la reunión activa (growth_appointments.attendance
+  // de esa cita) — la fuente de verdad real. Si falta (contexto sin cita
+  // activa a la vista), se cae de vuelta a asistioReunionRaw.
+  activeAttendance?: "asistio" | "no_show" | "pendiente";
   scheduledAt?: string | null;
   followUpDueAt?: string | null;
   followUpTitle?: string | null;
@@ -96,7 +105,24 @@ export function GrowthEditPanel({
   onClose: () => void;
   onSaved: () => void;
 }) {
-  const originalAsistio = opportunity.asistioReunionRaw ?? "Pendiente";
+  // El punto de partida real es el resultado YA guardado de la reunión
+  // ACTIVA (growth_appointments.attendance), no el campo crudo de GHL a
+  // nivel de oportunidad (asistioReunionRaw) — ese puede seguir en "Sí" de
+  // una Call 1 ya resuelta mientras la Call 2 activa sigue "pendiente" en
+  // Neon. Si el selector arrancara desde el campo crudo ya en "Sí", un
+  // closer que marca "Asistió" en la Call 2 (mismo valor que ya veía) nunca
+  // dispararía el guardado, porque el panel solo envía "asistio" cuando el
+  // valor CAMBIA respecto al original — causa raíz del caso Miguel Méndez /
+  // Mek habitat (2026-08-31): la reunión 2 quedaba mostrada como "Asistió"
+  // en el panel pero seguía "Falta registrar asistencia" en la Agenda.
+  const activeAttendanceLabel: Record<"asistio" | "no_show" | "pendiente", string> = {
+    asistio: "Sí",
+    no_show: "No",
+    pendiente: "Pendiente",
+  };
+  const originalAsistio = opportunity.activeAttendance
+    ? activeAttendanceLabel[opportunity.activeAttendance]
+    : (opportunity.asistioReunionRaw ?? "Pendiente");
   const originalProximoPaso = opportunity.proximoPaso ?? "No definido";
 
   const hasExistingFollowUp = Boolean(opportunity.followUpTaskId);

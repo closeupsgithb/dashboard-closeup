@@ -193,6 +193,7 @@ export async function GET(request: Request) {
           stageName: o.stageName,
           status: o.status,
           asistioReunionRaw: o.asistioReunion,
+          activeAttendance: o.activeAttendance,
           followUpDueAt: o.followUpDueAt,
           followUpTitle: o.followUpTitle,
           followUpTaskId: o.followUpTaskId,

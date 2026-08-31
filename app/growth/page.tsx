@@ -133,6 +133,7 @@ export default function GrowthPage() {
       stageName: row.stageName,
       status: row.status,
       asistioReunionRaw: row.asistioReunionRaw,
+      activeAttendance: row.attendance,
       scheduledAt: row.scheduledAt,
     });
   }
@@ -148,6 +149,7 @@ export default function GrowthPage() {
       stageName: row.stageName,
       status: row.status,
       asistioReunionRaw: row.asistioReunionRaw,
+      activeAttendance: row.activeAttendance,
       scheduledAt: null,
       followUpDueAt: row.dueAt,
       followUpTitle: row.accion,
@@ -166,6 +168,7 @@ export default function GrowthPage() {
       stageName: row.stageName,
       status: row.status,
       asistioReunionRaw: row.asistioReunionRaw,
+      activeAttendance: row.activeAttendance,
       scheduledAt: null,
       followUpDueAt: row.followUpDueAt,
       followUpTitle: row.followUpTitle,

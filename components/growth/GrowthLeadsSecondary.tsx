@@ -25,6 +25,7 @@ export type LeadRow = {
   stageName: string;
   status: string;
   asistioReunionRaw: string | null;
+  activeAttendance: "asistio" | "no_show" | "pendiente";
   followUpDueAt: string | null;
   followUpTitle: string | null;
   followUpTaskId: string | null;

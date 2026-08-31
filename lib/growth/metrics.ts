@@ -391,6 +391,12 @@ export type FollowUpRow = {
   stageName: string;
   status: string;
   asistioReunionRaw: string | null;
+  // Resultado de la reunión ACTIVA de este lead (growth_appointments.attendance,
+  // no el campo crudo de GHL de arriba) — ver comentario equivalente en
+  // GrowthOpportunityView.activeAttendance. El panel lo usa como punto de
+  // partida real de "Resultado de la reunión" en vez de asistioReunionRaw,
+  // que puede quedar desactualizado si esa reunión ya no es la activa.
+  activeAttendance: Attendance;
 };
 
 // 3 cajones, relativos al periodo activo (Daniel, 2026-08-21: "debe
@@ -441,6 +447,7 @@ export function computeFollowUpQueue(
       stageName: o.stageName,
       status: o.status,
       asistioReunionRaw: o.asistioReunion,
+      activeAttendance: o.activeAttendance,
     };
     if (!o.followUpDueAt) {
       buckets.sinFecha.push(row);

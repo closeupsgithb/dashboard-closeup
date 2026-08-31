@@ -17,6 +17,7 @@ export type FollowUpRow = {
   stageName: string;
   status: string;
   asistioReunionRaw: string | null;
+  activeAttendance: "asistio" | "no_show" | "pendiente";
 };
 
 export type FollowUpBuckets = {
