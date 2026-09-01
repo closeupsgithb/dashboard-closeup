@@ -40,7 +40,14 @@ export async function GET(request: Request) {
 
     const periodoParam = url.searchParams.get("periodo") || "hoy";
     const tipo: PeriodType = VALID_PERIOD_TYPES.has(periodoParam) ? (periodoParam as PeriodType) : "hoy";
-    const ref = url.searchParams.get("ref");
+    // "ref" viene de la query string — nunca se confía en su forma sin
+    // validar. Un ref que no encaja con el tipo (p. ej. "mes" con algo que
+    // no sea YYYY-MM) se trata como si no viniera ninguno, en vez de
+    // dejarlo llegar a resolvePeriod y producir una Date inválida que
+    // tumbaba la petición entera (caso real, Daniel, 2026-09-01).
+    const rawRef = url.searchParams.get("ref");
+    const refPattern = tipo === "mes" ? /^\d{4}-\d{2}$/ : /^\d{4}-\d{2}-\d{2}$/;
+    const ref = rawRef && refPattern.test(rawRef) ? rawRef : null;
     const closerFilter = url.searchParams.get("closer") || "all";
 
     let syncError: string | null = null;

@@ -15,7 +15,11 @@ import {
 } from "@/lib/growth/ghl";
 import { listClosers, upsertCloser } from "@/lib/growth/closers";
 
-type FollowUpTaskInfo = { dueAt: string; title: string; taskId: string };
+type FollowUpTaskInfo = { dueAt: string | null; title: string; taskId: string };
+
+function isValidIso(value: string | null | undefined): value is string {
+  return typeof value === "string" && !Number.isNaN(new Date(value).getTime());
+}
 
 // Devuelve la tarea PENDIENTE más próxima del contacto (fecha + título +
 // id) — el id es lo que permite luego EDITAR esa misma tarea (PUT) en vez de
@@ -24,10 +28,22 @@ async function resolveFollowUpTask(contactId: string, proximoPaso: string | null
   if (!proximoPaso || !FOLLOW_UP_REQUIRED_STEPS.has(proximoPaso)) return null;
   try {
     const tasks = await fetchContactTasks(contactId);
-    const pendientes = tasks.filter((t) => !t.completed).sort((a, b) => new Date(a.dueDate).getTime() - new Date(b.dueDate).getTime());
+    // dueDate llega tal cual de GHL, sin garantía de formato (a diferencia
+    // de una columna timestamptz, que Postgres ya habría rechazado si
+    // viniera mal). Las tareas con fecha ilegible se tratan como "sin
+    // fecha" en vez de dejar pasar un valor que reviente el formateo más
+    // adelante (caso real, Daniel, 2026-09-01) — no se descartan del todo:
+    // siguen siendo la tarea pendiente más próxima si son la única.
+    const pendientes = tasks
+      .filter((t) => !t.completed)
+      .sort((a, b) => {
+        const at = isValidIso(a.dueDate) ? new Date(a.dueDate).getTime() : Infinity;
+        const bt = isValidIso(b.dueDate) ? new Date(b.dueDate).getTime() : Infinity;
+        return at - bt;
+      });
     const next = pendientes[0];
     if (!next) return null;
-    return { dueAt: next.dueDate, title: next.title, taskId: next.id };
+    return { dueAt: isValidIso(next.dueDate) ? next.dueDate : null, title: next.title, taskId: next.id };
   } catch {
     // Una tarea que no se puede leer no debe romper la sincronización
     // entera — el lead simplemente cae en el cajón "Sin fecha".

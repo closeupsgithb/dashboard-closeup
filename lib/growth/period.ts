@@ -7,6 +7,16 @@ const MADRID_TZ = "Europe/Madrid";
 // instante UTC exacto sin asumir un offset fijo (+1/+2 cambia en marzo/octubre).
 function madridOffsetMinutes(dateStr: string): number {
   const probe = new Date(`${dateStr}T12:00:00Z`);
+  // Un dateStr malformado (p. ej. un "ref" de query string manipulado o
+  // corrupto) da una Date inválida — formatToParts() sobre eso lanza
+  // "RangeError: Invalid time value" y tumbaba la petición entera del
+  // dashboard (caso real, Daniel, 2026-09-01). Offset 0 como respaldo:
+  // resolvePeriod ya valida "ref" antes de llegar aquí, así que esto es solo
+  // la segunda capa de defensa, nunca el punto donde se decide qué mostrar.
+  if (Number.isNaN(probe.getTime())) {
+    console.error("madridOffsetMinutes: dateStr inválido, se usa offset 0", dateStr);
+    return 0;
+  }
   const parts = new Intl.DateTimeFormat("en-US", { timeZone: MADRID_TZ, timeZoneName: "shortOffset" }).formatToParts(probe);
   const tzPart = parts.find((p) => p.type === "timeZoneName")?.value ?? "GMT+0";
   const match = tzPart.match(/GMT([+-]\d+)(?::(\d+))?/);

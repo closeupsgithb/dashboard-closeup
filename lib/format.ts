@@ -8,6 +8,19 @@ const MADRID_TZ = "Europe/Madrid";
 // en UTC "Z" en vez de con el offset local ya incluido).
 export function madridDateOnly(input: string | number | Date): string {
   const date = input instanceof Date ? input : new Date(input);
+  // Un valor de fecha inválido (dato externo malformado — GHL, un query
+  // param manipulado, un registro corrupto) NO debe tirar toda una petición
+  // abajo: Intl.DateTimeFormat().format() lanza "RangeError: Invalid time
+  // value" sobre una Date inválida, y esta función se usa en decenas de
+  // sitios sin que cada llamador pueda protegerse individualmente. Se
+  // degrada a "hoy" en vez de crashear — un caso real reportado por Daniel
+  // (2026-09-01): un solo valor de fecha inválido tumbaba la vista de un mes
+  // entero con "No se pudo cargar el dashboard comercial. Invalid time
+  // value", ocultando datos por lo demás válidos.
+  if (Number.isNaN(date.getTime())) {
+    console.error("madridDateOnly: valor de fecha inválido, se usa hoy como respaldo", input);
+    return madridDateOnly(new Date());
+  }
   return new Intl.DateTimeFormat("en-CA", {
     timeZone: MADRID_TZ,
     year: "numeric",
