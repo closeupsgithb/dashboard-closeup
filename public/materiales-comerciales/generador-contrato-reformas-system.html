@@ -71,25 +71,30 @@
   .toolbar input[type=text] { width: 100%; box-sizing: border-box; padding: 8px 10px; font-size: 10pt; font-family: 'Segoe UI', Arial, sans-serif; border: 1px solid #ccc; border-radius: 6px; }
   .toolbar input:focus { outline: none; border-color: var(--orange); }
   .toolbar .full { grid-column: 1 / -1; }
-  .toolbar .payment-choice { grid-column: 1 / -1; display: flex; gap: 18px; padding: 10px 12px; background: #fff; border: 1px solid #ddd; border-radius: 6px; }
-  .toolbar .payment-choice label { display: flex; align-items: center; gap: 6px; font-size: 9.3pt; font-weight: 700; text-transform: none; letter-spacing: 0; color: var(--ink); margin-bottom: 0; cursor: pointer; }
-  .toolbar .payment-choice input[type=radio] { accent-color: var(--orange); width: 15px; height: 15px; cursor: pointer; }
+  .toolbar .payment-choice { grid-column: 1 / -1; display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px 14px; padding: 10px 12px; background: #fff; border: 1px solid #ddd; border-radius: 6px; }
+  .toolbar .payment-choice label { display: flex; align-items: flex-start; gap: 6px; font-size: 8.6pt; font-weight: 700; text-transform: none; letter-spacing: 0; color: var(--ink); margin-bottom: 0; cursor: pointer; line-height: 1.3; }
+  .toolbar .payment-choice input[type=radio] { accent-color: var(--orange); width: 15px; height: 15px; cursor: pointer; flex-shrink: 0; margin-top: 1px; }
   .toolbar .actions { margin-top: 16px; display: flex; align-items: center; gap: 12px; }
   .toolbar button { background: var(--orange); color: #fff; border: none; padding: 10px 22px; font-size: 10pt; font-weight: 700; border-radius: 6px; cursor: pointer; }
   .toolbar button:hover { opacity: 0.92; }
   .toolbar .status { font-size: 8.6pt; color: var(--ink-soft); }
   .toolbar .status.ok { color: #1a7d3a; font-weight: 700; }
+  @media (max-width: 640px) {
+    .toolbar .grid { grid-template-columns: 1fr; }
+    .toolbar .payment-choice { grid-template-columns: 1fr; }
+  }
 </style>
 </head>
 <body>
 
 <div class="toolbar">
   <h2>Generador de Contrato — +Reformas System</h2>
-  <p class="instr">Elige la forma de pago, rellena los datos del cliente y pulsa "Generar contrato". Después pulsa <b>Ctrl+P</b> (o Cmd+P en Mac) y elige <b>Guardar como PDF</b> — el nombre de archivo se rellenará solo como "Closeup x [nombre de la sociedad]" — con Tamaño de papel <b>A4</b>, Márgenes <b>Ninguno</b> y la casilla <b>Gráficos de fondo</b> activada. Este bloque no se imprime.</p>
+  <p class="instr">Elige la modalidad contractual, rellena los datos del cliente y pulsa "Generar contrato". Después pulsa <b>Ctrl+P</b> (o Cmd+P en Mac) y elige <b>Guardar como PDF</b> — el nombre de archivo se rellenará solo según la modalidad elegida — con Tamaño de papel <b>A4</b>, Márgenes <b>Ninguno</b> y la casilla <b>Gráficos de fondo</b> activada. Este bloque no se imprime.</p>
   <div class="grid">
     <div class="payment-choice full">
-      <label><input type="radio" name="pago" id="pago_unico" value="unico" checked> Pago único (2.997 € + IVA)</label>
-      <label><input type="radio" name="pago" id="pago_fraccionado" value="fraccionado"> Pago fraccionado (1.500 € inicial)</label>
+      <label><input type="radio" name="modalidad" id="modalidad_single_included" value="single_ads_included" checked> Pago único · Publicidad incluida (2.997 € + IVA)</label>
+      <label><input type="radio" name="modalidad" id="modalidad_single_separate" value="single_ads_separate"> Pago único · Publicidad aparte (2.997 € + IVA)</label>
+      <label><input type="radio" name="modalidad" id="modalidad_split_included" value="split_ads_included"> Pago fraccionado · Publicidad incluida (1.500 € inicial)</label>
     </div>
     <div><label>Nombre completo del representante</label><input type="text" id="f_nombre" placeholder="Ej: Marta Gómez Ruiz"></div>
     <div><label>DNI / NIE</label><input type="text" id="f_dni" placeholder="Ej: 12345678Z"></div>
@@ -125,7 +130,7 @@
 
   <h3 class="big-title">DEFINICIONES</h3>
   <h4 class="sub">Definición de Presupuesto Computable</h4>
-  <p>A efectos de la garantía, se considerará <b>PRESUPUESTO COMPUTABLE</b> aquel generado a partir de una oportunidad de +Reformas System que cumpla los criterios acordados, haya sido elaborado y enviado al potencial cliente y quede correctamente registrado en el CRM.</p>
+  <p>La garantía de la Cláusula 2 consiste en quince (15) oportunidades cualificadas procedentes de +Reformas System que alcancen la fase de presupuesto y sean presupuestadas por EL CLIENTE. A efectos de la garantía, se considerará <b>PRESUPUESTO COMPUTABLE</b> aquella oportunidad que proceda de +Reformas System; cumpla razonablemente los criterios comerciales acordados; alcance una fase del proceso comercial en la que resulte posible elaborar un presupuesto; cuente con un presupuesto técnico y económico preparado por EL CLIENTE; haya sido enviado o entregado al potencial cliente; y quede correctamente registrado en el CRM.</p>
   <p>Una vez enviado, el presupuesto computará aunque posteriormente el potencial cliente no responda, cambie de opinión, contrate a otra empresa, aplace la reforma o decida no ejecutarla. La garantía se refiere a presupuestos realizados y enviados, no a su aceptación.</p>
 </div>
 
@@ -139,10 +144,12 @@
   <p>El servicio +Reformas System incluye:</p>
   <ul>
     <li>Auditoría comercial inicial: presencia digital, oferta y comunicación.</li>
-    <li>Diseño y gestión de campañas de captación, con la inversión publicitaria incluida.</li>
+    <li class="ads-included-only">Diseño y gestión de campañas de captación, con una inversión publicitaria mínima efectiva de CUATROCIENTOS EUROS (400 €) mensuales incluida en el precio y destinada directamente a la plataforma publicitaria.</li>
+    <li class="ads-separate-only" style="display:none;">Diseño y gestión de campañas de captación. La inversión publicitaria no está incluida en los honorarios y será abonada por EL CLIENTE directamente a la plataforma publicitaria, con un presupuesto mínimo de CUATROCIENTOS EUROS (400 €) mensuales.</li>
     <li>Formularios, cualificación automatizada y atención por WhatsApp.</li>
     <li>CRM, automatizaciones y seguimiento comercial de cada oportunidad.</li>
     <li>Optimización comercial continua y medición de resultados.</li>
+    <li>Acompañamiento y consultoría 1:1: el servicio podrá incluir sesiones individuales de acompañamiento comercial y consultoría orientadas a revisar la cualificación, el contacto, el seguimiento, la elaboración de presupuestos y la conversión de oportunidades, con un máximo de una sesión semanal y cuatro (4) sesiones por mes.</li>
   </ul>
   <p>Las oportunidades generadas específicamente para EL CLIENTE no se cederán a otros clientes.</p>
   <p>Las recomendaciones de LA AGENCIA sobre presupuestos, seguimiento y conversión tienen naturaleza comercial y de marketing. La valoración técnica de los trabajos, mediciones, precios finales, plazos de obra y compromisos propios del servicio de reformas corresponden exclusivamente a EL CLIENTE.</p>
@@ -154,52 +161,79 @@
   <p>LA AGENCIA garantiza que, cumpliéndose las condiciones de colaboración de la Cláusula 3, +Reformas System permitirá alcanzar un mínimo de quince (15) presupuestos, conforme a la definición anterior, en el plazo de 90 días desde la activación efectiva de las campañas de captación.</p>
   <p>El CRM es el sistema de referencia para verificar el estado de las oportunidades y el cumplimiento de esta garantía. EL CLIENTE tiene acceso a sus propios registros. Las actuaciones que no consten registradas y no puedan verificarse razonablemente podrán no computarse hasta que sean acreditadas o actualizadas.</p>
   <p>Si, transcurridos los 90 días, EL CLIENTE ha cumplido la Cláusula 3 y no se ha alcanzado el mínimo de quince (15) presupuestos, LA AGENCIA continuará el servicio —incluida la inversión publicitaria necesaria— sin honorarios adicionales hasta completarlo.</p>
-
-  <h4 class="clause-title"><span class="n">3.</span> Condiciones de colaboración para mantener activa la garantía</h4>
-  <p>Para que la garantía de la Cláusula 2 se mantenga activa, EL CLIENTE se compromete a:</p>
-  <ul>
-    <li><b>Contacto.</b> Contactar cada oportunidad con prontitud razonable y, si no logra contacto inicial, realizar un mínimo de tres intentos en momentos distintos, siguiendo razonablemente la Guía Comercial de +Reformas System.</li>
-    <li><b>Visitas.</b> Mantener disponibilidad comercial suficiente y, cuando no pueda adaptarse a la fecha propuesta, ofrecer una alternativa próxima.</li>
-    <li><b>Presupuesto.</b> Elaborar y enviar el presupuesto en un plazo máximo de cinco (5) días hábiles tras la visita, salvo causa objetiva derivada de la complejidad del proyecto, que quedará registrada.</li>
-  </ul>
+  <p>El plazo de noventa (90) días constituye el plazo máximo inicialmente previsto para alcanzar la garantía y no un periodo mínimo de prestación durante el cual quede aplazado el inicio de la continuidad mensual. Una vez alcanzados y registrados en el CRM los quince (15) presupuestos computables, incluso aunque esto suceda antes de que hayan transcurrido los noventa (90) días, la garantía inicial se considerará cumplida y comenzará la continuidad mensual mediante la tarifa correspondiente.</p>
 </div>
 
 <!-- PÁGINA 3 -->
 <div class="page">
   <div class="run-header"><span>Closeup Marketing · Contrato de prestación de servicios · +Reformas System</span><span>3</span></div>
 
+  <h4 class="clause-title"><span class="n">3.</span> Condiciones de colaboración para mantener activa la garantía</h4>
+  <p>Para que la garantía de la Cláusula 2 se mantenga activa, EL CLIENTE se compromete a:</p>
   <ul>
-    <li><b>Seguimiento.</b> Aplicar razonablemente la Guía Comercial y colaborar en el proceso de seguimiento de cada oportunidad.</li>
+    <li><b>Contacto.</b> EL CLIENTE debe realizar el primer intento de contacto telefónico en un plazo máximo de veinticuatro (24) horas desde que la oportunidad quede registrada o sea puesta a su disposición en el CRM. El primer contacto debe realizarse mediante llamada telefónica; un mensaje de WhatsApp, SMS o correo electrónico puede utilizarse como apoyo, pero no sustituye la obligación de llamar. Cuando no se consiga contacto inicial, EL CLIENTE debe realizar un mínimo de tres (3) intentos de llamada telefónica, en horarios diferentes y preferiblemente en días distintos, dejando constancia de cada intento en el CRM. No será necesario continuar llamando si la oportunidad responde y avanza dentro del proceso comercial, rechaza expresamente el servicio, comunica que no desea recibir más llamadas, tiene datos falsos o inválidos debidamente registrados, o solicita expresamente continuar mediante otro canal.</li>
+    <li><b>Visitas.</b> Mantener disponibilidad comercial suficiente y, cuando no pueda adaptarse a la fecha propuesta, ofrecer una alternativa próxima.</li>
+    <li><b>Presupuesto.</b> Elaborar y enviar el presupuesto en un plazo máximo de cinco (5) días hábiles tras la visita, salvo causa objetiva derivada de la complejidad del proyecto, que quedará registrada.</li>
+    <li><b>Seguimiento.</b> EL CLIENTE debe realizar el seguimiento comercial de las oportunidades, visitas y presupuestos principalmente por teléfono. Enviar únicamente mensajes de WhatsApp no se considerará seguimiento suficiente para mantener activa la garantía. WhatsApp, correo electrónico o SMS podrán utilizarse como canales complementarios, pero deben existir llamadas telefónicas reales y registradas en el CRM, acreditando un mínimo de tres (3) llamadas cuando la oportunidad no haya respondido, avanzado, rechazado expresamente el servicio o solicitado otro canal.</li>
     <li><b>CRM.</b> Mantener actualizado el estado de cada oportunidad, visita, presupuesto y resultado relevante.</li>
     <li><b>Capacidad.</b> Mantener durante el periodo capacidad suficiente para atender las oportunidades, coordinar las visitas y prestar su servicio, disponiendo de los medios y personal necesarios. Asimismo, deberá mantener los criterios comerciales acordados al inicio; los cambios posteriores no afectarán a las oportunidades ya generadas conforme a dichos criterios.</li>
   </ul>
-
-  <h4 class="clause-title"><span class="n">4.</span> Suspensión de la garantía</h4>
-  <p>Si LA AGENCIA detecta un incumplimiento relevante de la Cláusula 3, lo comunicará a EL CLIENTE y solicitará su corrección; si el incumplimiento persiste y afecta materialmente al sistema, la garantía quedará suspendida. También quedará suspendida cuando el servicio no pueda ejecutarse por causa imputable a EL CLIENTE, como impago, pausa voluntaria de las campañas, o falta prolongada de disponibilidad o de accesos necesarios.</p>
-
-  <h4 class="clause-title"><span class="n">5.</span> Precio, forma de pago y continuidad</h4>
-  <div class="price-block">
-    <div class="price-row"><span class="k">Precio del servicio</span><span class="v">2.997 € + IVA</span></div>
-    <div class="price-row"><span class="k">IVA (21%)</span><span class="v">629,37 €</span></div>
-    <div class="price-row total"><span class="k">Total</span><span class="v">3.626,37 €</span></div>
-    <div class="price-note">Periodo inicial: 90 días. Inversión publicitaria incluida.</div>
-    <div class="frac-only" style="display:none;">
-      <div class="continuity-label">Forma de pago fraccionada</div>
-      <div class="price-row"><span class="k">1er pago</span><span class="v">1.500 € + IVA</span></div>
-      <div class="price-row"><span class="k">2º pago (resto)</span><span class="v">1.497 € + IVA</span></div>
-      <div class="price-row"><span class="k">Vencimiento del 2º pago</span><span class="v">30 días desde el 1er pago</span></div>
-    </div>
-    <div class="continuity-label">Continuidad</div>
-    <div class="price-row"><span class="k">A partir de los 15 presupuestos</span><span class="v">1.497 € + IVA / mes</span></div>
-  </div>
-  <p>La forma prioritaria de pago es transferencia bancaria: Banco Santander, IBAN <span style="white-space:nowrap;">ES05 0049 5175 7121 1653 9086</span>, titular Daniel Guillermo von Zedlitz / Closeup Marketing, concepto <span class="sig-fill" data-tok="sociedad">[NOMBRE EMPRESA]</span> +REFORMAS SYSTEM.</p>
-  <p class="frac-only" style="display:none;">El segundo pago deberá abonarse en el plazo de 30 días naturales desde el primer pago. Si no se recibe dentro de ese plazo, LA AGENCIA pausará las campañas y cancelará el sistema +Reformas System.</p>
-  <p>Una vez alcanzados los quince (15) presupuestos, se entenderá cumplida la garantía inicial y +Reformas System continuará mediante la tarifa mensual indicada. Esta continuidad podrá finalizarse por cualquiera de las partes con un preaviso de 10 días naturales antes de la siguiente mensualidad.</p>
 </div>
 
 <!-- PÁGINA 4 -->
 <div class="page">
   <div class="run-header"><span>Closeup Marketing · Contrato de prestación de servicios · +Reformas System</span><span>4</span></div>
+
+  <h4 class="clause-title"><span class="n">4.</span> Suspensión de la garantía</h4>
+  <p>Si LA AGENCIA detecta un incumplimiento relevante de la Cláusula 3, lo comunicará a EL CLIENTE y solicitará su corrección; si el incumplimiento persiste y afecta materialmente al sistema, la garantía quedará suspendida. También quedará suspendida cuando el servicio no pueda ejecutarse por causa imputable a EL CLIENTE, como impago, pausa voluntaria de las campañas, o falta prolongada de disponibilidad o de accesos necesarios.</p>
+
+  <h4 class="clause-title"><span class="n">5.</span> Precio, forma de pago y continuidad</h4>
+
+  <div class="price-block v-single-included">
+    <div class="price-row"><span class="k">Precio del servicio</span><span class="v">2.997 € + IVA</span></div>
+    <div class="price-row"><span class="k">IVA (21%)</span><span class="v">629,37 €</span></div>
+    <div class="price-row total"><span class="k">Total</span><span class="v">3.626,37 €</span></div>
+    <div class="price-note"><b>Inversión publicitaria mínima de 400 €/mes incluida.</b> Periodo inicial: 90 días.</div>
+    <div class="continuity-label">Continuidad</div>
+    <div class="price-row"><span class="k">A partir de los 15 presupuestos</span><span class="v">1.497 € + IVA / mes</span></div>
+    <div class="price-note">Publicidad incluida en la mensualidad de continuidad, en las mismas condiciones.</div>
+  </div>
+
+  <div class="price-block v-single-separate" style="display:none;">
+    <div class="price-row"><span class="k">Honorarios de LA AGENCIA</span><span class="v">2.997 € + IVA</span></div>
+    <div class="price-row"><span class="k">IVA (21%)</span><span class="v">629,37 €</span></div>
+    <div class="price-row total"><span class="k">Total honorarios</span><span class="v">3.626,37 €</span></div>
+    <div class="price-note"><b>Inversión publicitaria no incluida: mínimo 400 €/mes, abonados directamente por EL CLIENTE a la plataforma.</b> Periodo inicial: 90 días.</div>
+    <div class="continuity-label">Continuidad</div>
+    <div class="price-row"><span class="k">A partir de los 15 presupuestos</span><span class="v">1.497 € + IVA / mes</span></div>
+    <div class="price-note">Más la inversión publicitaria mínima de 400 €/mes, a cargo de EL CLIENTE.</div>
+  </div>
+
+  <div class="price-block v-split-included" style="display:none;">
+    <div class="price-row"><span class="k">Precio inicial total</span><span class="v">2.997 € + IVA</span></div>
+    <div class="continuity-label">1er pago — con la firma</div>
+    <div class="price-row"><span class="k">1er pago</span><span class="v">1.500 € + IVA</span></div>
+    <div class="price-row"><span class="k">IVA (21%)</span><span class="v">315 €</span></div>
+    <div class="price-row total"><span class="k">Total 1er pago</span><span class="v">1.815 €</span></div>
+    <div class="continuity-label">2º pago — a los 30 días naturales</div>
+    <div class="price-row"><span class="k">2º pago</span><span class="v">1.497 € + IVA</span></div>
+    <div class="price-row"><span class="k">IVA (21%)</span><span class="v">314,37 €</span></div>
+    <div class="price-row total"><span class="k">Total 2º pago</span><span class="v">1.811,37 €</span></div>
+    <div class="price-note"><b>Total del precio inicial: 3.626,37 € IVA incluido. Inversión publicitaria mínima de 400 €/mes incluida.</b> Periodo inicial: 90 días.</div>
+    <div class="continuity-label">Continuidad</div>
+    <div class="price-row"><span class="k">A partir de los 15 presupuestos</span><span class="v">1.497 € + IVA / mes</span></div>
+    <div class="price-note">Publicidad incluida en la mensualidad de continuidad, en las mismas condiciones.</div>
+  </div>
+
+  <p>La forma prioritaria de pago es transferencia bancaria: Banco Santander, IBAN <span style="white-space:nowrap;">ES05 0049 5175 7121 1653 9086</span>, titular Daniel Guillermo von Zedlitz / Closeup Marketing, concepto <span class="sig-fill" data-tok="sociedad">[NOMBRE EMPRESA]</span> +REFORMAS SYSTEM.</p>
+  <p class="frac-only" style="display:none;">El segundo pago deberá abonarse en el plazo de 30 días naturales desde el primer pago. Si no se recibe dentro de ese plazo, LA AGENCIA pausará las campañas y cancelará el sistema +Reformas System. El segundo pago de 1.497 € + IVA forma parte del precio inicial de 2.997 € + IVA y es independiente de la tarifa mensual de continuidad.</p>
+  <p class="frac-only" style="display:none;">El segundo pago continuará siendo exigible aunque la garantía de quince presupuestos se alcance antes de su fecha de vencimiento. La continuidad mensual comenzará cuando quede registrado el decimoquinto presupuesto, sin necesidad de esperar al vencimiento del segundo pago ni al transcurso de los noventa días.</p>
+  <p>Una vez alcanzados y registrados en el CRM los quince (15) presupuestos, se entenderá cumplida la garantía inicial y +Reformas System continuará mediante la tarifa mensual indicada. Esta continuidad podrá finalizarse por cualquiera de las partes con un preaviso de 10 días naturales antes de la siguiente mensualidad.</p>
+</div>
+
+<!-- PÁGINA 5 -->
+<div class="page">
+  <div class="run-header"><span>Closeup Marketing · Contrato de prestación de servicios · +Reformas System</span><span>5</span></div>
 
   <h4 class="clause-title"><span class="n">6.</span> Duración y cancelación</h4>
   <p>El periodo inicial del servicio será de hasta 90 días desde la activación efectiva de las campañas, durante los cuales LA AGENCIA desarrollará +Reformas System para alcanzar el objetivo acordado. Si EL CLIENTE decide desistir del servicio o deja de cumplir las obligaciones comerciales necesarias para su desarrollo, no tendrá derecho a la devolución de las cantidades abonadas.</p>
@@ -240,20 +274,55 @@
 
 
 <script>
-// El bloque "Forma de pago fraccionada" se muestra/oculta en cuanto se
-// cambia la opci\u00f3n de pago \u2014 no espera a "Generar contrato" ni a que est\u00e9n
-// rellenos los datos del cliente, para que se pueda comparar el contrato de
-// 2.997 \u20ac y el de 1.500 \u20ac antes de rellenar nada.
-function actualizarFormaPago() {
-  var fraccionado = document.getElementById('pago_fraccionado').checked;
-  document.querySelectorAll('.frac-only').forEach(function (el) {
-    el.style.display = fraccionado ? '' : 'none';
-  });
-  return fraccionado;
+// Los bloques espec\u00edficos de cada modalidad (precio, publicidad incluida/
+// aparte, pago fraccionado) se muestran/ocultan en cuanto se cambia la
+// modalidad \u2014 no esperan a "Generar contrato" ni a que est\u00e9n rellenos los
+// datos del cliente, para poder comparar las tres versiones antes de
+// rellenar nada. Cada bloque de precio es un contenedor independiente
+// (v-single-included / v-single-separate / v-split-included), nunca una
+// mezcla de fragmentos de varias modalidades \u2014 as\u00ed no puede quedar texto
+// residual de la modalidad anterior al cambiar de opci\u00f3n.
+var NOMBRES_MODALIDAD = {
+  single_ads_included: 'pago \u00fanico con publicidad incluida',
+  single_ads_separate: 'pago \u00fanico con publicidad aparte',
+  split_ads_included: 'pago fraccionado con publicidad incluida'
+};
+var SUFIJOS_ARCHIVO = {
+  single_ads_included: 'publicidad-incluida',
+  single_ads_separate: 'publicidad-aparte',
+  split_ads_included: 'pago-fraccionado'
+};
+
+function modalidadSeleccionada() {
+  var checked = document.querySelector('input[name="modalidad"]:checked');
+  return checked ? checked.value : 'single_ads_included';
 }
-document.getElementById('pago_unico').addEventListener('change', actualizarFormaPago);
-document.getElementById('pago_fraccionado').addEventListener('change', actualizarFormaPago);
-actualizarFormaPago();
+
+function aplicarModalidad() {
+  var v = modalidadSeleccionada();
+  var esFraccionado = v === 'split_ads_included';
+  var esPublicidadAparte = v === 'single_ads_separate';
+  document.querySelectorAll('.frac-only').forEach(function (el) { el.style.display = esFraccionado ? '' : 'none'; });
+  document.querySelectorAll('.ads-separate-only').forEach(function (el) { el.style.display = esPublicidadAparte ? '' : 'none'; });
+  document.querySelectorAll('.ads-included-only').forEach(function (el) { el.style.display = esPublicidadAparte ? 'none' : ''; });
+  document.querySelectorAll('.v-single-included').forEach(function (el) { el.style.display = v === 'single_ads_included' ? '' : 'none'; });
+  document.querySelectorAll('.v-single-separate').forEach(function (el) { el.style.display = v === 'single_ads_separate' ? '' : 'none'; });
+  document.querySelectorAll('.v-split-included').forEach(function (el) { el.style.display = v === 'split_ads_included' ? '' : 'none'; });
+  return v;
+}
+document.querySelectorAll('input[name="modalidad"]').forEach(function (r) {
+  r.addEventListener('change', aplicarModalidad);
+});
+aplicarModalidad();
+
+// Quita acentos y cualquier car\u00e1cter no v\u00e1lido en un nombre de archivo, para
+// construir "Closeup_[sociedad]_[modalidad].pdf" sin caracteres problem\u00e1ticos.
+function sanitizarNombreArchivo(s) {
+  return s
+    .normalize('NFD').replace(/[\u0300-\u036f]/g, '')
+    .replace(/[^a-zA-Z0-9]+/g, '-')
+    .replace(/^-+|-+$/g, '');
+}
 
 function generarContrato() {
   var campos = {
@@ -267,7 +336,7 @@ function generarContrato() {
   var faltan = [];
   for (var k in campos) { if (!campos[k]) faltan.push(k); }
   var status = document.getElementById('status');
-  var fraccionado = actualizarFormaPago();
+  var v = aplicarModalidad();
   if (faltan.length > 0) {
     status.textContent = 'Faltan datos: ' + faltan.join(', ');
     status.className = 'status';
@@ -279,8 +348,8 @@ function generarContrato() {
       el.classList.remove('sig-fill');
     });
   });
-  document.title = 'Closeup x ' + campos.sociedad;
-  status.textContent = 'Contrato generado (' + (fraccionado ? 'pago fraccionado' : 'pago \u00fanico') + '). Ahora pulsa Ctrl+P y guarda como PDF.';
+  document.title = 'Closeup_' + sanitizarNombreArchivo(campos.sociedad) + '_' + SUFIJOS_ARCHIVO[v];
+  status.textContent = 'Contrato generado (' + NOMBRES_MODALIDAD[v] + '). Ahora pulsa Ctrl+P y guarda como PDF.';
   status.className = 'status ok';
 }
 </script>

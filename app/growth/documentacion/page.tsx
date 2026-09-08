@@ -378,8 +378,8 @@ export default function CentroComercialPage() {
             </ul>
           </div>
           <Resource
-            title="Contrato +Reformas System — Pago único"
-            description="2.997 € + IVA en un solo pago. Versión estándar del contrato."
+            title="Contrato +Reformas System — Pago único · Publicidad incluida"
+            description="2.997 € + IVA en un solo pago. Inversión publicitaria mínima de 400 €/mes incluida."
             actions={
               <>
                 <OpenButton href="/materiales-comerciales/contrato-reformas-system-2997.pdf" label="Abrir PDF" />
@@ -388,8 +388,18 @@ export default function CentroComercialPage() {
             }
           />
           <Resource
-            title="Contrato +Reformas System — Pago fraccionado"
-            description="1.500 € + IVA de entrada y el resto a 30 días. Misma garantía y condiciones que la versión estándar."
+            title="Contrato +Reformas System — Pago único · Publicidad aparte"
+            description="2.997 € + IVA en un solo pago, más una inversión publicitaria mínima de 400 €/mes abonada directamente por el cliente a la plataforma."
+            actions={
+              <>
+                <OpenButton href="/materiales-comerciales/contrato-reformas-system-publicidad-aparte.pdf" label="Abrir PDF" />
+                <CopyButton path="/materiales-comerciales/contrato-reformas-system-publicidad-aparte.pdf" />
+              </>
+            }
+          />
+          <Resource
+            title="Contrato +Reformas System — Pago fraccionado · Publicidad incluida"
+            description="1.500 € + IVA con la firma y 1.497 € + IVA a los 30 días. Inversión publicitaria mínima de 400 €/mes incluida."
             actions={
               <>
                 <OpenButton href="/materiales-comerciales/contrato-reformas-system-1500.pdf" label="Abrir PDF" />
@@ -399,7 +409,7 @@ export default function CentroComercialPage() {
           />
           <Resource
             title="Generador de contrato"
-            description="Rellena los datos del cliente, elige pago único o fraccionado, y genera el PDF ya personalizado en segundos."
+            description="Rellena los datos del cliente, elige la modalidad (pago único con publicidad incluida o aparte, o pago fraccionado) y genera el PDF ya personalizado en segundos."
             actions={<OpenButton href="/materiales-comerciales/generador-contrato-reformas-system.html" label="Abrir generador" />}
           />
           <Resource
