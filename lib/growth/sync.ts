@@ -277,29 +277,73 @@ async function syncOpportunityRecord(
 // página, botón "Actualizar", futuro webhook) sin duplicar oportunidades ni
 // citas — todo se identifica por opportunity_id/appointment_id reales de
 // GHL, nunca por nombre/email/teléfono.
+// Nº de oportunidades sincronizadas EN PARALELO dentro de reconcileGrowth().
+// Auditoría 2026-09-09/11 §5: antes de esto, el bucle principal hacía
+// `await` secuencial oportunidad por oportunidad — con 71 oportunidades y
+// ~250 idas y vueltas a Neon en total (HTTP puro, sin conexión persistente,
+// cada `query()` es su propia petición), eso dominaba el tiempo de carga de
+// cada página. Cada oportunidad ya se sincroniza de forma independiente
+// (su propia fila de growth_opportunities, sus propias citas por
+// opportunity_id) — procesarlas en tandas no cambia ningún dato final, solo
+// cuánto se tarda. 8 a la vez es deliberadamente conservador para no
+// disparar el límite de peticiones/segundo de la API de GHL (10/s por
+// ubicación) — cada oportunidad con citas hace más de una llamada a GHL
+// (tareas de seguimiento si aplica) dentro de syncOpportunityRecord.
+const RECONCILE_CONCURRENCY = 8;
+
+async function syncInBatches(
+  opportunities: GrowthOpportunity[],
+  existingById: Map<string, ExistingOpportunityRow>,
+  knownCloserIds: Set<string>,
+  eventsByContact: Map<string, GhlCalendarEvent[]>
+): Promise<{ cambiosDetectados: number; errores: string[] }> {
+  let cambiosDetectados = 0;
+  const errores: string[] = [];
+  for (let i = 0; i < opportunities.length; i += RECONCILE_CONCURRENCY) {
+    const lote = opportunities.slice(i, i + RECONCILE_CONCURRENCY);
+    const resultados = await Promise.all(
+      lote.map(async (o) => {
+        try {
+          const changed = await syncOpportunityRecord(o, existingById, knownCloserIds, eventsByContact);
+          return { ok: true as const, changed };
+        } catch (err) {
+          return { ok: false as const, error: `${o.id}: ${err instanceof Error ? err.message : String(err)}` };
+        }
+      })
+    );
+    for (const r of resultados) {
+      if (r.ok) {
+        if (r.changed) cambiosDetectados += 1;
+      } else {
+        errores.push(r.error);
+      }
+    }
+  }
+  return { cambiosDetectados, errores };
+}
+
 export async function reconcileGrowth(): Promise<SyncResult> {
   const closers = await listClosers();
   const knownCloserIds = new Set(closers.map((c) => c.id));
 
-  const opportunities = await fetchGrowthOpportunities();
-  const eventsByContact = await fetchEventsByContact();
-  const existingRows = await query<ExistingOpportunityRow>`
-    select opportunity_id, entry_month, closer_id, pipeline_stage_id, status, asistio_reunion, proximo_paso
-    from growth_opportunities
-  `;
+  // Las tres cargas iniciales son independientes entre sí (búsqueda de
+  // oportunidades, barrido de calendarios, lectura del estado ya guardado en
+  // Neon) — antes se esperaban una detrás de otra sin necesidad.
+  const [opportunities, eventsByContact, existingRows] = await Promise.all([
+    fetchGrowthOpportunities(),
+    fetchEventsByContact(),
+    query<ExistingOpportunityRow>`
+      select opportunity_id, entry_month, closer_id, pipeline_stage_id, status, asistio_reunion, proximo_paso
+      from growth_opportunities
+    `,
+  ]);
   const existingById = new Map(existingRows.map((r) => [r.opportunity_id, r]));
 
-  let cambiosDetectados = 0;
-  const errores: string[] = [];
-
-  for (const o of opportunities) {
-    try {
-      const changed = await syncOpportunityRecord(o, existingById, knownCloserIds, eventsByContact);
-      if (changed) cambiosDetectados += 1;
-    } catch (err) {
-      errores.push(`${o.id}: ${err instanceof Error ? err.message : String(err)}`);
-    }
-  }
+  const resultadoLote = await syncInBatches(opportunities, existingById, knownCloserIds, eventsByContact);
+  const errores = resultadoLote.errores;
+  // let, no const: se sigue incrementando más abajo para las oportunidades
+  // desaparecidas de GHL.
+  let cambiosDetectados = resultadoLote.cambiosDetectados;
 
   // Oportunidades que existían en Postgres (abiertas) pero ya NO aparecen en
   // la búsqueda de GHL — el contacto o la oportunidad se borró directamente
