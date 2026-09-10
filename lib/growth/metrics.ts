@@ -332,6 +332,13 @@ export function computeOrphanedMeetings(
   for (const [opportunityId, appts] of appointmentsByOpportunity) {
     const opp = opportunitiesById.get(opportunityId);
     if (!opp) continue;
+    // Daniel 2026-09-11: si la oportunidad ya se borró en GHL, no hay nada
+    // que un closer pueda accionar — se sigue guardando el dato (nunca se
+    // borra la fila), pero deja de pedir atención en el dashboard. "Perdido"
+    // y "Abandonado" SÍ se mantienen aquí a propósito: son resultados de
+    // negocio reales, no datos huérfanos, y su asistencia histórica merece
+    // quedar bien marcada igual que la de una oportunidad abierta.
+    if (opp.status === "eliminado_en_ghl") continue;
     for (const a of appts) {
       if (a.isActive) continue;
       if (a.ghlStatus === "cancelled") continue;
@@ -453,6 +460,82 @@ export function computeMeetingsPeriodFunnelByCloser(
     .sort((a, b) => {
       const rank = (id: string | null) => (id === null ? 1 : 0);
       return rank(a.closerId) - rank(b.closerId) || a.closerName.localeCompare(b.closerName);
+    });
+}
+
+// ---------------------------------------------------------------------------
+// Desglose por etapa y por número de llamada — auditoría 2026-09-09, §4
+// ("Agendada / Confirmada / Asistida / No-show ya están en los datos, solo
+// falta agregarlos"). Vistas ADICIONALES sobre las mismas reuniones del
+// periodo que ya usa computeMeetingsPeriodFunnel — no lo sustituyen, no lo
+// modifican, no participan en metricasPeriodo ni en las tarjetas actuales.
+// ---------------------------------------------------------------------------
+
+export type MeetingWithStage = MeetingRow & { pipelineStageId: string; opportunityStatus: string };
+
+export type StageBreakdown = {
+  agendada: number; // pendiente, oportunidad abierta, todavía no en "Agendado | Confirmado"
+  confirmada: number; // pendiente, oportunidad abierta, en "Agendado | Confirmado"
+  asistida: number;
+  noShow: number;
+};
+
+// Desglose pedido por Daniel 2026-09-11 tras revisar el primer mockup: solo
+// 4 cajones, sin solapes (cada reunión cae en uno solo, nunca en dos —
+// "mientras no se dupliquen estas métricas"). Prioridad: si ya tiene
+// resultado (asistió/no-show), ESE es el dato que importa, aunque el closer
+// no haya movido la etapa después (pasa a menudo — "hay veces que no
+// movemos las que confirman"). Solo si sigue 'pendiente' se mira la etapa
+// para decidir Agendada vs Confirmada.
+//
+// "Confirmada" es un atributo de la OPORTUNIDAD (pipeline_stage_id), no de
+// la reunión — no existe una columna "stage_at_time_of_scheduling" por cita,
+// así que esto lee la etapa ACTUAL, no la que tenía al agendar. Por eso solo
+// se aplica a reuniones todavía pendientes.
+//
+// Una reunión pendiente de una oportunidad NO abierta (eliminado_en_ghl/
+// lost/abandoned) no entra en ningún cajón — pedido explícito de Daniel
+// 2026-09-11: "si se eliminan en GHL que se registren los datos pero que
+// deje de aparecer en el dashboard". El histórico ya resuelto (asistida/
+// no-show) de esas mismas oportunidades SÍ sigue contando — nunca se toca,
+// es el principio ya establecido el 2026-08-28 (Francisco Pizarro/Guillermo
+// Cc): perder una oportunidad no debe borrar lo que ya ocurrió.
+export function computeMeetingsPeriodFunnelByStage(meetings: MeetingWithStage[]): StageBreakdown {
+  const activas = meetings.filter((m) => !m.cancelled);
+  const pendientesAbiertas = activas.filter((m) => m.attendance === "pendiente" && m.opportunityStatus === "open");
+  return {
+    agendada: pendientesAbiertas.filter((m) => m.pipelineStageId !== GROWTH_STAGES.agendadoConfirmado).length,
+    confirmada: pendientesAbiertas.filter((m) => m.pipelineStageId === GROWTH_STAGES.agendadoConfirmado).length,
+    asistida: activas.filter((m) => m.attendance === "asistio").length,
+    noShow: activas.filter((m) => m.attendance === "no_show").length,
+  };
+}
+
+export type MeetingWithNumber = MeetingRow & { meetingNumber: number };
+
+export type CallNumberRow = { meetingNumber: number; label: string } & Omit<PeriodFunnel, "ventasPagadas" | "closeRate">;
+
+// Agrupa por meeting_number (Call 1 / Call 2 / ...) en vez de por closer_id
+// — mismo patrón que computeMeetingsPeriodFunnelByCloser. ventasPagadas no
+// tiene un "número de llamada" propio (es un evento de oportunidad, no de
+// reunión — ver METRICS_DEFINITIONS.md), así que closeRate no se calcula
+// aquí; se omiten ambos campos en vez de rellenarlos con un 0 engañoso.
+export function computeMeetingsPeriodFunnelByCallNumber(meetings: MeetingWithNumber[]): CallNumberRow[] {
+  const byNumber = new Map<number, MeetingWithNumber[]>();
+  for (const m of meetings) {
+    const list = byNumber.get(m.meetingNumber) ?? [];
+    list.push(m);
+    byNumber.set(m.meetingNumber, list);
+  }
+  return [...byNumber.entries()]
+    .sort(([a], [b]) => a - b)
+    .map(([meetingNumber, list]) => {
+      const { ventasPagadas: _v, closeRate: _c, ...rest } = computeMeetingsPeriodFunnel(list, 0);
+      return {
+        meetingNumber,
+        label: meetingNumber === 1 ? "Call 1" : `Call ${meetingNumber}`,
+        ...rest,
+      };
     });
 }
 

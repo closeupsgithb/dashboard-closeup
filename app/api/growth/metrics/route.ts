@@ -14,6 +14,8 @@ import {
   applyMetricAdjustments,
   meetingRowFromAppointment,
   computeOrphanedMeetings,
+  computeMeetingsPeriodFunnelByStage,
+  computeMeetingsPeriodFunnelByCallNumber,
   type MeetingRow,
 } from "@/lib/growth/metrics";
 import { resolvePeriod, type PeriodType } from "@/lib/growth/period";
@@ -92,10 +94,33 @@ export async function GET(request: Request) {
     // pierda) una Call 2 — antes de esta corrección esa Call 1 desaparecía en
     // cuanto la oportunidad avanzaba, porque solo se guardaba UN resultado de
     // asistencia por oportunidad, no uno por reunión.
-    const todasLasCitas: MeetingRow[] = [];
+    // opportunitiesById se necesita ya aquí (no solo más abajo, para
+    // reunionesSinResolver) para poder excluir del recuento las reuniones
+    // pendientes de una oportunidad que ya no está abierta.
+    const opportunitiesById = new Map(opportunities.map((o) => [o.opportunityId, o]));
+
+    // Cada elemento lleva TODOS los campos que necesita cualquiera de las
+    // vistas de abajo (funnel principal, por closer, por etapa, por número
+    // de llamada) — un solo recorrido de appointmentsByOpportunity, en vez
+    // de repetirlo por vista.
+    const todasLasCitas: (MeetingRow & { pipelineStageId: string; opportunityStatus: string; meetingNumber: number })[] = [];
     for (const list of appointmentsByOpportunity.values()) {
       for (const a of list) {
         const { attendance, cancelled } = meetingRowFromAppointment(a);
+        const opp = opportunitiesById.get(a.opportunityId);
+        if (!opp) continue;
+        // Daniel 2026-09-11: "si se eliminan en GHL que se registren los
+        // datos pero que deje de aparecer en el dashboard" — una reunión
+        // todavía pendiente (sin resultado) de una oportunidad que ya no
+        // está abierta (eliminado_en_ghl/lost/abandoned) no cuenta en
+        // Agendadas/Confirmada ni en ninguna vista derivada de esta lista.
+        // El dato SIGUE en growth_appointments (nunca se borra la fila),
+        // esto solo decide qué se muestra. Una reunión YA resuelta
+        // (asistió/no-show) de esa misma oportunidad NO se toca — sigue
+        // contando en el periodo en que ocurrió, principio ya establecido
+        // el 2026-08-28 (Francisco Pizarro/Guillermo Cc): perder la
+        // oportunidad no debe borrar lo que ya pasó de verdad.
+        if (attendance === "pendiente" && opp.status !== "open") continue;
         todasLasCitas.push({
           opportunityId: a.opportunityId,
           appointmentId: a.appointmentId,
@@ -103,6 +128,9 @@ export async function GET(request: Request) {
           scheduledAt: a.scheduledAt,
           attendance,
           cancelled,
+          pipelineStageId: opp.pipelineStageId,
+          opportunityStatus: opp.status,
+          meetingNumber: a.meetingNumber,
         });
       }
     }
@@ -143,6 +171,14 @@ export async function GET(request: Request) {
     );
     const closerBreakdown = computeMeetingsPeriodFunnelByCloser(meetingsEnPeriodo, ventasPagadasByCloser, closerNames);
 
+    // Desglose por etapa y por número de llamada — auditoría 2026-09-09,
+    // Paso 3, ajustado 2026-09-11 tras revisión del mockup con Daniel.
+    // Vistas ADICIONALES sobre las mismas meetingsEnPeriodoFiltradas del
+    // funnel principal (ya excluyen las pendientes de oportunidades no
+    // abiertas) — no modifican metricasPeriodo ni closerBreakdown.
+    const desglosePorEtapa = computeMeetingsPeriodFunnelByStage(meetingsEnPeriodoFiltradas);
+    const desglosePorLlamada = computeMeetingsPeriodFunnelByCallNumber(meetingsEnPeriodoFiltradas);
+
     // Pendientes vencidos: siempre GLOBAL (todos los periodos y closers) —
     // un pendiente atrasado no debe desaparecer solo porque se cambie de
     // vista, es la única alerta que se pide expresamente "global".
@@ -151,8 +187,8 @@ export async function GET(request: Request) {
     // Reuniones sin resolver (huérfanas) — auditoría 2026-09-09, Paso 2:
     // citas is_active=false, ya pasadas, sin marcar, invisibles en la
     // Agenda. Global igual que pendientesGlobal, y aditivo puro — no entra
-    // en metricasPeriodo ni en ninguna tarjeta existente.
-    const opportunitiesById = new Map(opportunities.map((o) => [o.opportunityId, o]));
+    // en metricasPeriodo ni en ninguna tarjeta existente. (opportunitiesById
+    // ya se construyó más arriba, junto a todasLasCitas.)
     const reunionesSinResolver = computeOrphanedMeetings(appointmentsByOpportunity, opportunitiesById, closerNames, now);
 
     // "Ganado" en GHL sin estar en la fase "Pagado" es una contradicción de
@@ -253,6 +289,8 @@ export async function GET(request: Request) {
       closers: closers.map((c) => ({ id: c.id, displayName: c.displayName, active: c.active, color: c.color })),
       metricasPeriodo,
       closerBreakdown,
+      desglosePorEtapa,
+      desglosePorLlamada,
       pendientesGlobalCount: pendientesGlobal.length,
       reunionesSinResolver,
       inconsistenciasGanadoSinPagado,

@@ -9,6 +9,7 @@ import { GrowthOrphanedMeetings, type OrphanedMeetingRow } from "@/components/gr
 import { GrowthFollowUps, type FollowUpBuckets, type FollowUpRow } from "@/components/growth/GrowthFollowUps";
 import { GrowthLeadsSecondary, type LeadsFunnel, type LeadRow } from "@/components/growth/GrowthLeadsSecondary";
 import { GrowthCloserComparison, type PeriodCloserRow } from "@/components/growth/GrowthCloserComparison";
+import { GrowthMeetingsBreakdown, type StageBreakdown, type CallNumberRow } from "@/components/growth/GrowthMeetingsBreakdown";
 import { GrowthEditPanel, type CloserOption, type PanelOpportunity } from "@/components/growth/GrowthEditPanel";
 import { GrowthClosersConfig, type CloserRow } from "@/components/growth/GrowthClosersConfig";
 import { UserMenu } from "@/components/growth/UserMenu";
@@ -30,6 +31,8 @@ type ApiResponse = {
   closers: CloserRow[];
   metricasPeriodo: PeriodFunnel;
   closerBreakdown: PeriodCloserRow[];
+  desglosePorEtapa: StageBreakdown;
+  desglosePorLlamada: CallNumberRow[];
   pendientesGlobalCount: number;
   reunionesSinResolver: OrphanedMeetingRow[];
   inconsistenciasGanadoSinPagado: { opportunityId: string; contacto: string | null; closer: string; estadoActual: string }[];
@@ -388,6 +391,14 @@ export default function GrowthPage() {
           <GrowthCloserComparison data={data.closerBreakdown} />
         </section>
       )}
+
+      <section className="growth-section mb-7">
+        <h2 className="growth-section-title mb-4">
+          <span className="bar" />
+          Desglose — {data.periodo.label}
+        </h2>
+        <GrowthMeetingsBreakdown stage={data.desglosePorEtapa} byCall={data.desglosePorLlamada} />
+      </section>
 
       <section className="growth-section mb-7">
         <h2 className="growth-section-title mb-4">
