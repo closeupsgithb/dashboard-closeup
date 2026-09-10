@@ -271,6 +271,90 @@ export function groupAgendaByDay(rows: AgendaRow[]): { date: string; rows: Agend
   return [...byDay.entries()].sort(([a], [b]) => a.localeCompare(b)).map(([date, dayRows]) => ({ date, rows: dayRows }));
 }
 
+// ---------------------------------------------------------------------------
+// Reuniones sin resolver (huérfanas): citas ya sustituidas (is_active=false)
+// por una reunión posterior de la MISMA oportunidad, ya pasadas, y todavía
+// 'pendiente' — invisibles en la Agenda, que solo muestra la cita ACTIVA de
+// cada oportunidad (computeAgenda, arriba). Auditoría 2026-09-09, hallazgo
+// "5 de 8 reuniones pendientes no tienen ningún botón que las marque".
+//
+// Deliberadamente GLOBAL, no filtrado por el periodo activo (mismo criterio
+// que ya usa isPendingAttention/pendientesGlobalCount): una reunión sin
+// resolver necesita atención se mire el periodo que se mire.
+//
+// Aditivo puro: no participa en reunionesAgendadas/showRate de ninguna
+// tarjeta — solo da visibilidad para que un closer pueda por fin marcarla
+// desde el dashboard, con el mismo endpoint que ya usa la Agenda
+// (POST /api/growth/opportunity, action "asistio", con su appointmentId).
+// ---------------------------------------------------------------------------
+
+export type OrphanedMeetingRow = {
+  opportunityId: string;
+  appointmentId: string;
+  meetingNumber: number;
+  scheduledAt: string;
+  contactName: string | null;
+  companyName: string | null;
+  closerId: string | null;
+  closerName: string;
+  stageId: string;
+  stageName: string;
+  status: string;
+};
+
+type OrphanCandidateAppointment = {
+  opportunityId: string;
+  appointmentId: string;
+  meetingNumber: number;
+  scheduledAt: string;
+  ghlStatus: string | null;
+  attendance: string;
+  isActive: boolean;
+  closerId: string | null;
+};
+
+type OrphanCandidateOpportunity = {
+  contactName: string | null;
+  companyName: string | null;
+  pipelineStageId: string;
+  stageName: string;
+  status: string;
+};
+
+export function computeOrphanedMeetings(
+  appointmentsByOpportunity: Map<string, OrphanCandidateAppointment[]>,
+  opportunitiesById: Map<string, OrphanCandidateOpportunity>,
+  closerNames: Map<string, string>,
+  asOf: Date
+): OrphanedMeetingRow[] {
+  const nowMs = asOf.getTime();
+  const rows: OrphanedMeetingRow[] = [];
+  for (const [opportunityId, appts] of appointmentsByOpportunity) {
+    const opp = opportunitiesById.get(opportunityId);
+    if (!opp) continue;
+    for (const a of appts) {
+      if (a.isActive) continue;
+      if (a.ghlStatus === "cancelled") continue;
+      if (a.attendance !== "pendiente") continue;
+      if (new Date(a.scheduledAt).getTime() >= nowMs) continue;
+      rows.push({
+        opportunityId,
+        appointmentId: a.appointmentId,
+        meetingNumber: a.meetingNumber,
+        scheduledAt: a.scheduledAt,
+        contactName: opp.contactName,
+        companyName: opp.companyName,
+        closerId: a.closerId,
+        closerName: a.closerId ? (closerNames.get(a.closerId) ?? "Otros closers") : "Sin asignar",
+        stageId: opp.pipelineStageId,
+        stageName: opp.stageName,
+        status: opp.status,
+      });
+    }
+  }
+  return rows.sort((a, b) => new Date(b.scheduledAt).getTime() - new Date(a.scheduledAt).getTime());
+}
+
 export type PeriodFunnel = {
   reunionesAgendadas: number;
   reunionesRealizadas: number;

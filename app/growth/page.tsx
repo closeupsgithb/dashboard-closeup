@@ -5,6 +5,7 @@ import Link from "next/link";
 import { Logo } from "@/components/Logo";
 import { GrowthMetricsCompact, type PeriodFunnel } from "@/components/growth/GrowthMetricsCompact";
 import { GrowthAgenda, type AgendaRow } from "@/components/growth/GrowthAgenda";
+import { GrowthOrphanedMeetings, type OrphanedMeetingRow } from "@/components/growth/GrowthOrphanedMeetings";
 import { GrowthFollowUps, type FollowUpBuckets, type FollowUpRow } from "@/components/growth/GrowthFollowUps";
 import { GrowthLeadsSecondary, type LeadsFunnel, type LeadRow } from "@/components/growth/GrowthLeadsSecondary";
 import { GrowthCloserComparison, type PeriodCloserRow } from "@/components/growth/GrowthCloserComparison";
@@ -30,6 +31,7 @@ type ApiResponse = {
   metricasPeriodo: PeriodFunnel;
   closerBreakdown: PeriodCloserRow[];
   pendientesGlobalCount: number;
+  reunionesSinResolver: OrphanedMeetingRow[];
   inconsistenciasGanadoSinPagado: { opportunityId: string; contacto: string | null; closer: string; estadoActual: string }[];
   agenda: AgendaRow[];
   agendaPorDia: { date: string; rows: AgendaRow[] }[] | null;
@@ -134,6 +136,28 @@ export default function GrowthPage() {
       status: row.status,
       asistioReunionRaw: row.asistioReunionRaw,
       activeAttendance: row.attendance,
+      scheduledAt: row.scheduledAt,
+    });
+  }
+
+  // Auditoría 2026-09-09, Paso 2: esta reunión ya no es la activa de su
+  // oportunidad (is_active=false), así que proximoPaso/asistioReunionRaw del
+  // día de hoy no describen esta cita concreta — se pasan null a propósito
+  // en vez de un dato que podría venir de una reunión posterior. activeAttendance
+  // se fija en "pendiente" porque es exactamente el filtro que la trajo aquí.
+  function openPanelFromOrphan(row: OrphanedMeetingRow) {
+    setEditing({
+      opportunityId: row.opportunityId,
+      appointmentId: row.appointmentId,
+      contactName: row.contactName,
+      companyName: row.companyName,
+      closerId: row.closerId,
+      proximoPaso: null,
+      stageId: row.stageId,
+      stageName: row.stageName,
+      status: row.status,
+      asistioReunionRaw: null,
+      activeAttendance: "pendiente",
       scheduledAt: row.scheduledAt,
     });
   }
@@ -329,6 +353,22 @@ export default function GrowthPage() {
           Agenda
         </h2>
         <GrowthAgenda rows={data.agenda} groupedByDay={data.agendaPorDia} onEdit={openPanelFromAgenda} />
+      </section>
+
+      <section className="growth-section mb-7">
+        <h2 className="growth-section-title mb-4">
+          <span className="bar" />
+          Reuniones sin resolver
+          {data.reunionesSinResolver.length > 0 && (
+            <span
+              className="ml-2 rounded-full px-2 py-0.5 text-xs font-medium normal-case tracking-normal"
+              style={{ background: "rgba(208,59,59,0.1)", color: "var(--status-critical)" }}
+            >
+              {data.reunionesSinResolver.length}
+            </span>
+          )}
+        </h2>
+        <GrowthOrphanedMeetings rows={data.reunionesSinResolver} onEdit={openPanelFromOrphan} />
       </section>
 
       <section className="growth-section mb-7">

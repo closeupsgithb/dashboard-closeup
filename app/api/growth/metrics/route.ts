@@ -13,6 +13,7 @@ import {
   isVentaConfirmada,
   applyMetricAdjustments,
   meetingRowFromAppointment,
+  computeOrphanedMeetings,
   type MeetingRow,
 } from "@/lib/growth/metrics";
 import { resolvePeriod, type PeriodType } from "@/lib/growth/period";
@@ -147,6 +148,13 @@ export async function GET(request: Request) {
     // vista, es la única alerta que se pide expresamente "global".
     const pendientesGlobal = opportunities.filter((o) => isPendingAttention(o, now));
 
+    // Reuniones sin resolver (huérfanas) — auditoría 2026-09-09, Paso 2:
+    // citas is_active=false, ya pasadas, sin marcar, invisibles en la
+    // Agenda. Global igual que pendientesGlobal, y aditivo puro — no entra
+    // en metricasPeriodo ni en ninguna tarjeta existente.
+    const opportunitiesById = new Map(opportunities.map((o) => [o.opportunityId, o]));
+    const reunionesSinResolver = computeOrphanedMeetings(appointmentsByOpportunity, opportunitiesById, closerNames, now);
+
     // "Ganado" en GHL sin estar en la fase "Pagado" es una contradicción de
     // datos (regla de Daniel, 2026-08-21) — se señala para revisión, nunca
     // se cuenta como venta ni se ignora en silencio.
@@ -246,6 +254,7 @@ export async function GET(request: Request) {
       metricasPeriodo,
       closerBreakdown,
       pendientesGlobalCount: pendientesGlobal.length,
+      reunionesSinResolver,
       inconsistenciasGanadoSinPagado,
       agenda: operativaFull,
       agendaPorDia,
