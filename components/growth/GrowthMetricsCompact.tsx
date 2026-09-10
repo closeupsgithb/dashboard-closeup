@@ -4,6 +4,7 @@ export type PeriodFunnel = {
   reunionesAgendadas: number;
   reunionesRealizadas: number;
   noShows: number;
+  pendientes: number;
   ventasPagadas: number;
   showRate: number | null;
   closeRate: number | null;
@@ -50,10 +51,11 @@ export function GrowthMetricsCompact({ funnel }: { funnel: PeriodFunnel }) {
         <Metric value={String(funnel.reunionesAgendadas)} label="Agendadas" accentVar="--brand" />
         <Metric value={String(funnel.reunionesRealizadas)} label="Realizadas" />
       </Block>
-      <Block title="Asistencia" columns={3}>
+      <Block title="Asistencia" columns={4}>
         <Metric value={formatPercent(funnel.showRate)} label="Show rate" accentVar="--status-good" />
         <Metric value={String(funnel.reunionesRealizadas)} label="Asistidas" />
         <Metric value={String(funnel.noShows)} label="No shows" />
+        <Metric value={String(funnel.pendientes)} label="Pendientes" />
       </Block>
       <Block title="Ventas" columns={2}>
         <Metric value={formatPercent(funnel.closeRate)} label="Close rate" accentVar="--status-good" />

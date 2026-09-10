@@ -271,6 +271,12 @@ export type PeriodFunnel = {
   reunionesAgendadas: number;
   reunionesRealizadas: number;
   noShows: number;
+  // Agendadas que todavía no tienen resultado: futuras, o pasadas sin marcar
+  // (ver docs/MEETINGS_METRICS_AUDIT.md — auditoría 2026-09-09, hallazgo
+  // "el 100% de asistencia no es un bug de fórmula"). No entra en el
+  // numerador ni el denominador de showRate, pero se expone aparte para que
+  // la tarjeta de Asistencia no oculte cuántas quedan sin resolver.
+  pendientes: number;
   ventasPagadas: number;
   showRate: number | null;
   closeRate: number | null;
@@ -324,6 +330,7 @@ export function computeMeetingsPeriodFunnel(meetings: MeetingRow[], ventasPagada
     reunionesAgendadas: activas.length,
     reunionesRealizadas: asistieron.length,
     noShows: noShows.length,
+    pendientes: activas.length - resueltas,
     ventasPagadas,
     showRate: resueltas > 0 ? asistieron.length / resueltas : null,
     closeRate: asistieron.length > 0 ? ventasPagadas / asistieron.length : null,
