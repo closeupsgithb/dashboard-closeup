@@ -102,24 +102,30 @@ export type FunnelCounts = {
   noShows: number;
   pagados: number;
   tasaAgenda: number | null;
-  showRate: number | null;
-  noShowRate: number | null;
   closeRate: number | null;
   leadACliente: number | null;
 };
 
+// showRate/noShowRate vivieron aquí hasta la auditoría 2026-09-09: un
+// segundo cálculo de "show rate" con denominador "celebrables" (asistidas +
+// no-shows + pasadas todavía sin marcar), distinto del showRate real de las
+// tarjetas (computeMeetingsPeriodFunnel, solo asistidas+no-shows). Ningún
+// componente los leía (confirmado por grep) — quitados para que no queden
+// esperando a que alguien los conecte por error y produzca un tercer show
+// rate con un número distinto. Al quitarlos, isMeetingCelebrable() (arriba)
+// se queda sin ninguna llamada real — isPendingAttention() no la usa, tiene
+// su propia lógica inline equivalente. No se ha tocado aquí (fuera del
+// alcance pedido): queda para una limpieza aparte si se confirma que
+// tampoco hace falta en ningún sitio futuro.
 export function computeFunnel(opportunities: GrowthOpportunityView[], asOf: Date): FunnelCounts {
   const leadsCualificados = opportunities.length;
   const reunionesAgendadas = opportunities.filter(
     (o) => o.hasAnyAppointment || AGENDA_REACHED_STAGES.has(o.pipelineStageId)
   ).length;
 
-  const celebrables = opportunities.filter((o) => isMeetingCelebrable(o, asOf));
   const asistieron = opportunities.filter((o) => resolveAttendance(o) === "asistio").length;
   const noShows = opportunities.filter((o) => resolveAttendance(o) === "no_show").length;
   const pagados = opportunities.filter(isVentaConfirmada).length;
-
-  const denomCelebrable = celebrables.length;
 
   return {
     leadsCualificados,
@@ -128,8 +134,6 @@ export function computeFunnel(opportunities: GrowthOpportunityView[], asOf: Date
     noShows,
     pagados,
     tasaAgenda: leadsCualificados > 0 ? reunionesAgendadas / leadsCualificados : null,
-    showRate: denomCelebrable > 0 ? asistieron / denomCelebrable : null,
-    noShowRate: denomCelebrable > 0 ? noShows / denomCelebrable : null,
     closeRate: asistieron > 0 ? pagados / asistieron : null,
     leadACliente: leadsCualificados > 0 ? pagados / leadsCualificados : null,
   };
