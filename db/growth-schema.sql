@@ -85,6 +85,15 @@ create table if not exists growth_appointments (
   unique (appointment_id)
 );
 create index if not exists idx_growth_appointments_opportunity on growth_appointments(opportunity_id);
+-- Auditoría 2026-09-09: scheduled_at es la columna que filtra cada consulta
+-- por periodo (Hoy/Semana/Mes) y no tenía índice — sin efecto notable al
+-- volumen actual, pero no debía quedar así indefinidamente. (opportunity_id,
+-- is_active) acelera el join de la cita activa en lib/growth/view.ts. Ya
+-- aplicados en producción con CREATE INDEX CONCURRENTLY (sin bloquear
+-- escrituras); aquí quedan también de forma idempotente para que una base
+-- nueva los reciba igual a través de ensureSchema().
+create index if not exists idx_growth_appointments_scheduled_at on growth_appointments(scheduled_at);
+create index if not exists idx_growth_appointments_opp_active on growth_appointments(opportunity_id, is_active);
 
 -- Auditoría: quién cambió qué, desde dónde, y si la sincronización con GHL
 -- salió bien. No se muestra en la pantalla principal, pero tiene que existir
