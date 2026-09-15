@@ -29,7 +29,8 @@ function CopyButton({ path }: { path: string }) {
     <button
       onClick={async () => {
         try {
-          await navigator.clipboard.writeText(`${window.location.origin}${path}`);
+          const url = /^https?:\/\//.test(path) ? path : `${window.location.origin}${path}`;
+          await navigator.clipboard.writeText(url);
           setCopied(true);
           setTimeout(() => setCopied(false), 1500);
         } catch {
@@ -377,6 +378,16 @@ export default function CentroComercialPage() {
               <li>CIF</li>
             </ul>
           </div>
+          <Resource
+            title="Página de resultados — Post llamada"
+            description="Se envía junto al borrador del contrato o la propuesta, tras la 2ª llamada, para que el prospecto revise los resultados del sistema con calma."
+            actions={
+              <>
+                <OpenButton href="https://closeupsgithb.github.io/reformas-system-resultados/" label="Abrir página" />
+                <CopyButton path="https://closeupsgithb.github.io/reformas-system-resultados/" />
+              </>
+            }
+          />
           <Resource
             title="Contrato +Reformas System — Pago único · Publicidad incluida"
             description="2.997 € + IVA en un solo pago. Inversión publicitaria mínima de 400 €/mes incluida."
