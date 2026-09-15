@@ -393,6 +393,12 @@ export default function CentroComercialPage() {
             <div className="rounded-md border p-3 text-xs italic" style={{ borderColor: "var(--gridline)", background: "var(--page)", color: "var(--ink)" }}>
               &quot;¿Te viene bien que agendemos el [día] para dejar listo y ver cómo ponernos en marcha?&quot;
             </div>
+            <p className="mb-1.5 mt-2.5 text-xs font-medium" style={{ color: "var(--ink)" }}>
+              Recordar el siguiente paso concreto:
+            </p>
+            <div className="rounded-md border p-3 text-xs italic" style={{ borderColor: "var(--gridline)", background: "var(--page)", color: "var(--ink)" }}>
+              &quot;Si me mandas tus datos fiscales, cerramos el contrato y nos ponemos en marcha.&quot;
+            </div>
             <p className="mt-2.5 text-xs" style={{ color: "var(--ink-muted)" }}>
               Objetivo: que no haya desconexión entre la llamada y lo siguiente. Cada minuto que pasa sin info, el
               lead tira hacia el no.
