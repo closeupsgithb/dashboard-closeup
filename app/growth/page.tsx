@@ -348,7 +348,7 @@ export default function GrowthPage() {
         </section>
       )}
 
-      <GrowthMetricsCompact funnel={data.metricasPeriodo} />
+      <GrowthMetricsCompact funnel={data.metricasPeriodo} confirmadas={data.desglosePorEtapa.confirmada} />
 
       <section className="growth-section mb-7">
         <h2 className="growth-section-title mb-4">

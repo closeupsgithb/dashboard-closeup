@@ -44,12 +44,18 @@ function Metric({ value, label, accentVar }: { value: string; label: string; acc
   );
 }
 
-export function GrowthMetricsCompact({ funnel }: { funnel: PeriodFunnel }) {
+// Auditoría 2026-09-15: "Realizadas" (bloque Reuniones) y "Asistidas"
+// (bloque Asistencia) mostraban el mismo número (funnel.reunionesRealizadas)
+// bajo dos etiquetas distintas — duplicado sin sentido, pedido explícito de
+// Daniel de quitarlo. "Confirmadas" viene de computeMeetingsPeriodBreakdown
+// (mismo cálculo que ya usa el desglose por etapa más abajo), no es un
+// concepto nuevo — solo faltaba conectarlo a esta tarjeta.
+export function GrowthMetricsCompact({ funnel, confirmadas }: { funnel: PeriodFunnel; confirmadas: number }) {
   return (
     <section className="mb-6 grid grid-cols-1 gap-4 md:grid-cols-3">
       <Block title="Reuniones" columns={2}>
         <Metric value={String(funnel.reunionesAgendadas)} label="Agendadas" accentVar="--brand" />
-        <Metric value={String(funnel.reunionesRealizadas)} label="Realizadas" />
+        <Metric value={String(confirmadas)} label="Confirmadas" />
       </Block>
       <Block title="Asistencia" columns={4}>
         <Metric value={formatPercent(funnel.showRate)} label="Show rate" accentVar="--status-good" />
