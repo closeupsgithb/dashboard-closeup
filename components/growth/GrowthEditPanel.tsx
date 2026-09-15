@@ -133,6 +133,15 @@ export function GrowthEditPanel({
   const [draftEtapa, setDraftEtapa] = useState(opportunity.stageId);
   const [reagendarOpen, setReagendarOpen] = useState(false);
   const [draftReagendarFecha, setDraftReagendarFecha] = useState("");
+  // Auditoría 2026-09-15: antes de esto, un lead que pedía reagendar SIN
+  // tener aún la fecha nueva no tenía ninguna acción que guardar — el botón
+  // de reprogramar exige fecha y bloquea "Guardar cambios" sin ella
+  // (reagendarValid), así que el closer acababa marcando "No show" solo para
+  // poder cerrar el panel. El backend ya soportaba "Solicita Reagendar" sin
+  // fecha (app/api/growth/opportunity/route.ts, acción reagendar sin
+  // nuevaFechaIso) — faltaba exponerlo aquí. Mutuamente excluyente con
+  // reagendarOpen: son dos variantes de la misma intención.
+  const [pideReagendarSinFecha, setPideReagendarSinFecha] = useState(false);
   const [followUpFecha, setFollowUpFecha] = useState(opportunity.followUpDueAt ? isoToMadridLocalInput(opportunity.followUpDueAt) : "");
   const [followUpAccion, setFollowUpAccion] = useState(opportunity.followUpTitle ?? "");
   const [followUpCompletar, setFollowUpCompletar] = useState(false);
@@ -175,6 +184,7 @@ export function GrowthEditPanel({
     draftProximoPaso !== originalProximoPaso ||
     draftEtapa !== opportunity.stageId ||
     (reagendarOpen && draftReagendarFecha !== "") ||
+    pideReagendarSinFecha ||
     draftPagado ||
     followUpCompletar ||
     (!hasExistingFollowUp && (followUpFecha !== "" || followUpAccion !== "")) ||
@@ -198,6 +208,9 @@ export function GrowthEditPanel({
     }
     if (reagendarOpen && draftReagendarFecha) {
       diffs.push({ label: "Nueva fecha de reunión", before: "—", after: fmtLocal(draftReagendarFecha) });
+    }
+    if (pideReagendarSinFecha) {
+      diffs.push({ label: "Reagendar", before: opportunity.stageName, after: "Solicita Reagendar (pendiente de fecha nueva)" });
     }
     if (draftProximoPaso !== originalProximoPaso) {
       diffs.push({ label: "Próximo paso", before: originalProximoPaso, after: draftProximoPaso });
@@ -279,6 +292,9 @@ export function GrowthEditPanel({
       await runStep("Nueva fecha de reunión", () =>
         postAction({ action: "reagendar", nuevaFechaIso: new Date(draftReagendarFecha).toISOString() })
       );
+    }
+    if (pideReagendarSinFecha) {
+      await runStep("Solicita reagendar", () => postAction({ action: "reagendar" }));
     }
     if (draftProximoPaso !== originalProximoPaso) {
       await runStep("Próximo paso", () => postAction({ action: "proximoPaso", value: draftProximoPaso }));
@@ -452,9 +468,28 @@ export function GrowthEditPanel({
             </Field>
 
             <div className="flex flex-col gap-1.5">
-              <button onClick={() => setReagendarOpen((v) => !v)} className="self-start text-xs underline" style={{ color: "var(--ink-secondary)" }}>
-                {reagendarOpen ? "Cancelar reprogramación" : "Reprogramar esta reunión"}
-              </button>
+              <div className="flex flex-wrap gap-4">
+                <button
+                  onClick={() => {
+                    setReagendarOpen((v) => !v);
+                    setPideReagendarSinFecha(false);
+                  }}
+                  className="self-start text-xs underline"
+                  style={{ color: "var(--ink-secondary)" }}
+                >
+                  {reagendarOpen ? "Cancelar reprogramación" : "Reprogramar (ya sé la fecha nueva)"}
+                </button>
+                <button
+                  onClick={() => {
+                    setPideReagendarSinFecha((v) => !v);
+                    setReagendarOpen(false);
+                  }}
+                  className="self-start text-xs underline"
+                  style={{ color: "var(--ink-secondary)" }}
+                >
+                  {pideReagendarSinFecha ? "Cancelar" : "Pide reagendar (sin fecha aún)"}
+                </button>
+              </div>
               {reagendarOpen && (
                 <input
                   type="datetime-local"
@@ -467,6 +502,13 @@ export function GrowthEditPanel({
               {reagendarOpen && !reagendarValid && (
                 <span className="text-xs" style={{ color: "var(--status-critical)" }}>
                   Elige fecha y hora, o cancela la reprogramación.
+                </span>
+              )}
+              {pideReagendarSinFecha && (
+                <span className="text-xs" style={{ color: "var(--ink-muted)" }}>
+                  No marques &quot;No show&quot;: esto deja el resultado en Pendiente y mueve la etapa a &quot;Solicita
+                  Reagendar&quot;. No cuenta como no-show y no vuelve a pedirte que lo actualices hasta que le pongas
+                  fecha.
                 </span>
               )}
             </div>
