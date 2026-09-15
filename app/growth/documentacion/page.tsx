@@ -66,6 +66,7 @@ const QUICK_LINKS: QuickLink[] = [
   { label: "Contrato", sectionId: "contratos" },
   { label: "Pago", sectionId: "pagos", href: "/materiales-comerciales/guia-pagos-reformas-system.html" },
   { label: "Pre-Call", sectionId: "precall", href: "/materiales-comerciales/mas-reformas-system.pdf" },
+  { label: "Post-Call", sectionId: "postcall", href: "https://closeupsgithb.github.io/reformas-system-resultados/" },
 ];
 
 function Accordion({
@@ -373,6 +374,30 @@ export default function CentroComercialPage() {
               </>
             }
           />
+          <div className="rounded-lg border p-3.5" style={{ borderColor: "var(--gridline)" }}>
+            <div className="mb-1 text-sm font-medium" style={{ color: "var(--ink)" }}>
+              Cómo comunicarse con el cliente después de la llamada
+            </div>
+            <p className="mb-2.5 text-xs" style={{ color: "var(--ink-secondary)" }}>
+              Al acabar la 2ª llamada, mandar por WhatsApp — el borrador del contrato y la página de resultados van en
+              el mismo mensaje.
+            </p>
+            <div className="rounded-md border p-3 text-xs italic" style={{ borderColor: "var(--gridline)", background: "var(--page)", color: "var(--ink)" }}>
+              &quot;Te mando el borrador del contrato que trabajamos con otras empresas de reformas igual que la
+              tuya. Y aquí tienes una página donde ves los resultados de nuestro sistema, para que lo revises con
+              calma. Si tienes cualquier duda o necesitas que modifiquemos algo, me dices.&quot;
+            </div>
+            <p className="mb-1.5 mt-2.5 text-xs font-medium" style={{ color: "var(--ink)" }}>
+              Cerrar con fecha:
+            </p>
+            <div className="rounded-md border p-3 text-xs italic" style={{ borderColor: "var(--gridline)", background: "var(--page)", color: "var(--ink)" }}>
+              &quot;¿Te viene bien que agendemos el [día] para dejar listo y ver cómo ponernos en marcha?&quot;
+            </div>
+            <p className="mt-2.5 text-xs" style={{ color: "var(--ink-muted)" }}>
+              Objetivo: que no haya desconexión entre la llamada y lo siguiente. Cada minuto que pasa sin info, el
+              lead tira hacia el no.
+            </p>
+          </div>
         </Accordion>
 
         <Accordion
