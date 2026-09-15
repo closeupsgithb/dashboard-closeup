@@ -21,6 +21,7 @@ type OpportunityRow = {
   follow_up_task_id: string | null;
   pagado_confirmado_at: string | null;
   first_contact_at: string | null;
+  interesado_desde: string | null;
   appt_count: string;
   active_scheduled_at: string | null;
   active_appointment_id: string | null;
@@ -50,6 +51,7 @@ export type GrowthOpportunityFull = GrowthOpportunityView & {
   followUpTaskId: string | null;
   pagadoConfirmadoAt: string | null;
   firstContactAt: string | null;
+  interesadoDesde: string | null;
   activeAppointmentId: string | null;
   activeMeetingNumber: number | null;
 };
@@ -71,7 +73,7 @@ export async function loadGrowthView(): Promise<{
         o.opportunity_id, o.contact_name, o.company_name, o.phone, o.email,
         o.pipeline_stage_id, o.status, o.closer_id, o.entry_month, o.entry_at,
         o.asistio_reunion, o.proximo_paso, o.follow_up_due_at, o.follow_up_title, o.follow_up_task_id,
-        o.pagado_confirmado_at, o.first_contact_at,
+        o.pagado_confirmado_at, o.first_contact_at, o.interesado_desde,
         coalesce(ca.appt_count, 0) as appt_count,
         act.scheduled_at as active_scheduled_at,
         act.appointment_id as active_appointment_id,
@@ -135,6 +137,7 @@ export async function loadGrowthView(): Promise<{
     followUpTaskId: r.follow_up_task_id,
     pagadoConfirmadoAt: r.pagado_confirmado_at,
     firstContactAt: r.first_contact_at,
+    interesadoDesde: r.interesado_desde,
     activeAppointmentAt: r.active_scheduled_at,
     activeAppointmentId: r.active_appointment_id,
     activeMeetingNumber: r.active_meeting_number,

@@ -158,6 +158,17 @@ alter table growth_opportunities add column if not exists follow_up_task_id text
 -- primera vez, igual que entry_at/pagado_confirmado_at — mide velocidad de
 -- respuesta real del setter, no se recalcula si el lead retrocede después.
 alter table growth_opportunities add column if not exists first_contact_at timestamptz;
+-- Fecha/hora en que la oportunidad entro en "Reunion realizada | Interesado"
+-- o "Follow-up / Call 2" (lib/growth/sync.ts). A diferencia de entry_at/
+-- pagado_confirmado_at NO es "write-once": se reescribe cada vez que la
+-- oportunidad (re)entra en una de esas dos etapas desde otra distinta, y se
+-- limpia a null en cuanto la abandona (avanza a Pagado, se pierde, vuelve a
+-- una etapa anterior...) — el bucket "Interesados por semana" del dashboard
+-- solo necesita saber "desde cuando lleva SIN resolver en el estado actual",
+-- no el primer contacto historico. Peticion de Daniel, 2026-09-15: "cada vez
+-- que lo movamos a Reunion realizada Interesado o Call 2 lo tengamos
+-- ordenados para recordar cada contacto".
+alter table growth_opportunities add column if not exists interesado_desde timestamptz;
 
 -- Corrección estructural 2026-08-28 (ver docs/MEETING_ARCHITECTURE.md): quita
 -- el "on delete cascade" de una tabla ya creada en producción con esa

@@ -1,5 +1,6 @@
 import { GROWTH_STAGES, FOLLOW_UP_REQUIRED_STEPS } from "@/lib/growth/ghl";
 import { madridDateOnly } from "@/lib/format";
+import { mondayOf, addDays } from "@/lib/growth/period";
 
 export type Attendance = "asistio" | "no_show" | "pendiente";
 
@@ -649,6 +650,104 @@ export function computeFollowUpQueue(
   };
   buckets.vencidos.sort(byDueDate);
   buckets.enPeriodo.sort(byDueDate);
+
+  return buckets;
+}
+
+// ---------------------------------------------------------------------------
+// Interesados por semana — petición de Daniel, 2026-09-15: "cada vez que lo
+// movamos a Reunión realizada Interesado o Call 2 lo tengamos ordenados para
+// recordar cada contacto". Vista ADICIONAL, independiente del selector
+// Hoy/Semana/Mes (siempre agrupa contra la semana natural de AHORA, igual
+// que pendientesGlobal/reunionesSinResolver) — no toca metricasPeriodo ni
+// ningún otro cálculo existente. interesado_desde se computa en
+// lib/growth/sync.ts (se reescribe cada vez que la oportunidad reentra en
+// una de las dos etapas, se limpia al salir de ellas).
+// ---------------------------------------------------------------------------
+
+const INTERESADO_STAGES = new Set<string>([GROWTH_STAGES.reunionRealizada, GROWTH_STAGES.followUpCall2]);
+
+export type InteresadoOpportunity = GrowthOpportunityView & {
+  contactName: string | null;
+  companyName: string | null;
+  stageName: string;
+  interesadoDesde: string | null;
+  followUpDueAt: string | null;
+  followUpTitle: string | null;
+  followUpTaskId: string | null;
+};
+
+export type InteresadoRow = {
+  opportunityId: string;
+  contactName: string | null;
+  companyName: string | null;
+  closerId: string | null;
+  closerName: string;
+  stageId: string;
+  stageName: string;
+  // Etiqueta humana en vez del nombre técnico de la fase (mismo criterio que
+  // GrowthAgenda.estadoLabel) — se calcula aquí, no en el componente cliente.
+  tipo: "interesado" | "call2";
+  interesadoDesde: string;
+  proximoPaso: string | null;
+  asistioReunionRaw: string | null;
+  activeAttendance: Attendance;
+  followUpDueAt: string | null;
+  followUpTitle: string | null;
+  followUpTaskId: string | null;
+};
+
+export type InteresadoBuckets = {
+  estaSemana: InteresadoRow[];
+  semanaPasada: InteresadoRow[];
+  anteriores: InteresadoRow[];
+};
+
+export function computeInteresadosPorSemana(
+  opportunities: InteresadoOpportunity[],
+  closerNames: Map<string, string>,
+  nowMadrid: string
+): InteresadoBuckets {
+  const candidatos = opportunities.filter(
+    (o): o is InteresadoOpportunity & { interesadoDesde: string } =>
+      o.status === "open" && o.interesadoDesde !== null && INTERESADO_STAGES.has(o.pipelineStageId)
+  );
+
+  const mondayEstaSemana = mondayOf(nowMadrid);
+  const mondaySemanaPasada = addDays(mondayEstaSemana, -7);
+
+  const buckets: InteresadoBuckets = { estaSemana: [], semanaPasada: [], anteriores: [] };
+
+  for (const o of candidatos) {
+    const row: InteresadoRow = {
+      opportunityId: o.opportunityId,
+      contactName: o.contactName,
+      companyName: o.companyName,
+      closerId: o.closerId,
+      closerName: o.closerId ? (closerNames.get(o.closerId) ?? "Otros closers") : "Sin asignar",
+      stageId: o.pipelineStageId,
+      stageName: o.stageName,
+      tipo: o.pipelineStageId === GROWTH_STAGES.followUpCall2 ? "call2" : "interesado",
+      interesadoDesde: o.interesadoDesde,
+      proximoPaso: o.proximoPaso,
+      asistioReunionRaw: o.asistioReunion,
+      activeAttendance: o.activeAttendance,
+      followUpDueAt: o.followUpDueAt,
+      followUpTitle: o.followUpTitle,
+      followUpTaskId: o.followUpTaskId,
+    };
+    const mondayDe = mondayOf(madridDateOnly(o.interesadoDesde));
+    if (mondayDe === mondayEstaSemana) buckets.estaSemana.push(row);
+    else if (mondayDe === mondaySemanaPasada) buckets.semanaPasada.push(row);
+    else buckets.anteriores.push(row);
+  }
+
+  // El más antiguo primero en cada cajón — el que más lleva sin resolver es
+  // el que más riesgo tiene de quedar olvidado.
+  const byInteresadoDesde = (a: InteresadoRow, b: InteresadoRow) => new Date(a.interesadoDesde).getTime() - new Date(b.interesadoDesde).getTime();
+  buckets.estaSemana.sort(byInteresadoDesde);
+  buckets.semanaPasada.sort(byInteresadoDesde);
+  buckets.anteriores.sort(byInteresadoDesde);
 
   return buckets;
 }

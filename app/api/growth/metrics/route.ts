@@ -8,6 +8,7 @@ import {
   computeMeetingsPeriodFunnel,
   computeMeetingsPeriodFunnelByCloser,
   computeFollowUpQueue,
+  computeInteresadosPorSemana,
   isPendingAttention,
   isGanadoSinPagado,
   isVentaConfirmada,
@@ -207,6 +208,11 @@ export async function GET(request: Request) {
     // ve Hoy/Semana, que era el bug reportado.
     const followUps = computeFollowUpQueue(porCloser(opportunities), closerNames, periodo.start, periodo.end, now);
 
+    // Interesados por semana — aditivo puro, independiente del periodo activo
+    // (siempre agrupa contra la semana natural de AHORA, igual que
+    // pendientesGlobal), pero sí respeta el filtro de closer como Follow-ups.
+    const interesados = computeInteresadosPorSemana(porCloser(opportunities), closerNames, nowMadrid);
+
     // Leads: bloque secundario, ahora filtrado por fecha real de entrada
     // (entry_at) dentro del MISMO periodo activo — antes usaba siempre el
     // mes en curso sin importar la vista seleccionada (bug reportado).
@@ -297,6 +303,7 @@ export async function GET(request: Request) {
       agenda: operativaFull,
       agendaPorDia,
       followUps,
+      interesados,
       leadsLabel: LEADS_LABEL[tipo],
       leadsFunnel,
       leadsRows,

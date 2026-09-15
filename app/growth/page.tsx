@@ -7,6 +7,7 @@ import { GrowthMetricsCompact, type PeriodFunnel } from "@/components/growth/Gro
 import { GrowthAgenda, type AgendaRow } from "@/components/growth/GrowthAgenda";
 import { GrowthOrphanedMeetings, type OrphanedMeetingRow } from "@/components/growth/GrowthOrphanedMeetings";
 import { GrowthFollowUps, type FollowUpBuckets, type FollowUpRow } from "@/components/growth/GrowthFollowUps";
+import { GrowthInteresados, type InteresadoBuckets, type InteresadoRow } from "@/components/growth/GrowthInteresados";
 import { GrowthLeadsSecondary, type LeadsFunnel, type LeadRow } from "@/components/growth/GrowthLeadsSecondary";
 import { GrowthCloserComparison, type PeriodCloserRow } from "@/components/growth/GrowthCloserComparison";
 import { GrowthMeetingsBreakdown, type StageBreakdown, type CallNumberRow } from "@/components/growth/GrowthMeetingsBreakdown";
@@ -39,6 +40,7 @@ type ApiResponse = {
   agenda: AgendaRow[];
   agendaPorDia: { date: string; rows: AgendaRow[] }[] | null;
   followUps: FollowUpBuckets;
+  interesados: InteresadoBuckets;
   leadsLabel: string;
   leadsFunnel: LeadsFunnel;
   leadsRows: LeadRow[];
@@ -181,6 +183,25 @@ export default function GrowthPage() {
       followUpDueAt: row.dueAt,
       followUpTitle: row.accion,
       followUpTaskId: row.taskId,
+    });
+  }
+
+  function openPanelFromInteresado(row: InteresadoRow) {
+    setEditing({
+      opportunityId: row.opportunityId,
+      contactName: row.contactName,
+      companyName: row.companyName,
+      closerId: row.closerId,
+      proximoPaso: row.proximoPaso,
+      stageId: row.stageId,
+      stageName: row.stageName,
+      status: "open",
+      asistioReunionRaw: row.asistioReunionRaw,
+      activeAttendance: row.activeAttendance,
+      scheduledAt: null,
+      followUpDueAt: row.followUpDueAt,
+      followUpTitle: row.followUpTitle,
+      followUpTaskId: row.followUpTaskId,
     });
   }
 
@@ -380,6 +401,14 @@ export default function GrowthPage() {
           Follow-ups
         </h2>
         <GrowthFollowUps buckets={data.followUps} periodoLabel={data.periodo.label} onEdit={openPanelFromFollowUp} />
+      </section>
+
+      <section className="growth-section mb-7">
+        <h2 className="growth-section-title mb-4">
+          <span className="bar" />
+          Interesados y Call 2
+        </h2>
+        <GrowthInteresados buckets={data.interesados} onEdit={openPanelFromInteresado} />
       </section>
 
       {closerFilter === "all" && (

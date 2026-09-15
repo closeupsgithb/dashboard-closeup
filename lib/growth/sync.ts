@@ -76,6 +76,7 @@ type ExistingOpportunityRow = {
   status: string;
   asistio_reunion: string | null;
   proximo_paso: string | null;
+  interesado_desde: string | null;
 };
 
 async function logAudit(
@@ -171,18 +172,36 @@ async function syncOpportunityRecord(
   const huboContacto = proximoPaso !== null && proximoPaso !== "No definido";
   const firstContactCandidateAt = huboContacto ? (o.lastStageChangeAt ?? new Date().toISOString()) : null;
 
+  // "Interesado" = etapa actual es Reunion realizada|Interesado o Follow-up/
+  // Call 2 (lib/growth/ghl.ts: GROWTH_STAGES). A diferencia de first_contact_at
+  // NO se congela: si ya estaba en una de esas dos etapas en el sync anterior
+  // (existing?.pipeline_stage_id === la misma), se conserva su fecha
+  // original (coalesce abajo); si REENTRA desde una etapa distinta, se
+  // reescribe a ahora — es justo lo pedido ("cada vez que lo movamos...").
+  // Fuera de esas dos etapas, se limpia a null explicitamente (no coalesce):
+  // un lead que avanza a Pagado o se pierde deja de necesitar recordatorio.
+  const esInteresado = o.pipelineStageId === GROWTH_STAGES.reunionRealizada || o.pipelineStageId === GROWTH_STAGES.followUpCall2;
+  const reentraEnInteresado = esInteresado && existing?.pipeline_stage_id !== o.pipelineStageId;
+  const interesadoDesde = !esInteresado
+    ? null
+    : reentraEnInteresado
+      ? (o.lastStageChangeAt ?? new Date().toISOString())
+      : (existing?.interesado_desde ?? o.lastStageChangeAt ?? new Date().toISOString());
+
   await query`
     insert into growth_opportunities (
       opportunity_id, contact_id, contact_name, company_name, phone, email,
       pipeline_stage_id, status, closer_id, entry_month, entry_at,
       asistio_reunion, proximo_paso, fecha_reunion_agendada, follow_up_due_at,
-      follow_up_title, follow_up_task_id, pagado_confirmado_at, first_contact_at, last_synced_at
+      follow_up_title, follow_up_task_id, pagado_confirmado_at, first_contact_at,
+      interesado_desde, last_synced_at
     ) values (
       ${o.id}, ${o.contactId}, ${o.contact?.name ?? null}, ${o.contact?.companyName ?? null},
       ${o.contact?.phone ?? null}, ${o.contact?.email ?? null},
       ${o.pipelineStageId}, ${o.status}, ${closerId}, ${entryMonth}, ${entryAt},
       ${asistioReunion}, ${proximoPaso}, ${fechaReunionAgendada}, ${followUpDueAt},
-      ${followUpTitle}, ${followUpTaskId}, ${pagadoCandidateAt}, ${firstContactCandidateAt}, now()
+      ${followUpTitle}, ${followUpTaskId}, ${pagadoCandidateAt}, ${firstContactCandidateAt},
+      ${interesadoDesde}, now()
     )
     on conflict (opportunity_id) do update set
       contact_name = excluded.contact_name,
@@ -201,6 +220,7 @@ async function syncOpportunityRecord(
       pagado_confirmado_at = coalesce(growth_opportunities.pagado_confirmado_at, excluded.pagado_confirmado_at),
       entry_at = coalesce(growth_opportunities.entry_at, excluded.entry_at),
       first_contact_at = coalesce(growth_opportunities.first_contact_at, excluded.first_contact_at),
+      interesado_desde = excluded.interesado_desde,
       last_synced_at = now(),
       updated_at = now()
   `;
@@ -333,7 +353,7 @@ export async function reconcileGrowth(): Promise<SyncResult> {
     fetchGrowthOpportunities(),
     fetchEventsByContact(),
     query<ExistingOpportunityRow>`
-      select opportunity_id, entry_month, closer_id, pipeline_stage_id, status, asistio_reunion, proximo_paso
+      select opportunity_id, entry_month, closer_id, pipeline_stage_id, status, asistio_reunion, proximo_paso, interesado_desde
       from growth_opportunities
     `,
   ]);
@@ -384,7 +404,7 @@ export async function syncSingleOpportunity(opportunityId: string): Promise<void
   const closers = await listClosers();
   const knownCloserIds = new Set(closers.map((c) => c.id));
   const existingRows = await query<ExistingOpportunityRow>`
-    select opportunity_id, entry_month, closer_id, pipeline_stage_id, status, asistio_reunion, proximo_paso
+    select opportunity_id, entry_month, closer_id, pipeline_stage_id, status, asistio_reunion, proximo_paso, interesado_desde
     from growth_opportunities where opportunity_id = ${opportunityId}
   `;
   const existingById = new Map(existingRows.map((r) => [r.opportunity_id, r]));
