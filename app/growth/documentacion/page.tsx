@@ -353,6 +353,29 @@ export default function CentroComercialPage() {
         </Accordion>
 
         <Accordion
+          id="postcall"
+          title="Post-call"
+          subtitle="Material que recibe el prospecto"
+          tag="Enviar al prospecto"
+          open={open === "postcall"}
+          onToggle={() => toggle("postcall")}
+        >
+          <p className="text-xs" style={{ color: "var(--ink-muted)" }}>
+            &quot;¿Qué recibe el prospecto después de la 2ª llamada?&quot;
+          </p>
+          <Resource
+            title="Página de resultados — Post llamada"
+            description="Se envía junto al borrador del contrato o la propuesta, tras la 2ª llamada, para que el prospecto revise los resultados del sistema con calma."
+            actions={
+              <>
+                <OpenButton href="https://closeupsgithb.github.io/reformas-system-resultados/" label="Abrir página" />
+                <CopyButton path="https://closeupsgithb.github.io/reformas-system-resultados/" />
+              </>
+            }
+          />
+        </Accordion>
+
+        <Accordion
           id="contratos"
           title="Contratos"
           subtitle="Documentación para formalizar el cierre"
@@ -378,16 +401,6 @@ export default function CentroComercialPage() {
               <li>CIF</li>
             </ul>
           </div>
-          <Resource
-            title="Página de resultados — Post llamada"
-            description="Se envía junto al borrador del contrato o la propuesta, tras la 2ª llamada, para que el prospecto revise los resultados del sistema con calma."
-            actions={
-              <>
-                <OpenButton href="https://closeupsgithb.github.io/reformas-system-resultados/" label="Abrir página" />
-                <CopyButton path="https://closeupsgithb.github.io/reformas-system-resultados/" />
-              </>
-            }
-          />
           <Resource
             title="Contrato +Reformas System — Pago único · Publicidad incluida"
             description="2.997 € + IVA en un solo pago. Inversión publicitaria mínima de 400 €/mes incluida."
