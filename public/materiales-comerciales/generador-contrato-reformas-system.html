@@ -94,7 +94,7 @@
     <div class="payment-choice full">
       <label><input type="radio" name="modalidad" id="modalidad_single_included" value="single_ads_included" checked> Pago único · Publicidad incluida (2.997 € + IVA)</label>
       <label><input type="radio" name="modalidad" id="modalidad_single_separate" value="single_ads_separate"> Pago único · Publicidad aparte (2.997 € + IVA)</label>
-      <label><input type="radio" name="modalidad" id="modalidad_split_included" value="split_ads_included"> Pago fraccionado · Publicidad incluida (1.500 € inicial)</label>
+      <label><input type="radio" name="modalidad" id="modalidad_split_separate" value="split_ads_separate"> Pago fraccionado · Publicidad aparte (1.500 € inicial)</label>
     </div>
     <div><label>Nombre completo del representante</label><input type="text" id="f_nombre" placeholder="Ej: Marta Gómez Ruiz"></div>
     <div><label>DNI / NIE</label><input type="text" id="f_dni" placeholder="Ej: 12345678Z"></div>
@@ -206,27 +206,25 @@
     <div class="price-note"><b>Inversión publicitaria no incluida: mínimo 400 €/mes, abonados directamente por EL CLIENTE a la plataforma.</b> Periodo inicial: 90 días.</div>
     <div class="continuity-label">Continuidad</div>
     <div class="price-row"><span class="k">A partir de los 15 presupuestos</span><span class="v">1.497 € + IVA / mes</span></div>
-    <div class="price-note">Inversión publicitaria a cargo de EL CLIENTE, en las mismas condiciones.</div>
   </div>
 
-  <div class="price-block v-split-included" style="display:none;">
-    <div class="price-row"><span class="k">Precio inicial total</span><span class="v">2.997 € + IVA</span></div>
+  <div class="price-block v-split-separate" style="display:none;">
+    <div class="price-row"><span class="k">Honorarios de LA AGENCIA</span><span class="v">2.997 € + IVA</span></div>
     <div class="continuity-label">1er pago — con la firma</div>
     <div class="price-row"><span class="k">1er pago</span><span class="v">1.500 € + IVA</span></div>
     <div class="price-row"><span class="k">IVA (21%)</span><span class="v">315 €</span></div>
     <div class="price-row total"><span class="k">Total 1er pago</span><span class="v">1.815 €</span></div>
-    <div class="continuity-label">2º pago — a los 30 días naturales</div>
+    <div class="continuity-label">2º pago — a los 30 días de la activación de campañas</div>
     <div class="price-row"><span class="k">2º pago</span><span class="v">1.497 € + IVA</span></div>
     <div class="price-row"><span class="k">IVA (21%)</span><span class="v">314,37 €</span></div>
     <div class="price-row total"><span class="k">Total 2º pago</span><span class="v">1.811,37 €</span></div>
-    <div class="price-note"><b>Total del precio inicial: 3.626,37 € IVA incluido. Inversión publicitaria mínima de 400 €/mes incluida.</b> Periodo inicial: 90 días.</div>
+    <div class="price-note"><b>Total honorarios: 3.626,37 € IVA incluido. Inversión publicitaria no incluida: mínimo 400 €/mes, abonados directamente por EL CLIENTE a la plataforma.</b> Periodo inicial: 90 días.</div>
     <div class="continuity-label">Continuidad</div>
     <div class="price-row"><span class="k">A partir de los 15 presupuestos</span><span class="v">1.497 € + IVA / mes</span></div>
-    <div class="price-note">Publicidad incluida en la mensualidad de continuidad, en las mismas condiciones.</div>
   </div>
 
   <p>La forma prioritaria de pago es transferencia bancaria: Banco Santander, IBAN <span style="white-space:nowrap;">ES05 0049 5175 7121 1653 9086</span>, titular Daniel Guillermo von Zedlitz / Closeup Marketing, concepto <span class="sig-fill" data-tok="sociedad">[NOMBRE EMPRESA]</span> +REFORMAS SYSTEM.</p>
-  <p class="frac-only" style="display:none;">El segundo pago deberá abonarse en el plazo de 30 días naturales desde el primer pago. Si no se recibe dentro de ese plazo, LA AGENCIA pausará las campañas y cancelará el sistema +Reformas System. El segundo pago de 1.497 € + IVA forma parte del precio inicial de 2.997 € + IVA y es independiente de la tarifa mensual de continuidad.</p>
+  <p class="frac-only" style="display:none;">El segundo pago deberá abonarse en el plazo de 30 días naturales desde la activación efectiva de las campañas. Si no se recibe dentro de ese plazo, LA AGENCIA pausará las campañas y cancelará el sistema +Reformas System. El segundo pago de 1.497 € + IVA forma parte de los honorarios totales de 2.997 € + IVA y es independiente de la tarifa mensual de continuidad.</p>
   <p class="frac-only" style="display:none;">El segundo pago continuará siendo exigible aunque la garantía de quince presupuestos se alcance antes de su fecha de vencimiento. La continuidad mensual comenzará cuando quede registrado el decimoquinto presupuesto, sin necesidad de esperar al vencimiento del segundo pago ni al transcurso de los noventa días.</p>
   <p>Una vez alcanzados y registrados en el CRM los quince (15) presupuestos, se entenderá cumplida la garantía inicial y +Reformas System continuará mediante la tarifa mensual indicada. Esta continuidad podrá finalizarse por cualquiera de las partes con un preaviso de 10 días naturales antes de la siguiente mensualidad.</p>
 </div>
@@ -279,18 +277,18 @@
 // modalidad \u2014 no esperan a "Generar contrato" ni a que est\u00e9n rellenos los
 // datos del cliente, para poder comparar las tres versiones antes de
 // rellenar nada. Cada bloque de precio es un contenedor independiente
-// (v-single-included / v-single-separate / v-split-included), nunca una
+// (v-single-included / v-single-separate / v-split-separate), nunca una
 // mezcla de fragmentos de varias modalidades \u2014 as\u00ed no puede quedar texto
 // residual de la modalidad anterior al cambiar de opci\u00f3n.
 var NOMBRES_MODALIDAD = {
   single_ads_included: 'pago \u00fanico con publicidad incluida',
   single_ads_separate: 'pago \u00fanico con publicidad aparte',
-  split_ads_included: 'pago fraccionado con publicidad incluida'
+  split_ads_separate: 'pago fraccionado con publicidad aparte'
 };
 var SUFIJOS_ARCHIVO = {
   single_ads_included: 'publicidad-incluida',
   single_ads_separate: 'publicidad-aparte',
-  split_ads_included: 'pago-fraccionado'
+  split_ads_separate: 'pago-fraccionado'
 };
 
 function modalidadSeleccionada() {
@@ -300,14 +298,14 @@ function modalidadSeleccionada() {
 
 function aplicarModalidad() {
   var v = modalidadSeleccionada();
-  var esFraccionado = v === 'split_ads_included';
-  var esPublicidadAparte = v === 'single_ads_separate';
+  var esFraccionado = v === 'split_ads_separate';
+  var esPublicidadAparte = v === 'single_ads_separate' || v === 'split_ads_separate';
   document.querySelectorAll('.frac-only').forEach(function (el) { el.style.display = esFraccionado ? '' : 'none'; });
   document.querySelectorAll('.ads-separate-only').forEach(function (el) { el.style.display = esPublicidadAparte ? '' : 'none'; });
   document.querySelectorAll('.ads-included-only').forEach(function (el) { el.style.display = esPublicidadAparte ? 'none' : ''; });
   document.querySelectorAll('.v-single-included').forEach(function (el) { el.style.display = v === 'single_ads_included' ? '' : 'none'; });
   document.querySelectorAll('.v-single-separate').forEach(function (el) { el.style.display = v === 'single_ads_separate' ? '' : 'none'; });
-  document.querySelectorAll('.v-split-included').forEach(function (el) { el.style.display = v === 'split_ads_included' ? '' : 'none'; });
+  document.querySelectorAll('.v-split-separate').forEach(function (el) { el.style.display = v === 'split_ads_separate' ? '' : 'none'; });
   return v;
 }
 document.querySelectorAll('input[name="modalidad"]').forEach(function (r) {

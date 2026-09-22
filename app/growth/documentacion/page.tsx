@@ -453,8 +453,8 @@ export default function CentroComercialPage() {
             }
           />
           <Resource
-            title="Contrato +Reformas System — Pago fraccionado · Publicidad incluida"
-            description="1.500 € + IVA con la firma y 1.497 € + IVA a los 30 días. Inversión publicitaria mínima de 400 €/mes incluida."
+            title="Contrato +Reformas System — Pago fraccionado · Publicidad aparte"
+            description="1.500 € + IVA con la firma y 1.497 € + IVA a los 30 días de la activación de campañas. Inversión publicitaria no incluida: mínimo 400 €/mes abonados directamente por el cliente a la plataforma."
             actions={
               <>
                 <OpenButton href="/materiales-comerciales/contrato-reformas-system-1500.pdf" label="Abrir PDF" />
