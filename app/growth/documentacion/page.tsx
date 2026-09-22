@@ -433,12 +433,12 @@ export default function CentroComercialPage() {
             </ul>
           </div>
           <Resource
-            title="Contrato +Reformas System — Pago único · Publicidad incluida"
-            description="2.997 € + IVA en un solo pago. Inversión publicitaria mínima de 400 €/mes incluida."
+            title="Contrato +Reformas System — Borrador (sujeto a revisión)"
+            description="Versión de trabajo pendiente de revisión legal: sin datos de LA AGENCIA ni de la cuenta bancaria. Base: pago único con publicidad aparte."
             actions={
               <>
-                <OpenButton href="/materiales-comerciales/contrato-reformas-system-2997.pdf" label="Abrir PDF" />
-                <CopyButton path="/materiales-comerciales/contrato-reformas-system-2997.pdf" />
+                <OpenButton href="/materiales-comerciales/contrato-reformas-system-borrador.pdf" label="Abrir PDF" />
+                <CopyButton path="/materiales-comerciales/contrato-reformas-system-borrador.pdf" />
               </>
             }
           />
@@ -459,6 +459,16 @@ export default function CentroComercialPage() {
               <>
                 <OpenButton href="/materiales-comerciales/contrato-reformas-system-1500.pdf" label="Abrir PDF" />
                 <CopyButton path="/materiales-comerciales/contrato-reformas-system-1500.pdf" />
+              </>
+            }
+          />
+          <Resource
+            title="Contrato +Reformas System — Pago único · Publicidad incluida"
+            description="2.997 € + IVA en un solo pago. Inversión publicitaria mínima de 400 €/mes incluida."
+            actions={
+              <>
+                <OpenButton href="/materiales-comerciales/contrato-reformas-system-2997.pdf" label="Abrir PDF" />
+                <CopyButton path="/materiales-comerciales/contrato-reformas-system-2997.pdf" />
               </>
             }
           />
