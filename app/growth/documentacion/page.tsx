@@ -62,7 +62,7 @@ function OpenButton({ href, label }: { href: string; label: string }) {
 type QuickLink = { label: string; sectionId: string; href?: string; pending?: boolean };
 
 const QUICK_LINKS: QuickLink[] = [
-  { label: "Presentación", sectionId: "presentacion", href: "/materiales-comerciales/presentacion-ventas-reformas-system.pdf" },
+  { label: "Presentación", sectionId: "presentacion", href: "/materiales-comerciales/presentacion-reformas-system.pdf" },
   { label: "Contrato", sectionId: "contratos" },
   { label: "Pago", sectionId: "pagos", href: "/materiales-comerciales/guia-pagos-reformas-system.html" },
   { label: "Pre-Call", sectionId: "precall", href: "/materiales-comerciales/mas-reformas-system.pdf" },
@@ -289,7 +289,7 @@ export default function CentroComercialPage() {
 
         <Accordion
           id="presentacion"
-          title="Presentación de ventas"
+          title="Presentación"
           subtitle="Material para utilizar en la llamada"
           tag="Usar en la reunión"
           open={open === "presentacion"}
@@ -299,12 +299,12 @@ export default function CentroComercialPage() {
             &quot;¿Qué presentación utilizo para vender +Reformas System?&quot;
           </p>
           <Resource
-            title="+Reformas System — Presentación de ventas (versión final)"
-            description="Versión definitiva para usar en la llamada de venta."
+            title="+Reformas System — Presentación (versión final)"
+            description="Versión definitiva para usar en la llamada."
             actions={
               <>
-                <OpenButton href="/materiales-comerciales/presentacion-ventas-reformas-system.pdf" label="Abrir presentación" />
-                <CopyButton path="/materiales-comerciales/presentacion-ventas-reformas-system.pdf" />
+                <OpenButton href="/materiales-comerciales/presentacion-reformas-system.pdf" label="Abrir presentación" />
+                <CopyButton path="/materiales-comerciales/presentacion-reformas-system.pdf" />
               </>
             }
           />
@@ -343,7 +343,7 @@ export default function CentroComercialPage() {
           </p>
           <Resource
             title="+Reformas System — Pre-Call"
-            description="Documento previo que se envía al prospecto para preparar la reunión. No es la presentación de ventas — la consume el prospecto antes de la llamada, no el closer durante ella."
+            description="Documento previo que se envía al prospecto para preparar la reunión. No es la presentación — la consume el prospecto antes de la llamada, no el closer durante ella."
             actions={
               <>
                 <OpenButton href="/materiales-comerciales/mas-reformas-system.pdf" label="Abrir PDF" />
