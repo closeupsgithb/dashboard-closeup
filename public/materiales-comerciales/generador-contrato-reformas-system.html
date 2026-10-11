@@ -350,6 +350,30 @@ function generarContrato() {
   status.textContent = 'Contrato generado (' + NOMBRES_MODALIDAD[v] + '). Ahora pulsa Ctrl+P y guarda como PDF.';
   status.className = 'status ok';
 }
+
+// Relleno desde el asistente de reuniones: el asistente abre esta página y le
+// pasa los datos del lead por postMessage (nunca en la URL, para que los datos
+// personales no queden en el historial ni en los registros). Solo se aceptan
+// mensajes del origen del asistente y solo se escriben valores de texto en los
+// campos del formulario; el contrato se sigue generando a mano con el botón.
+var ORIGEN_ASISTENTE = 'https://br-tiny-glade-b9ta8w1l-asistente.compute.c-7.eu-central-1.aws.neon.tech';
+window.addEventListener('message', function (e) {
+  if (e.origin !== ORIGEN_ASISTENTE || !e.data || e.data.tipo !== 'rellenar-contrato') return;
+  var d = e.data.datos || {};
+  ['nombre', 'dni', 'sociedad', 'cif', 'direccion', 'fecha'].forEach(function (k) {
+    if (typeof d[k] === 'string' && d[k]) document.getElementById('f_' + k).value = d[k];
+  });
+  if (typeof d.modalidad === 'string' && NOMBRES_MODALIDAD[d.modalidad]) {
+    document.querySelectorAll('input[name="modalidad"]').forEach(function (r) { r.checked = r.value === d.modalidad; });
+  }
+  aplicarModalidad();
+  var status = document.getElementById('status');
+  status.textContent = 'Datos cargados desde el asistente. Revisa, completa lo que falte (DNI, CIF...) y pulsa "Generar contrato".';
+  status.className = 'status';
+});
+if (window.opener) {
+  try { window.opener.postMessage({ tipo: 'generador-listo' }, ORIGEN_ASISTENTE); } catch (err) { /* sin asistente */ }
+}
 </script>
 </body>
 </html>
