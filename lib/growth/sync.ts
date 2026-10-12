@@ -111,7 +111,10 @@ async function ensureCloserExists(ghlUserId: string, knownIds: Set<string>): Pro
 }
 
 function resolveClosingCloserId(o: GrowthOpportunity, activeEvent: GhlCalendarEvent | undefined): string | null {
-  return activeEvent?.assignedUserId ?? o.assignedTo ?? null;
+  // GHL devuelve assignedTo: "" en oportunidades sin asignar (p. ej. al pasar a perdidas). Con ?? la cadena vacía llegaba
+  // a closer_id y violaba la FK growth_opportunities_closer_id_fkey: la oportunidad dejaba de sincronizarse para siempre
+  // (8 casos reales, 14/09-07/10/2026). Con || la cadena vacía se trata como "sin closer".
+  return activeEvent?.assignedUserId || o.assignedTo || null;
 }
 
 export type SyncResult = { procesadas: number; cambiosDetectados: number; errores: string[] };
